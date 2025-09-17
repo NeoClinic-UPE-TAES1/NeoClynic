@@ -11,3 +11,14 @@ services:
       restart_policy:
         condition: on-failure
 
+  frontend:
+    image: neoclinic-frontend:1.0
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
