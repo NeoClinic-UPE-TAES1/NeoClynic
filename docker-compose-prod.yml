@@ -1,0 +1,13 @@
+services:
+  backend:
+    image: neoclinic-backend:1.0
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    command: npm run start
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+

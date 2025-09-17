@@ -1,0 +1,66 @@
+generator client_postgres {
+  provider = "prisma-client-js"
+  output   = "../src/infra/database/client"
+}
+
+datasource postgres {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Secretary {
+  id       String @id @default(uuid()) @map("_id")
+  name     String
+  email    String @unique
+  password String
+}
+
+model Medic {
+  id           String         @id @default(uuid()) @map("_id")
+  name         String
+  email        String         @unique
+  password     String
+  specialty    String
+  consultation Consultation[]
+}
+
+model Patient {
+  id           String         @id @default(uuid()) @map("_id")
+  name         String
+  birthDay     DateTime
+  sex          String
+  cpf          String         @unique
+  ethnicity    String
+  email        String?        @unique
+  observation  Observation?
+  consultation Consultation[]
+}
+
+model Observation {
+  id          String  @id @default(uuid()) @map("_id")
+  comorbidity String
+  allergies   String
+  medications String
+  patientId   String  @unique
+  patient     Patient @relation(fields: [patientId], references: [id])
+}
+
+model Consultation {
+  id        String   @id @default(uuid()) @map("_id")
+  date      DateTime
+  Report    Report?
+  followUp  Boolean
+  medicId   String
+  patientId String
+  medic     Medic    @relation(fields: [medicId], references: [id])
+  patient   Patient  @relation(fields: [patientId], references: [id])
+}
+
+model Report {
+  id             String       @id @default(uuid()) @map("_id")
+  description    String
+  diagnosis      String
+  prescription   String
+  consultationId String       @unique
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
+}

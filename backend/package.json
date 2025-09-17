@@ -1,0 +1,28 @@
+{
+  "name": "backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node app.ts ",
+    "start": "node app.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.0",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "dotenv": "^17.2.2",
+    "express": "^4.21.2",
+    "http-errors": "~1.6.3",
+    "jade": "^0.29.0",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.1",
+    "prisma": "^6.16.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}
