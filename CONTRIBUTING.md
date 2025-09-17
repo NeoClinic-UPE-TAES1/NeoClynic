@@ -73,14 +73,16 @@ O merge só é liberado quando:
 
 ## 🚀 Deploy
 
--   **`development`** → Ambiente de Desenvolvimento
--   **`homologation`** → Ambiente de Homologação
+-   **`development`** → Ambiente de Desenvolvimento.
+-   **`homologation`** → Ambiente de Homologação.
 -   **`main`** → Produção (merge via PR, depois de validação).
 
 ---
 
 ## 👥 Papéis
 
--   **Todos os Devs:** Podem abrir PRs e revisar.
+-   **Desenvolvedores:** Podem criar branchs de `features` ou `bugfix`, abrir PRs e revisar.
+    - Após revisão e conclusão do PR, a branch que contribuiu para uma das branchs principais deverá ser excluída para manutenção do repositório.
+    - Apenas o criador da branch ou Scrum Master têm autorização para excluir branchs.
 -   **Scrum Master:** Responsável pela aprovação final do merge de `homologation` para `main`.
 -   **DevOps:** Monitora deploys e incidentes.
