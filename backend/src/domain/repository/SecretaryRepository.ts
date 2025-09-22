@@ -4,6 +4,8 @@ import { ISecretaryRepository } from "./ISecretaryRepository";
 import { SecretaryResponse } from "../../dto/SecretaryResponseDTO";
 import { CreateSecretaryRequest } from "../../dto/CreateSecretaryRequestDTO";
 import { DeleteSecretaryRequest } from "../../dto/DeleteSecretaryRequestDTO";
+import { UpdateSecretaryRequest } from "../../dto/UpdateSecretaryRequestDTO";
+import { ListSecretaryRequest } from "../../dto/ListSecretaryRequestDTO";
 
 export class SecretaryRepository implements ISecretaryRepository {
     async createSecretary(createSecretary: CreateSecretaryRequest): Promise<SecretaryResponse> {
@@ -23,16 +25,52 @@ export class SecretaryRepository implements ISecretaryRepository {
         };
     }
 
-    async listSecretary(id:string): Promise<SecretaryResponse>{
-        throw new Error("Method not implemented.");
+    async listSecretary(listSecretary: ListSecretaryRequest): Promise<SecretaryResponse> {
+    const { id } = listSecretary;
+
+    const data = await prisma.secretary.findUnique({
+        where: { id },
+    });
+
+    if (!data) {
+        throw new Error(`Secretária com id ${id} não encontrada.`);
     }
 
-    listSecretaries(): Promise<Secretary[]> {
-        throw new Error("Method not implemented.");
+    return {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+    };
     }
 
-    updateSecretary(id: string, name?: string, email?: string, password?: string): Promise<SecretaryResponse> {
-        throw new Error("Method not implemented.");
+
+    async listSecretaries(): Promise<SecretaryResponse[]> {
+        const secretaries = await prisma.secretary.findMany();
+
+        return secretaries.map((s) => ({
+            id: s.id,
+            name: s.name,
+            email: s.email,
+        }));
+    }
+
+    async updateSecretary(updateSecretary: UpdateSecretaryRequest): Promise<SecretaryResponse> {
+        const { id, name, email, password } = updateSecretary;
+
+        const data = await prisma.secretary.update({
+            where: { id },
+            data: {
+                ...(name !== undefined && name !== "" && { name }),
+                ...(email !== undefined && email !== "" && { email }),
+                ...(password !== undefined && password !== "" && { password })
+            }
+        });
+
+        return {
+            id: data.id,
+            name: data.name,
+            email: data.email
+        };
     }
 
     async deleteSecretary(deleteSecretary:DeleteSecretaryRequest): Promise<void> {
