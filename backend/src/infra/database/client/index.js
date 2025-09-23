@@ -177,7 +177,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\kaiod\\Desktop\\Computação\\TAES\\backend\\src\\infra\\database\\client",
+      "value": "C:\\Users\\kaiod\\Desktop\\Computação\\TAES\\NeoClinic\\backend\\src\\infra\\database\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -191,11 +191,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\kaiod\\Desktop\\Computação\\TAES\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\kaiod\\Desktop\\Computação\\TAES\\NeoClinic\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../../.env"
   },
   "relativePath": "../../../../prisma",
   "clientVersion": "6.16.0",
@@ -204,7 +205,6 @@ const config = {
     "postgres"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "postgres": {
       "url": {
