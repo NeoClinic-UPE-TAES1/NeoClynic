@@ -1,4 +1,4 @@
-import { Consultation } from "../entities/Consultation";
+import { Consultation } from "../domain/entity/Consultation";
 export type MedicResponse = {
     id: string
     name: string,
