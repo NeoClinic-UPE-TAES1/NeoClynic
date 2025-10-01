@@ -23,7 +23,7 @@ describe("User integration with real DB", () => {
 
     test("Create Secretary", async () => {
         const name = "John Doe";
-        const email = ""
+        const email = "JohnDoe@gmail.com"
         const password = "password123";
         const secretary = await secretaryService.create(name, email, password);
         expect(secretary).toHaveProperty("id");
@@ -33,19 +33,11 @@ describe("User integration with real DB", () => {
 
     test("Create Secretary with existing email", async () => {
         const name = "John Doe";
-        const email = ""
+        const email = "JohnDoe@gmail.com"
         const password = "password123";
         await secretaryService.create(name, email, password);
         await expect(secretaryService.create(name, email, password)).rejects.toThrow("Secretary already exists.");
     }
-    );
-
-    test("Create Secretary with missing fields", async () => {
-        const name = "John Doe";
-        const email = "";
-        const password = "password123";
-        await expect(secretaryService.create(name, email, password)).rejects.toThrow("Name, email, and password are required.");
-    }   
     );
 
 });

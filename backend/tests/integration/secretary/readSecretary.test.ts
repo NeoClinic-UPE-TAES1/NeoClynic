@@ -23,10 +23,10 @@ describe("User integration with real DB", () => {
 
     test("List All Secretaries", async () => {
         const name1 = "John Doe";
-        const email1 = ""
+        const email1 = "JohnDoe@gmail.com"
         const password1 = "password123";
         const name2 = "Jane Smith";
-        const email2 = ""
+        const email2 = "JaneSmith@gmail.com"
         const password2 = "password456";
         await secretaryService.create(name1, email1, password1);
         await secretaryService.create(name2, email2, password2);
@@ -38,7 +38,7 @@ describe("User integration with real DB", () => {
     });
     test("List One Secretary", async () => {
         const name = "John Doe";
-        const email = ""
+        const email = "JohnDoe@gmail.com"
         const password = "password123";
         const secretary = await secretaryService.create(name, email, password);
         const foundSecretary = await secretaryService.listOne(secretary.id);

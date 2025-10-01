@@ -23,7 +23,7 @@ describe("User integration with real DB", () => {
 
     test("Update Secretary", async () => {
         const name = "John Doe";
-        const email = ""
+        const email = "JohnDoe@gmail.com"
         const password = "password123";
         const secretary = await secretaryService.create(name, email, password);
         const newName = "Jane Doe";
