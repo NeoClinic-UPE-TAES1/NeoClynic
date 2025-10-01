@@ -51,6 +51,7 @@ const Login = () => {
           href="#"
           className="login-link"
         >Esqueci minha senha</a>
+        <span className="login-link-line"></span>
       </div>
     </div>
   );
