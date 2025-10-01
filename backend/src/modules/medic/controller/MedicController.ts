@@ -3,11 +3,15 @@ import { IMedicRepository } from "../domain/repository/IMedicRepository";
 import { Request, Response } from "express";
 
 export class MedicController {
+  constructor(private medicRepository: IMedicRepository,
+              private medicService: MedicService = new MedicService(medicRepository)
+  ) {}
+
   public async registerMedic(req: Request, res: Response, medicRepository: IMedicRepository): Promise<Response> {
     const { name, email, password, specialty } = req.body;
 
     try {
-      const result = await MedicService.create(name, email, password, specialty, medicRepository);
+      const result = await this.medicService.create(name, email, password, specialty);
       return res.status(201).json({ medic: result });
     } catch (error) {
       console.error("Error registering medic:", error);
@@ -20,7 +24,7 @@ export class MedicController {
     const { password } = req.body;
 
     try {
-      await MedicService.delete(id, password, medicRepository);
+      await this.medicService.delete(id, password);
       return res.status(200).json({ message: "Ok" });
     } catch (error) {
       console.error("Error deleting medic:", error);
@@ -33,7 +37,7 @@ export class MedicController {
     const { name, email, password, specialty } = req.body;
 
     try {
-      const result = await MedicService.update(id, name, email, password, specialty, medicRepository);
+      const result = await this.medicService.update(id, name, email, password, specialty);
       return res.status(200).json({ medic: result });
     } catch (error) {
       console.error("Error updating medic:", error);
@@ -45,7 +49,7 @@ export class MedicController {
     const { id } = req.params;
 
     try {
-      const result = await MedicService.listOne(id, medicRepository);
+      const result = await this.medicService.listOne(id);
       return res.status(200).json({ medic: result });
     } catch (error) {
       console.error("Error listing medic:", error);
@@ -55,7 +59,7 @@ export class MedicController {
 
   public async listMedics(req: Request, res: Response, medicRepository: IMedicRepository): Promise<Response> {
     try {
-      const result = await MedicService.listAll(medicRepository);
+      const result = await this.medicService.listAll();
       return res.status(200).json({ medics: result });
     } catch (error) {
       console.error("Error listing medics:", error);

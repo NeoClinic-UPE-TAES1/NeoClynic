@@ -1,5 +1,5 @@
 import { Secretary } from "../entity/Secretary";
-import { prisma } from "../../infra/database/prismaClient";
+import { prisma } from "../../../../infra/database/prismaClient";
 import { ISecretaryRepository } from "./ISecretaryRepository";
 import { SecretaryResponse } from "../../dto/SecretaryResponseDTO";
 import { CreateSecretaryRequest } from "../../dto/CreateSecretaryRequestDTO";

@@ -1,5 +1,5 @@
 import { Medic } from "../entity/Medic";
-import { prisma } from "../../infra/database/prismaClient";
+import { prisma } from "../../../../infra/database/prismaClient";
 import { IMedicRepository } from "./IMedicRepository";
 import { MedicResponse } from "../../dto/MedicResponseDTO";
 import { CreateMedicRequest } from "../../dto/CreateMedicRequestDTO";
@@ -17,9 +17,12 @@ export class MedicRepository implements IMedicRepository {
         email,
         specialty,
         password: hashedPassword,
-      },
-      include: { consultation: true },
-    });
+      //   consultations: {
+      //   connect: [{ id: consultationId1 }, { id: consultationId2 }]
+      // }
+    },
+    include: { consultation: true },
+  });
 
     return {
       id: data.id,

@@ -7,12 +7,17 @@ import { UpdateMedicRequest } from "../dto/UpdateMedicRequestDTO";
 import bcrypt from "bcrypt";
 
 export class MedicService {
-  static async create(name: string, email: string, password: string, specialty: string, medicRepository: IMedicRepository): Promise<MedicResponse> {
+  constructor(
+    private medicRepository: IMedicRepository
+  ) {
+  }
+
+  async create(name: string, email: string, password: string, specialty: string): Promise<MedicResponse> {
     if (!name || !email || !password || !specialty) {
       throw new Error("Name, email, password and specialty are required.");
     }
 
-    const medicExists = await medicRepository.findByEmail(email);
+    const medicExists = await this.medicRepository.findByEmail(email);
     if (medicExists) {
       throw new Error("Medic already exists.");
     }
@@ -27,11 +32,11 @@ export class MedicService {
       hashedPassword,
     };
 
-    return await medicRepository.createMedic(registerData);
+    return await this.medicRepository.createMedic(registerData);
   }
 
-  static async delete(id: string, password: string, medicRepository: IMedicRepository): Promise<void> {
-    const medic = await medicRepository.findById(id);
+  async delete(id: string, password: string): Promise<void> {
+    const medic = await this.medicRepository.findById(id);
     if (!medic) {
       throw new Error("Medic not exists.");
     }
@@ -42,18 +47,17 @@ export class MedicService {
     }
 
     const deleteRequest: DeleteMedicRequest = { id };
-    await medicRepository.deleteMedic(deleteRequest);
+    await this.medicRepository.deleteMedic(deleteRequest);
   }
 
-  static async update(
+  async update(
     id: string,
     name: string | undefined,
     email: string | undefined,
     password: string | undefined,
-    specialty: string | undefined,
-    medicRepository: IMedicRepository
+    specialty: string | undefined
   ): Promise<MedicResponse> {
-    const medic = await medicRepository.findById(id);
+    const medic = await this.medicRepository.findById(id);
     if (!medic) {
       throw new Error("Medic not exists.");
     }
@@ -71,20 +75,21 @@ export class MedicService {
       specialty,
     };
 
-    return await medicRepository.updateMedic(updateRequest);
+    return await this.medicRepository.updateMedic(updateRequest);
   }
-
-  static async listAll(medicRepository: IMedicRepository): Promise<MedicResponse[]> {
-    return await medicRepository.listMedics();
-  }
-
-  static async listOne(id: string, medicRepository: IMedicRepository): Promise<MedicResponse> {
-    const medic = await medicRepository.findById(id);
+  
+  async listOne(id: string): Promise<MedicResponse> {
+    const medic = await this.medicRepository.findById(id);
     if (!medic) {
       throw new Error("Medic not exists.");
     }
 
     const list: ListMedicRequest = { id: medic.id };
-    return await medicRepository.listMedic(list);
+    return await this.medicRepository.listMedic(list);
   }
+  
+  async listAll(): Promise<MedicResponse[]> {
+    return await this.medicRepository.listMedics();
+  }
+
 }

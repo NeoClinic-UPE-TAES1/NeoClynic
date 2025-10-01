@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
-import { MedicController } from '../src/controller/MedicController';
-import { MedicRepository } from '../src/domain/repository/MedicRepository';
+import { MedicController } from '../src/modules/medic/controller/MedicController';
+import { MedicRepository } from '../src/modules/medic/domain/repository/MedicRepository';
 
 const medicRoutes = Router();
 
-const medicController = new MedicController();
 const medicRepository = new MedicRepository();
+const medicController = new MedicController(medicRepository);
 
 medicRoutes.post('/medic/register', (req: Request, res: Response) => {
     medicController.registerMedic(req, res, medicRepository) });

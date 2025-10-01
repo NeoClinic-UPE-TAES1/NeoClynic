@@ -16,7 +16,7 @@ services:
     ports:
       - "8050:3000"
     environment:
-      DATABASE_URL: ${CLOUD_DATABASE_URL}
+      DATABASE_URL: ${LOCAL_DATABASE_URL}
     depends_on:
       - db
 
