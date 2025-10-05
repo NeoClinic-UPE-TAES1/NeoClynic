@@ -4,11 +4,15 @@ import { Router, Request, Response } from 'express';
 
 export class SecretaryController {
 
-    public async registerSecretary(req: Request, res: Response, secretaryRepository: ISecretaryRepository): Promise<Response> {
+    constructor(private secretaryRepository: ISecretaryRepository,
+                private secretaryService: SecretaryService = new SecretaryService(secretaryRepository)
+    ) {}
+
+    public async registerSecretary(req: Request, res: Response): Promise<Response> {
         const { name, email, password } = req.body;
 
         try{
-            const result = await SecretaryService.create(name, email, password, secretaryRepository);
+            const result = await this.secretaryService.create(name, email, password);
             return res.status(201).json({ secretary: result });
 
         } catch (error) {
@@ -17,12 +21,13 @@ export class SecretaryController {
         }
     }
 
-    public async deleteSecretary(req: Request, res: Response, secretaryRepository: ISecretaryRepository):Promise<Response>{
+
+    public async deleteSecretary(req: Request, res: Response):Promise<Response>{
         const { id } = req.params;
         const { password } = req.body
 
         try{
-            await SecretaryService.delete(id, password, secretaryRepository);
+            await this.secretaryService.delete(id, password);
             return res.status(200).json({ message: 'Ok' });
 
         } catch (error) {
@@ -32,13 +37,12 @@ export class SecretaryController {
     }
 
 
-
-    public async updateSecretary(req: Request, res: Response, secretaryRepository: ISecretaryRepository): Promise<Response> {
+    public async updateSecretary(req: Request, res: Response): Promise<Response> {
         const { id } = req.params;
         const { name, email, password } = req.body;
 
         try {
-            const result = await SecretaryService.update(id, name, email, password, secretaryRepository);
+            const result = await this.secretaryService.update(id, name, email, password);
             return res.status(200).json({ secretary: result });
         } catch (error) {
             console.error("Error updating secretary:", error);
@@ -47,13 +51,11 @@ export class SecretaryController {
     }
 
 
-
-
-    public async listSecretary(req: Request, res: Response, secretaryRepository: ISecretaryRepository): Promise<Response> {
+    public async listSecretary(req: Request, res: Response): Promise<Response> {
         const { id } = req.params;
 
         try {
-            const result = await SecretaryService.listOne(id, secretaryRepository);
+            const result = await this.secretaryService.listOne(id);
             return res.status(200).json({ secretary: result });
         } catch (error) {
             console.error("Error listing secretary:", error);
@@ -61,9 +63,10 @@ export class SecretaryController {
         }
     }
 
-    public async listSecretaries(req: Request, res: Response, secretaryRepository: ISecretaryRepository): Promise<Response> {
+    
+    public async listSecretaries(req: Request, res: Response): Promise<Response> {
         try {
-            const result = await SecretaryService.listAll(secretaryRepository);
+            const result = await this.secretaryService.listAll();
             return res.status(200).json({ secretaries: result });
         } catch (error) {
             console.error("Error listing secretaries:", error);

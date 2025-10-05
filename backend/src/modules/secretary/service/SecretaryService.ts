@@ -7,9 +7,10 @@ import { UpdateSecretaryRequest } from "../dto/UpdateSecretaryRequestDTO";
 import bcrypt from "bcrypt";
 
 export class SecretaryService {
+    constructor(private secretaryRepository: ISecretaryRepository) {}
 
-    static async create(name: string, email: string, password: string, SecretaryRepository:ISecretaryRepository): Promise<SecretaryResponse> {
-        const secretary =  await SecretaryRepository.findByEmail(email)
+    async create(name: string, email: string, password: string): Promise<SecretaryResponse> {
+        const secretary =  await this.secretaryRepository.findByEmail(email)
         console.log(secretary)
 
         if (!name || !email || !password){
@@ -27,12 +28,12 @@ export class SecretaryService {
             hashedPassword
         };
 
-        return await SecretaryRepository.createSecretary(registerData)
+        return await this.secretaryRepository.createSecretary(registerData)
 
     }
 
-    static async delete(id:string, password:string, SecretaryRepository:ISecretaryRepository): Promise<void>{
-        const secretary =  await SecretaryRepository.findById(id)
+    async delete(id:string, password:string): Promise<void>{
+        const secretary =  await this.secretaryRepository.findById(id)
         
         if (secretary == null){
             throw new Error("Secretary not exists.");
@@ -51,18 +52,17 @@ export class SecretaryService {
             id
         }
 
-        await SecretaryRepository.deleteSecretary(deleteRequest)
+        await this.secretaryRepository.deleteSecretary(deleteRequest)
     }
 
 
-    static async update(
+    async update(
         id: string,
         name: string | undefined,
         email: string | undefined,
-        password: string | undefined,
-        secretaryRepository: ISecretaryRepository
+        password: string | undefined
     ): Promise<SecretaryResponse> {
-        const secretary = await secretaryRepository.findById(id);
+        const secretary = await this.secretaryRepository.findById(id);
         if (!secretary) {
             throw new Error("Secretary not exists.");
         }
@@ -79,25 +79,22 @@ export class SecretaryService {
             password: hashedPassword
         };
 
-        return await secretaryRepository.updateSecretary(updateRequest);
+        return await this.secretaryRepository.updateSecretary(updateRequest);
     }
 
-
-
-
-    static async listAll(secretaryRepository: ISecretaryRepository): Promise<SecretaryResponse[]> {
-        return await secretaryRepository.listSecretaries();
+    async listAll(): Promise<SecretaryResponse[]> {
+        return await this.secretaryRepository.listSecretaries();
     }
 
-    static async listOne(id: string, secretaryRepository: ISecretaryRepository): Promise<SecretaryResponse> {
-        const secretary = await secretaryRepository.findById(id);
+    async listOne(id: string): Promise<SecretaryResponse> {
+        const secretary = await this.secretaryRepository.findById(id);
         if (secretary == null) {
             throw new Error("Secretary not exists.");
         }
 
         const list: ListSecretaryRequest = { id: secretary.id };
 
-        return await secretaryRepository.listSecretary(list);
+        return await this.secretaryRepository.listSecretary(list);
         }
 
 

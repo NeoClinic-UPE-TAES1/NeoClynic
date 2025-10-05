@@ -33,7 +33,7 @@ model Patient {
   cpf               String  @unique
   ethnicity         String
   email             String? @unique
-  observation      Observation?
+  observation       Observation?
   consultation      Consultation[]
 }
 
