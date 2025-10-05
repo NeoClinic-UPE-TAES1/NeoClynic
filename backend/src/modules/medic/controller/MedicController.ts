@@ -7,7 +7,7 @@ export class MedicController {
               private medicService: MedicService = new MedicService(medicRepository)
   ) {}
 
-  public async registerMedic(req: Request, res: Response, medicRepository: IMedicRepository): Promise<Response> {
+  public async registerMedic(req: Request, res: Response): Promise<Response> {
     const { name, email, password, specialty } = req.body;
 
     try {
@@ -19,7 +19,7 @@ export class MedicController {
     }
   }
 
-  public async deleteMedic(req: Request, res: Response, medicRepository: IMedicRepository): Promise<Response> {
+  public async deleteMedic(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
     const { password } = req.body;
 
@@ -32,7 +32,7 @@ export class MedicController {
     }
   }
 
-  public async updateMedic(req: Request, res: Response, medicRepository: IMedicRepository): Promise<Response> {
+  public async updateMedic(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
     const { name, email, password, specialty } = req.body;
 
@@ -45,7 +45,7 @@ export class MedicController {
     }
   }
 
-  public async listMedic(req: Request, res: Response, medicRepository: IMedicRepository): Promise<Response> {
+  public async listMedic(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
 
     try {
@@ -57,7 +57,7 @@ export class MedicController {
     }
   }
 
-  public async listMedics(req: Request, res: Response, medicRepository: IMedicRepository): Promise<Response> {
+  public async listMedics(req: Request, res: Response): Promise<Response> {
     try {
       const result = await this.medicService.listAll();
       return res.status(200).json({ medics: result });
