@@ -14,6 +14,7 @@ jobs:
       LOCAL_POSTGRES_PASSWORD: ${{ secrets.LOCAL_POSTGRES_PASSWORD }}
       LOCAL_POSTGRES_DB: ${{ secrets.LOCAL_POSTGRES_DB }}
       DATABASE_URL: ${{ secrets.LOCAL_DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     strategy:
       matrix:
