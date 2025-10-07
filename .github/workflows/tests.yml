@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.LOCAL_DATABASE_URL }}
 
     strategy:
       matrix:
@@ -32,10 +34,6 @@ jobs:
         working-directory: backend
         run: |
           docker compose -f ../docker-compose-dev.yml up -d db
-
-      - name: Wait for database to be healthy
-        run: |
-          sleep 10 
 
       - name: Generate Prisma client
         working-directory: backend
