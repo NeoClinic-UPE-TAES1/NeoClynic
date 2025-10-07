@@ -35,17 +35,7 @@ jobs:
 
       - name: Wait for database to be healthy
         run: |
-          echo "Waiting for the database to be healthy..."
-          TIMEOUT=60
-          COUNTER=0
-          until [ "$(docker inspect --format='{{.State.Health.Status}}' db)" == "healthy" ] || [ $COUNTER -ge $TIMEOUT ]; do
-            sleep 2
-            ((COUNTER++))
-          done
-          if [ $COUNTER -ge $TIMEOUT ]; then
-            echo "Database did not become healthy in time"
-            exit 1
-          fi   
+          sleep 10 
 
       - name: Generate Prisma client
         working-directory: backend
