@@ -3,7 +3,7 @@ import { IMedicRepository } from "../domain/repository/IMedicRepository";
 import { Request, Response } from "express";
 
 export class MedicController {
-  constructor(private medicRepository: IMedicRepository,
+  constructor(medicRepository: IMedicRepository,
               private medicService: MedicService = new MedicService(medicRepository)
   ) {}
 
