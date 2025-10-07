@@ -4,7 +4,7 @@ import { Router, Request, Response } from 'express';
 
 export class SecretaryController {
 
-    constructor(private secretaryRepository: ISecretaryRepository,
+    constructor(secretaryRepository: ISecretaryRepository,
                 private secretaryService: SecretaryService = new SecretaryService(secretaryRepository)
     ) {}
 

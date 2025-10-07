@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
-import secretaryRoutes from "./routes/secretaryRoutes"
-import medicRoutes from "./routes/medicRoutes"
+import secretaryRoutes from "./src/routes/secretaryRoutes"
+import medicRoutes from "./src/routes/medicRoutes"
 const app = express();
 const PORT = 3000;
 
