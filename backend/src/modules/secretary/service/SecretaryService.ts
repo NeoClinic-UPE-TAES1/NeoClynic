@@ -11,7 +11,6 @@ export class SecretaryService {
 
     async create(name: string, email: string, password: string): Promise<SecretaryResponse> {
         const secretary =  await this.secretaryRepository.findByEmail(email)
-        console.log(secretary)
 
         if (!name || !email || !password){
             throw new Error("Name, email, and password are required.");

@@ -2,13 +2,12 @@ import { Request, Response } from 'express';
 import { ISecretaryRepository } from '../domain/repository/ISecretaryRepository';
 import { AuthSecretaryService } from '../service/AuthSecretaryService';
 import { IAuthProvider } from '../../../infra/providers/auth/IAuthProvider';
-import { LoginSecretaryResponse } from '../dto/LoginSecretaryResponse';
 
 export class AuthSecretaryController {
 
     constructor(
-        private secretaryRepository: ISecretaryRepository,
-        private authProvider: IAuthProvider,
+        secretaryRepository: ISecretaryRepository,
+        authProvider: IAuthProvider,
         private authSecretaryService: AuthSecretaryService = new AuthSecretaryService(authProvider,secretaryRepository),
     ) {}
 
