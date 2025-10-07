@@ -46,7 +46,7 @@ jobs:
         working-directory: backend
         run: npx prisma migrate dev --name init --skip-seed
 
-      - name: Build project
+      - name: Build project backend
         working-directory: backend
         run: npm run build --if-present
 
