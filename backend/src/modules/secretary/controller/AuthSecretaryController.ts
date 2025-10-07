@@ -8,7 +8,7 @@ export class AuthSecretaryController {
     constructor(
         secretaryRepository: ISecretaryRepository,
         authProvider: IAuthProvider,
-        private authSecretaryService: AuthSecretaryService = new AuthSecretaryService(authProvider,secretaryRepository),
+        private authSecretaryService: AuthSecretaryService = new AuthSecretaryService(secretaryRepository, authProvider),
     ) {}
 
     public async login(req: Request, res: Response): Promise<Response> {

@@ -5,8 +5,8 @@ import { LoginMedicResponse } from "../dto/LoginMedicResponse";
 
 export class AuthMedicService{
     constructor(
-        private authProvider: IAuthProvider,
-        private medicRepository: IMedicRepository
+        private medicRepository: IMedicRepository,
+        private authProvider: IAuthProvider
     ){}
 
     async authenticate(email: string, password: string): Promise<LoginMedicResponse | null> {

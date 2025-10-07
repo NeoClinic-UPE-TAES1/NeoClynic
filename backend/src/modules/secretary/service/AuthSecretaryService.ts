@@ -5,8 +5,8 @@ import { LoginSecretaryResponse } from "../dto/LoginSecretaryResponse";
 
 export class AuthSecretaryService{
     constructor(
-        private authProvider: IAuthProvider,
-        private secretaryRepository: ISecretaryRepository
+        private secretaryRepository: ISecretaryRepository,
+        private authProvider: IAuthProvider
     ){}
 
     async authenticate(email: string, password: string): Promise<LoginSecretaryResponse | null> {
