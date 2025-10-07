@@ -1,0 +1,1 @@
+// Componente para rotas privadas
