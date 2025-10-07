@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [22.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +27,33 @@ jobs:
       - name: Install dependencies
         working-directory: backend
         run: npm ci
+
+      - name: Start database with Docker Compose
+        working-directory: backend
+        run: |
+          docker compose -f ../docker-compose-dev.yml up -d db
+
+      - name: Wait for database to be healthy
+        run: |
+          echo "Waiting for the database to be healthy..."
+          TIMEOUT=60
+          COUNTER=0
+          until [ "$(docker inspect --format='{{.State.Health.Status}}' db)" == "healthy" ] || [ $COUNTER -ge $TIMEOUT ]; do
+            sleep 2
+            ((COUNTER++))
+          done
+          if [ $COUNTER -ge $TIMEOUT ]; then
+            echo "Database did not become healthy in time"
+            exit 1
+          fi   
+
+      - name: Generate Prisma client
+        working-directory: backend
+        run: npx prisma generate
+
+      - name: Run Prisma migrations
+        working-directory: backend
+        run: npx prisma migrate dev --name init --skip-seed
 
       - name: Build project
         working-directory: backend
