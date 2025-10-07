@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+          DATABASE_URL: ${{ secrets.LOCAL_DATABASE_URL }}
 
     strategy:
       matrix:
@@ -39,8 +41,6 @@ jobs:
 
       - name: Run Prisma migrations
         working-directory: backend
-        env:
-          DATABASE_URL: ${{ secrets.LOCAL_DATABASE_URL }}
         run: npx prisma migrate dev --name init --skip-seed
 
       - name: Build project
