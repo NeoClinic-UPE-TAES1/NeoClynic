@@ -9,8 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-          DATABASE_URL: ${{ secrets.LOCAL_DATABASE_URL }}
+    environment: DATABASE_SECRETS
 
     strategy:
       matrix:
