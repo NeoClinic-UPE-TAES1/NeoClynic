@@ -66,5 +66,3 @@ model Report{
   consultation   Consultation @relation(fields: [consultationId], references: [id])
 }
 
-
-
