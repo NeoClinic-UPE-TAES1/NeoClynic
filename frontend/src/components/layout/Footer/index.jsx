@@ -8,11 +8,9 @@ const FooterBar = styled.footer`
 	background: linear-gradient(90deg, #f5f7f6, #eef6f2);
 	color: #2c6b63;
 	border-top: 1px solid rgba(0,0,0,0.04);
-    position: fixed;
-    bottom: 0;
 `;
 
-const Footer = () => (
+const Footer = () => (  
 	<FooterBar>
 		<div>&copy; 2025 NeoClinic. Todos os direitos reservados.</div>
 		<div style={{ fontSize: 12, marginTop: 6 }}>Sistema em conformidade com a LGPD</div>
