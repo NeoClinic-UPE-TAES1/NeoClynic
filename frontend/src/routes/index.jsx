@@ -11,10 +11,21 @@ import ManageMedics from '../pages/ManageMedics/ManageMedics';
 import Calendar from '../pages/Calendar/Calendar';
 import Patients from '../pages/Patients/Patients';
 import Profile from '../pages/Profile/Profile';
+import NaoEncontrada from '../pages/NaoEncontrada/NaoEncontrada';
 
 // Importa o componente de rota privada/protegida
 import PrivateRoute from './private';
 import RootRedirect from './RootRedirect';
+
+import styled from 'styled-components';
+
+const ContainerBoasVindas = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    height: 100%;
+`;
 
 const AppRoutes = () => {
     return (
@@ -34,7 +45,7 @@ const AppRoutes = () => {
                     </PrivateRoute>
                 }
             >
-                <Route index element={<div>Bem-vindo, Administrador!</div>} />
+                <Route index element={<ContainerBoasVindas>Bem-vindo, Administrador!</ContainerBoasVindas>} />
                 <Route path="secretaries" element={<ManageSecretaries />} />
                 <Route path="medics" element={<ManageMedics />} />
                 <Route path="profile" element={<Profile />} />
@@ -49,7 +60,7 @@ const AppRoutes = () => {
                     </PrivateRoute>
                 }
             >
-                <Route index element={<div>Bem-vindo, Médico!</div>} />
+                <Route index element={<ContainerBoasVindas>Bem-vindo, Médico!</ContainerBoasVindas>} />
                 <Route path="calendar" element={<Calendar readonly />} />
                 <Route path="patients" element={<Patients />} />
                 <Route path="profile" element={<Profile />} />
@@ -64,14 +75,14 @@ const AppRoutes = () => {
                     </PrivateRoute>
                 }
             >
-                <Route index element={<div>Bem-vindo, Secretária!</div>} />
+                <Route index element={<ContainerBoasVindas>Bem-vindo, Secretária!</ContainerBoasVindas>} />
                 <Route path="calendar" element={<Calendar />} />
                 <Route path="patients" element={<Patients />} />
                 <Route path="profile" element={<Profile />} />
             </Route>
 
             {/* Redirecionar ou página 404 */}
-            <Route path="*" element={<div>Página não encontrada</div>} />
+            <Route path="*" element={<NaoEncontrada />} />
         </Routes>
     );
 }
