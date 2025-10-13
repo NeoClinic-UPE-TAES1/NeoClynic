@@ -15,7 +15,7 @@ const theme = {
     },
     fonts: {
         family: {
-            primary: '"Istok Web", Arial, sans-serif',
+            primary: '"Istok Web", sans-serif',
             secondary: 'Georgia, serif',
         },
         sizes: {
