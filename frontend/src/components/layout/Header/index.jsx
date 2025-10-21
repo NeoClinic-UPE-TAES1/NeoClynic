@@ -20,7 +20,7 @@ const Nav = styled.nav`
 	gap:1rem;
 `;
 
-const Brand = styled.div`
+const Brand = styled(Link)`
 	display:flex;
 	align-items:center;
 	gap: 0.75rem;
@@ -54,6 +54,10 @@ const BotaoSair = styled.button`
   color: white;
   padding: 0.5rem 2rem;
   font-size: ${({ theme }) => theme.fonts.sizes.medium};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.danger};
+  }
 `;
 
 
@@ -103,7 +107,7 @@ const Header = ({ userType }) => {
 
     return (
         <HeaderBar>
-            <Brand>
+            <Brand to="/">
 					<LogoImg src="/logo-neoclinic.png" alt="NeoClinic" />
 			</Brand> 
 
