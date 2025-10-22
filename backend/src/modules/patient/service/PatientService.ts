@@ -1,4 +1,4 @@
-import { Consultation, Observation } from "../../../infra/database/client";
+import { Observation } from "../../../infra/database/client";
 import { IPatientRepository } from "../domain/repository/IPatientRepository";
 import { CreatePatientRequest } from "../dto/CreatePatientRequestDTO";
 import { DeletePatientRequest } from "../dto/DeletePatientRequestDTO";
@@ -7,6 +7,7 @@ import { PatientResponse } from "../dto/PatientResponseDTO";
 import { UpdatePatientRequest } from "../dto/UpdatePatientRequestDTO";
 import { IObservationRepository } from "../../observation/domain/repository/IObservationRepository";
 import { ObservationService } from "../../observation/service/ObservationService";
+import { ObservationBodyDTO } from "../../observation/dto/ObservationBodyDTO";
 
 export class PatientService {
   constructor(
@@ -16,9 +17,14 @@ export class PatientService {
   ) {
   }
 
-  async create(name: string, birthDay: Date, sex: string, cpf: string, ethnicity: string, email: string, observation: Observation): Promise<PatientResponse> {
+  async create(name: string, birthDay: Date, sex: string, cpf: string, ethnicity: string, email: string, observation: ObservationBodyDTO): Promise<PatientResponse> {
     if (!name || !birthDay || !sex || !cpf || !ethnicity) {
       throw new Error("Name, birthday, sex, cpf, and ethnicity are required.");
+    }
+
+    const parsedBirthDay = birthDay instanceof Date ? birthDay : new Date(birthDay as any);
+    if (isNaN(parsedBirthDay.getTime())) {
+      throw new Error('Invalid birthDay. Use a valid Date or ISO-8601 string.');
     }
 
     const patientExists = await this.patientRepository.findByCPF(cpf);
@@ -39,10 +45,10 @@ export class PatientService {
 
     if (observation) {
       patient.observation = await this.observationService.create(
-        observation.comorbidity,
-        observation.allergies,
-        observation.medications,
-        observation.patientId
+        observation.comorbidity ?? "",
+        observation.allergies ?? "",
+        observation.medications ?? "",
+        patient.id
       );
     }
 
@@ -57,6 +63,12 @@ export class PatientService {
 
     if (patient.cpf !== cpf) {
       throw new Error("CPF invalid.");
+    }
+
+    const observationExists = await this.observationRepository.findByPatientId(id);
+
+    if (observationExists) {
+      await this.observationService.delete(observationExists.id);
     }
 
     const deleteRequest: DeletePatientRequest = { id };

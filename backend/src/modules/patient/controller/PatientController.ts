@@ -1,13 +1,12 @@
 import { PatientService } from "../service/PatientService";
 import { IPatientRepository } from "../domain/repository/IPatientRepository";
 import { IObservationRepository } from "../../observation/domain/repository/IObservationRepository";
-import { ObservationService } from "../../observation/service/ObservationService";
 import { Request, Response } from "express";
 
 export class PatientController {
   constructor(patientRepository: IPatientRepository,
               observationRepository: IObservationRepository,
-              private patientService: PatientService = new PatientService(patientRepository, observationRepository)
+              private patientService: PatientService = new PatientService(patientRepository, observationRepository),
   ) {}
 
   public async registerPatient(req: Request, res: Response): Promise<Response> {
@@ -37,7 +36,7 @@ export class PatientController {
 
   public async updatePatient(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
-    const { name, birthDay, sex, cpf, ethnicity, email, observation, consultation } = req.body;
+    const { name, birthDay, sex, cpf, ethnicity, email, observation } = req.body;
 
     try {
       const result = await this.patientService.update(id, name, birthDay, sex, cpf, ethnicity, email, observation);
