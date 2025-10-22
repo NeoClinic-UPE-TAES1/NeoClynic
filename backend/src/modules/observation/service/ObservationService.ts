@@ -13,9 +13,9 @@ export class ObservationService {
 
   async create(comorbidity: string, allergies: string, medications: string, patientId: string): Promise<ObservationResponse> {
     const registerData: CreateObservationRequest = {
-      comorbidity,
-      allergies,
-      medications,
+      comorbidity: comorbidity ?? '',
+      allergies: allergies ?? '',
+      medications: medications ?? '',
       patientId,
     };
 
@@ -30,9 +30,9 @@ export class ObservationService {
 
     const updateRequest: UpdateObservationRequest = {
     id,
-    comorbidity,
-    allergies,
-    medications
+    comorbidity: comorbidity ?? '',
+    allergies: allergies ?? '',
+    medications: medications ?? '',
     };
 
     return await this.observationRepository.updateObservation(updateRequest);
