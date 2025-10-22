@@ -109,9 +109,9 @@ export class PatientService {
       if (observationExists?.patientId === id ) {
           await this.observationService.update(
             observationExists.id,
-            observationExists.comorbidity,
-            observationExists.allergies,
-            observationExists.medications,
+            observationExists.comorbidity ?? "",
+            observationExists.allergies ?? "",
+            observationExists.medications ?? "",
             observationExists.patientId
           );
         }
