@@ -8,8 +8,6 @@ const FooterBar = styled.footer`
 	background: linear-gradient(90deg, #f5f7f6, #eef6f2);
 	color: #2c6b63;
 	border-top: 1px solid rgba(0,0,0,0.04);
-    position: fixed;
-    bottom: 0;
 `;
 
 const Footer = () => (
