@@ -9,11 +9,11 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "express"],
     "typeRoots": [
       "./src/@types",
       "./node_modules/@types"
     ]
   },
-  "include": ["src/**/*", "tests/**/*"]
+  "include": ["src/**/*", "tests/**/*", "src/@types/**/*"]
 }
