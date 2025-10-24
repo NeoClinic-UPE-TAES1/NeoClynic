@@ -47,7 +47,7 @@ export class SecretaryRepository implements ISecretaryRepository {
     async listSecretaries(): Promise<SecretaryResponse[]> {
         const secretaries = await prisma.secretary.findMany();
 
-        return secretaries.map((s) => ({
+        return secretaries.map((s: { id: string; name: string; email: string; }) => ({
             id: s.id,
             name: s.name,
             email: s.email,

@@ -69,7 +69,8 @@ export class PatientRepository implements IPatientRepository {
       cpf: m.cpf,
       ethnicity: m.ethnicity,
       name: m.name,
-      email: m.email ?? undefined
+      email: m.email ?? undefined,
+      observations: m.observation
     }));
   }
 
