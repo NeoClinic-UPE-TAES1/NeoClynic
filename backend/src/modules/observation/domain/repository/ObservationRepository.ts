@@ -22,9 +22,9 @@ export class ObservationRepository implements IObservationRepository {
 
         return {
             id: data.id,
-            comorbidity: data.comorbidity,
-            allergies: data.allergies,
-            medications: data.medications,
+            comorbidity: data.comorbidity ?? '',
+            allergies: data.allergies ?? '',
+            medications: data.medications ?? '',
             patientId: data.patientId
         };
     }
@@ -42,9 +42,9 @@ export class ObservationRepository implements IObservationRepository {
 
         return {
             id: data.id,
-            comorbidity: data.comorbidity,
-            allergies: data.allergies,
-            medications: data.medications,
+            comorbidity: data.comorbidity ?? '',
+            allergies: data.allergies ?? '',
+            medications: data.medications ?? '',
             patientId: data.patientId
         };
     }
@@ -63,9 +63,9 @@ export class ObservationRepository implements IObservationRepository {
 
         return {
             id: data.id,
-            comorbidity: data.comorbidity,
-            medications: data.medications,
-            allergies: data.allergies,
+            comorbidity: data.comorbidity ?? '',
+            medications: data.medications ?? '',
+            allergies: data.allergies ?? '',
             patientId: data.patientId
         };
     }
