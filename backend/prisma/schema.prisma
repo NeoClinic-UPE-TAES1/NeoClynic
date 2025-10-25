@@ -49,19 +49,19 @@ model Observation{
 model Consultation {
   id            String      @id @default(uuid()) @map("_id")
   date          DateTime
-  Report Report?
-  followUp      Boolean  
+  hasFollowUp   Boolean  
   medicId       String
   patientId     String
+  report Report?
   medic         Medic   @relation(fields: [medicId], references: [id])
   patient       Patient @relation(fields: [patientId], references: [id])
 }
 
 model Report{
-  id            String      @id @default(uuid()) @map("_id")
-  description   String
-  diagnosis     String
-  prescription  String
+  id             String      @id @default(uuid()) @map("_id")
+  description    String
+  diagnosis      String
+  prescription   String?
   consultationId String    @unique
   consultation   Consultation @relation(fields: [consultationId], references: [id])
 }

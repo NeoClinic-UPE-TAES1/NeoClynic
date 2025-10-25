@@ -38,22 +38,22 @@ model Patient {
 
 model Observation {
   id          String  @id @default(uuid()) @map("_id")
-  comorbidity String
-  allergies   String
-  medications String
+  comorbidity String?
+  allergies   String?
+  medications String?
   patientId   String  @unique
   patient     Patient @relation(fields: [patientId], references: [id])
 }
 
 model Consultation {
-  id        String   @id @default(uuid()) @map("_id")
-  date      DateTime
-  Report    Report?
-  followUp  Boolean
-  medicId   String
-  patientId String
-  medic     Medic    @relation(fields: [medicId], references: [id])
-  patient   Patient  @relation(fields: [patientId], references: [id])
+  id          String   @id @default(uuid()) @map("_id")
+  date        DateTime
+  hasFollowUp Boolean
+  medicId     String
+  patientId   String
+  report      Report?
+  medic       Medic    @relation(fields: [medicId], references: [id])
+  patient     Patient  @relation(fields: [patientId], references: [id])
 }
 
 model Report {
