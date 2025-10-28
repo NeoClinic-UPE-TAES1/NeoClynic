@@ -26,17 +26,18 @@ const CalendarContainer = styled.div`
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
+`;
 
-  h1 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    text-align: center;
-  }
+const FilterContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  align-items: center;
 
-  .fc {
-    flex: 1;
-    min-height: 0;
+  label {
+    font-weight: 600;
+    color: #2d3748;
   }
 `;
 
