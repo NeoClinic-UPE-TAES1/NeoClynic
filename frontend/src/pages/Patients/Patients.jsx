@@ -54,6 +54,9 @@ const ListItem = styled.li`
     padding: 1rem;
     border-bottom: 1px solid #eee;
     
+    &:nth-child(uneven) {
+        background: #218838;
+    }
     &:nth-child(even) {
         background: #fcfcfc;
     }

@@ -2,7 +2,8 @@
 import { Routes, Route } from 'react-router-dom';
 
 // Importa os componentes de página
-import Login from '../pages/Login/Login'; // Assumindo que existe
+import Login from '../pages/Login/Login';
+import ForgotPassword from '../pages/ForgotPassword/ForgotPassword';
 import AdminHome from '../pages/AdminHome/AdminHome';
 import MedicHome from '../pages/MedicHome/MedicHome';
 import SecretaryHome from '../pages/SecretaryHome/SecretaryHome';
@@ -33,8 +34,9 @@ const AppRoutes = () => {
             {/* Rota raiz */}
             <Route path="/" element={<RootRedirect />} />
 
-            {/* Rota pública */}
+            {/* Rotas públicas */}
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Rotas para Administrador */}
             <Route 
