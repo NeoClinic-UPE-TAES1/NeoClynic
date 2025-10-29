@@ -22,9 +22,10 @@ export class MedicController {
   public async deleteMedic(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
     const { password } = req.body;
+    const userId = req.user?.id;
 
     try {
-      await this.medicService.delete(id, password);
+      await this.medicService.delete(id, password, userId);
       return res.status(200).json({ message: "Ok" });
     } catch (error) {
       console.error("Error deleting medic:", error);
@@ -35,9 +36,10 @@ export class MedicController {
   public async updateMedic(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
     const { name, email, password, specialty } = req.body;
+    const userId = req.user?.id;
 
     try {
-      const result = await this.medicService.update(id, name, email, password, specialty);
+      const result = await this.medicService.update(id, name, email, password, specialty, userId);
       return res.status(200).json({ medic: result });
     } catch (error) {
       console.error("Error updating medic:", error);
@@ -49,7 +51,7 @@ export class MedicController {
     const { id } = req.params;
 
     try {
-      const result = await this.medicService.listOne(id);
+      const result = await this.medicService.list(id);
       return res.status(200).json({ medic: result });
     } catch (error) {
       console.error("Error listing medic:", error);

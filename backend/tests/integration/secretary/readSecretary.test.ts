@@ -41,10 +41,10 @@ describe("User integration with real DB", () => {
         const email = "JohnDoe@gmail.com"
         const password = "password123";
         const secretary = await secretaryService.create(name, email, password);
-        const foundSecretary = await secretaryService.listOne(secretary.id);
+        const foundSecretary = await secretaryService.list(secretary.id);
         expect(foundSecretary.email).toBe(email);
 
-        await expect(secretaryService.listOne("non-existing-id")).rejects.toThrow("Secretary not exists.");
+        await expect(secretaryService.list("non-existing-id")).rejects.toThrow("Secretary not exists.");
     }
     );
 });

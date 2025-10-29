@@ -42,4 +42,18 @@ describe("User integration with real DB", () => {
         expect(patient.name).toBe(name);
         expect(patient.email).toBe(email);
     });
+
+    test("Create Patient without Observation", async () => {
+        const name = "John Doe";
+        const birthDay = new Date("2025-10-21T17:45:30.123Z");
+        const sex = "M";
+        const cpf = "12345678900";
+        const ethnicity = "Pardo";
+        const email = "JohnDoe@gmail.com"
+        
+        const patient = await patientService.create(name, birthDay, sex, cpf, ethnicity, email, undefined);
+        expect(patient).toHaveProperty("id");
+        expect(patient.name).toBe(name);
+        expect(patient.email).toBe(email);
+    });
 });

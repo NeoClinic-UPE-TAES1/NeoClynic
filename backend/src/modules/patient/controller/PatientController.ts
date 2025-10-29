@@ -51,7 +51,7 @@ export class PatientController {
     const { id } = req.params;
 
     try {
-      const result = await this.patientService.listOne(id);
+      const result = await this.patientService.list(id);
       return res.status(200).json({ patient: result });
     } catch (error) {
       console.error("Error listing patient:", error);

@@ -105,7 +105,7 @@ export class ConsultationService {
         return await this.consultationRepository.updateConsultation(updateRequest);
     }
 
-    public async listOne(id:string) : Promise<ConsultationResponse>{
+    public async list(id:string) : Promise<ConsultationResponse>{
         const consultation = await this.consultationRepository.findById(id);
             if (!consultation) {
               throw new Error("Consultation not exists.");

@@ -39,7 +39,8 @@ export class PatientRepository implements IPatientRepository {
     const data = await prisma.patient.findUnique({
       where: { id },
       include: { 
-         observation: true},
+         observation: true,
+         consultation: true},
     });
 
     if (!data) {
@@ -53,13 +54,17 @@ export class PatientRepository implements IPatientRepository {
       cpf: data.cpf,
       ethnicity: data.ethnicity,
       name: data.name,
-      email: data.email ?? undefined
+      email: data.email ?? undefined,
+      observation: data.observation ?? undefined,
+      consultation: data.consultation ?? undefined
     };
   }
 
   async listPatients(): Promise<PatientResponse[]> {
     const patients = await prisma.patient.findMany({
-      include: { observation: true },
+      include: { 
+         observation: true,
+         consultation: true},
     });
 
     return patients.map((m) => ({
@@ -70,7 +75,8 @@ export class PatientRepository implements IPatientRepository {
       ethnicity: m.ethnicity,
       name: m.name,
       email: m.email ?? undefined,
-      observations: m.observation
+      observations: m.observation ?? undefined,
+      consultation: m.consultation ?? undefined
     }));
   }
 

@@ -71,10 +71,10 @@ describe("User integration with real DB", () => {
             medications: "Ibuprofeno"
         };
         const patient = await patientService.create(name, birthDay, sex, cpf, ethnicity, email, observation);
-        const foundPatient = await patientService.listOne(patient.id);
+        const foundPatient = await patientService.list(patient.id);
         expect(foundPatient.email).toBe(email);
 
-        await expect(patientService.listOne("non-existing-id")).rejects.toThrow("Patient not exists.");
+        await expect(patientService.list("non-existing-id")).rejects.toThrow("Patient not exists.");
     }
     );
 });

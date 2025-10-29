@@ -54,7 +54,7 @@ export class ConsultationController {
     const { id } = req.params;
 
     try {
-      const result = await this.consultationService.listOne(id);
+      const result = await this.consultationService.list(id);
       return res.status(200).json({ consultation: result });
     } catch (error) {
       console.error("Error listing consultation:", error);

@@ -24,10 +24,11 @@ export class SecretaryController {
 
     public async deleteSecretary(req: Request, res: Response):Promise<Response>{
         const { id } = req.params;
-        const { password } = req.body
+        const { password } = req.body;
+        const userId = req.user?.id;
 
         try{
-            await this.secretaryService.delete(id, password);
+            await this.secretaryService.delete(id, password, userId);
             return res.status(200).json({ message: 'Ok' });
 
         } catch (error) {
@@ -40,9 +41,10 @@ export class SecretaryController {
     public async updateSecretary(req: Request, res: Response): Promise<Response> {
         const { id } = req.params;
         const { name, email, password } = req.body;
+        const userId = req.user?.id;
 
         try {
-            const result = await this.secretaryService.update(id, name, email, password);
+            const result = await this.secretaryService.update(id, name, email, password, userId);
             return res.status(200).json({ secretary: result });
         } catch (error) {
             console.error("Error updating secretary:", error);
@@ -55,7 +57,7 @@ export class SecretaryController {
         const { id } = req.params;
 
         try {
-            const result = await this.secretaryService.listOne(id);
+            const result = await this.secretaryService.list(id);
             return res.status(200).json({ secretary: result });
         } catch (error) {
             console.error("Error listing secretary:", error);
