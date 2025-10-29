@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import styled from 'styled-components';
-// import { useAuth } from '../context/AuthContext'; // Exemplo de como usar o contexto
+import { AuthContext } from '../../context/AuthContext';
 
 // --- Estilização ---
 const Container = styled.div`
@@ -59,22 +59,37 @@ const Button = styled.button`
 
 // --- Componente ---
 const Profile = () => {
-    // const { user, updateUser } = useAuth(); // Idealmente, viria do contexto
-    
-    // Usando dados mock caso o contexto não esteja implementado
+    const { user } = useContext(AuthContext);
+
+    // Estado para os dados do formulário
     const [formData, setFormData] = useState({
-        name: 'Administrador Padrão',
-        email: 'admin@neoclinic.com',
+        name: '',
+        email: '',
         newPassword: '',
         confirmPassword: ''
     });
+
+    // Carregar dados do usuário ao montar o componente
+    useEffect(() => {
+        if (user) {
+            // Simulação: em produção, buscar dados da API
+            // Por enquanto, usar dados mock baseados no role
+            const mockData = {
+                admin: { name: 'Administrador', email: 'admin@neoclinic.com' },
+                medic: { name: 'Dr. Médico', email: 'medic@neoclinic.com' },
+                secretary: { name: 'Secretária', email: 'secretary@neoclinic.com' }
+            };
+            const data = mockData[user.role] || { name: '', email: '' };
+            setFormData(prev => ({ ...prev, name: data.name, email: data.email }));
+        }
+    }, [user]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
         if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
@@ -82,18 +97,22 @@ const Profile = () => {
             return;
         }
 
-        // --- Simulação de API para atualizar o perfil ---
+        // Simulação de API para atualizar o perfil
         console.log('Atualizando perfil com:', {
             name: formData.name,
             email: formData.email,
             password: formData.newPassword || undefined // Só envia a senha se for preenchida
         });
         
-        // await updateUser(formData); // Chamada real da API
+        // Em produção: await fetch('/api/profile/update', { method: 'PATCH', body: JSON.stringify(formData) });
         
         alert('Perfil atualizado com sucesso!');
         setFormData(prev => ({ ...prev, newPassword: '', confirmPassword: '' }));
     };
+
+    if (!user) {
+        return <Container>Carregando...</Container>;
+    }
 
     return (
         <Container>
