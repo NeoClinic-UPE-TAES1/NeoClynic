@@ -1,5 +1,7 @@
 import { IConsultationRepository } from '../domain/repository/IConsultationRepository';
 import { IReportRepository } from '../../report/domain/repository/IReportRepository';
+import { IPatientRepository } from '../../patient/domain/repository/IPatientRepository';
+import { IMedicRepository } from '../../medic/domain/repository/IMedicRepository';
 import { ConsultationService } from '../service/ConsultationService';
 import { Request, Response } from "express";
 
@@ -8,7 +10,9 @@ export class ConsultationController {
     constructor(
         consultationRepository: IConsultationRepository,
         reportRepository: IReportRepository,
-        private consultationService = new ConsultationService(consultationRepository, reportRepository)
+        patientRepository: IPatientRepository,
+        medicRepository: IMedicRepository,
+        private consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository)
     ){
         
     }
@@ -39,10 +43,10 @@ export class ConsultationController {
 
   public async updateConsultation(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
-    const { date, hasFollowUp, medicId, patiendId, report } = req.body;
+    const { date, hasFollowUp, report } = req.body;
 
     try {
-      const result = await this.consultationService.update(id, date, hasFollowUp, medicId, patiendId, report);
+      const result = await this.consultationService.update(id, date, hasFollowUp, report);
       return res.status(200).json({ consultation: result });
     } catch (error) {
       console.error("Error updating consultation:", error);

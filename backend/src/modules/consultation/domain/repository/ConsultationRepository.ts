@@ -15,8 +15,8 @@ export class ConsultationRepository implements IConsultationRepository{
         data: {
             date,
             hasFollowUp,
-            medicId,
-            patientId,
+            medic: { connect: { id: medicId } },
+            patient: { connect: { id: patientId } },
             }
         });
 

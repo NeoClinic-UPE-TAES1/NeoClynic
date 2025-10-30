@@ -22,7 +22,7 @@ export class ReportService {
     return await this.ReportRepository.create(registerData);
   }
 
-  async update(id:string, description: string, diagnosis: string, prescription: string): Promise<ReportResponse> {
+  async update(id:string, description: string |  undefined, diagnosis: string |  undefined, prescription: string |  undefined): Promise<ReportResponse> {
     const report = await this.ReportRepository.findById(id);
     if (!report) {
       throw new Error("Report not exists.");
@@ -32,7 +32,7 @@ export class ReportService {
     id,
     description,
     diagnosis,
-    prescription: prescription ?? '',
+    prescription,
     };
 
     return await this.ReportRepository.update(updateRequest);

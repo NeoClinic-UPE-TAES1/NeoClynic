@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { ConsultationController } from '../modules/consultation/controller/ConsultationController';
 import { ConsultationRepository } from '../modules/consultation/domain/repository/ConsultationRepository';
 import { ReportRepository } from '../modules/report/domain/repository/ReportRepository';
+import { PatientRepository } from '../modules/patient/domain/repository/PatientRepository';
+import { MedicRepository } from '../modules/medic/domain/repository/MedicRepository';
 import { authenticateToken } from '../infra/middlewares/authMiddleware';
 import { JWTProvider } from '../infra/providers/auth/JWTProvider'; 
 
@@ -9,7 +11,9 @@ const consultationRoutes = Router();
 
 const reportRepository = new ReportRepository();
 const consultationRepository = new ConsultationRepository();
-const consultationController = new ConsultationController(consultationRepository, reportRepository);
+const patientRepository = new PatientRepository();
+const medicRepository = new MedicRepository();
+const consultationController = new ConsultationController(consultationRepository, reportRepository, patientRepository, medicRepository);
 const jwtProvider = new JWTProvider();
 
 consultationRoutes.use(authenticateToken(jwtProvider));

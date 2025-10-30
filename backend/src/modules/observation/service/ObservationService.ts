@@ -30,9 +30,9 @@ export class ObservationService {
 
     const updateRequest: UpdateObservationRequest = {
     id,
-    comorbidity: comorbidity,
-    allergies: allergies,
-    medications: medications,
+    comorbidity,
+    allergies,
+    medications,
     };
 
     return await this.observationRepository.updateObservation(updateRequest);

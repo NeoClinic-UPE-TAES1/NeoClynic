@@ -7,7 +7,7 @@ import { PatientResponse } from "../dto/PatientResponseDTO";
 import { UpdatePatientRequest } from "../dto/UpdatePatientRequestDTO";
 import { IObservationRepository } from "../../observation/domain/repository/IObservationRepository";
 import { ObservationService } from "../../observation/service/ObservationService";
-import { ObservationBodyDTO } from "../../observation/dto/ObservationBodyDTO";
+import { ObservationBody } from "../../observation/dto/ObservationBodyDTO";
 import { ObservationResponse } from "../../observation/dto/ObservationResponseDTO";
 
 export class PatientService {
@@ -18,7 +18,7 @@ export class PatientService {
   ) {
   }
 
-  async create(name: string, birthDay: Date, sex: string, cpf: string, ethnicity: string, email: string, observation: ObservationBodyDTO | undefined): Promise<PatientResponse> {
+  async create(name: string, birthDay: Date, sex: string, cpf: string, ethnicity: string, email: string, observation: ObservationBody | undefined): Promise<PatientResponse> {
     if (!name || !birthDay || !sex || !cpf || !ethnicity) {
       throw new Error("Name, birthday, sex, cpf, and ethnicity are required.");
     }
@@ -91,7 +91,7 @@ export class PatientService {
     cpf: string | undefined,
     ethnicity: string | undefined,
     email: string | undefined,
-    observation: ObservationBodyDTO | undefined
+    observation: ObservationBody | undefined
   ): Promise<PatientResponse> {
       const patient = await this.patientRepository.findById(id);
       if (!patient) {
