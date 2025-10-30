@@ -1,7 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import useApi from '../../hooks/useApi';
 
 // --- Estilização ---
 const Container = styled.div`
@@ -201,7 +200,36 @@ const SaveButton = styled(Button)`
 `;
 
 // --- Mock Data (baseado no schema.prisma) ---
-const initialPatients = [];
+const initialPatients = [
+    { 
+        id: 'p1', 
+        name: 'Carlos Batista', 
+        birthDay: '1985-04-12T00:00:00.000Z', 
+        sex: 'Masculino', 
+        cpf: '111.222.333-44', 
+        ethnicity: 'Branco', 
+        email: 'carlos.batista@email.com',
+        observation: {
+            comorbidity: 'Hipertensão',
+            allergies: 'Poeira',
+            medications: 'Losartana 50mg (contínuo)'
+        }
+    },
+    { 
+        id: 'p2', 
+        name: 'Mariana Oliveira', 
+        birthDay: '1992-09-30T00:00:00.000Z', 
+        sex: 'Feminino', 
+        cpf: '555.666.777-88', 
+        ethnicity: 'Pardo', 
+        email: 'mari.oli@email.com',
+        observation: {
+            comorbidity: 'Asma',
+            allergies: 'Penicilina, Camarão',
+            medications: 'Aerolin (quando necessário)'
+        }
+    }
+];
 
 const emptyPatient = {
     id: null,
@@ -224,58 +252,11 @@ const Patients = () => {
     const location = useLocation();
     const isSecretary = location.pathname.startsWith('/secretary');
 
-    const { apiCall, loading, error } = useApi();
-
     // 2. Estados
-    const [patients, setPatients] = useState([]);
+    const [patients, setPatients] = useState(initialPatients);
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [currentPatient, setCurrentPatient] = useState(emptyPatient);
-    
-    // Carregar pacientes ao montar
-    useEffect(() => {
-        loadPatients();
-    }, []);
-
-    const loadPatients = async () => {
-        try {
-            // Em produção: const data = await apiCall('/patient/list');
-            // Por enquanto, mock
-            const mockData = [
-                { 
-                    id: 'p1', 
-                    name: 'Carlos Batista', 
-                    birthDay: '1985-04-12T00:00:00.000Z', 
-                    sex: 'Masculino', 
-                    cpf: '111.222.333-44', 
-                    ethnicity: 'Branco', 
-                    email: 'carlos.batista@email.com',
-                    observation: {
-                        comorbidity: 'Hipertensão',
-                        allergies: 'Poeira',
-                        medications: 'Losartana 50mg (contínuo)'
-                    }
-                },
-                { 
-                    id: 'p2', 
-                    name: 'Mariana Oliveira', 
-                    birthDay: '1992-09-30T00:00:00.000Z', 
-                    sex: 'Feminino', 
-                    cpf: '555.666.777-88', 
-                    ethnicity: 'Pardo', 
-                    email: 'mari.oli@email.com',
-                    observation: {
-                        comorbidity: 'Asma',
-                        allergies: 'Penicilina, Camarão',
-                        medications: 'Aerolin (quando necessário)'
-                    }
-                }
-            ];
-            setPatients(mockData);
-        } catch (err) {
-            console.error('Erro ao carregar pacientes:', err);
-        }
-    };
     
     // 3. Lógica de Filtro
     const filteredPatients = useMemo(() => 
@@ -316,48 +297,38 @@ const Patients = () => {
     };
 
     // Ação da Secretária: Salvar cadastro do paciente
-    const handleSavePatient = async (e) => {
+    const handleSavePatient = (e) => {
         e.preventDefault();
-        try {
-            if (currentPatient.id) {
-                // await apiCall(`/patient/update/${currentPatient.id}`, { method: 'PATCH', body: JSON.stringify(currentPatient) });
-                setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
-                alert('Paciente atualizado com sucesso!');
-            } else {
-                // const data = await apiCall('/patient/create', { method: 'POST', body: JSON.stringify(currentPatient) });
-                const newPatient = { ...currentPatient, id: `p${Date.now()}` };
-                setPatients([...patients, newPatient]);
-                alert('Paciente cadastrado com sucesso!');
-            }
-            handleCloseModal();
-        } catch (err) {
-            alert('Erro ao salvar paciente: ' + err.message);
+        // Simulação de API
+        if (currentPatient.id) {
+            // --- Lógica de ATUALIZAÇÃO (UPDATE) ---
+            setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
+            alert('Paciente atualizado com sucesso!');
+        } else {
+            // --- Lógica de CRIAÇÃO (CREATE) ---
+            const newPatient = { ...currentPatient, id: `p${Date.now()}` };
+            setPatients([...patients, newPatient]);
+            alert('Paciente cadastrado com sucesso!');
         }
+        handleCloseModal();
     };
     
     // Ação do Médico: Salvar observações clínicas
-    const handleSaveObservation = async (e) => {
+    const handleSaveObservation = (e) => {
         e.preventDefault();
-        try {
-            // await apiCall(`/patient/observation/${currentPatient.id}`, { method: 'PATCH', body: JSON.stringify(currentPatient.observation) });
-            setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
-            alert('Observações clínicas atualizadas!');
-            handleCloseModal();
-        } catch (err) {
-            alert('Erro ao salvar observações: ' + err.message);
-        }
+        // Simulação de API
+        console.log('Salvando observações para:', currentPatient.id, currentPatient.observation);
+        setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
+        alert('Observações clínicas atualizadas!');
+        handleCloseModal();
     };
 
     // Ação da Secretária: Excluir paciente
-    const handleDelete = async (id) => {
+    const handleDelete = (id) => {
         if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
-            try {
-                // await apiCall(`/patient/delete/${id}`, { method: 'DELETE' });
-                setPatients(patients.filter(p => p.id !== id));
-                alert('Paciente excluído.');
-            } catch (err) {
-                alert('Erro ao excluir paciente: ' + err.message);
-            }
+            // Simulação de API
+            setPatients(patients.filter(p => p.id !== id));
+            alert('Paciente excluído.');
         }
     };
 
