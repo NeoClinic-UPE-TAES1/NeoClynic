@@ -39,9 +39,9 @@ model Patient {
 
 model Observation{
   id            String @id @default(uuid()) @map("_id")
-  comorbidity   String
-  allergies     String
-  medications   String
+  comorbidity   String?
+  allergies     String?
+  medications   String?
   patientId     String @unique
   patient       Patient @relation(fields: [patientId], references: [id])
 }
@@ -65,6 +65,4 @@ model Report{
   consultationId String    @unique
   consultation   Consultation @relation(fields: [consultationId], references: [id])
 }
-
-
 
