@@ -37,11 +37,11 @@ describe("User integration with real DB", () => {
         await prismaClient.$disconnect();
     });
     beforeEach(async () => {
-        await prismaClient.patient.deleteMany();
-        await prismaClient.medic.deleteMany();
-        await prismaClient.observation.deleteMany();
         await prismaClient.report.deleteMany();
         await prismaClient.consultation.deleteMany();
+        await prismaClient.observation.deleteMany();
+        await prismaClient.patient.deleteMany();
+        await prismaClient.medic.deleteMany();
     });
 
     test("Create Consultation", async () => {
@@ -56,10 +56,10 @@ describe("User integration with real DB", () => {
         const medic = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        const consultation = await consultationService.create(date, hasFollowUp, patient.id, medic.id, report);
+        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report);
         expect(consultation).toHaveProperty("id");
-        expect(consultation.date).toBe(date);
-        expect(consultation.report).toBe(report);
+        expect(consultation.date).toStrictEqual(date);
+        expect(consultation.report).toMatchObject(report);
     });
 
     test("Create Consultation without Report", async () => {
@@ -69,9 +69,9 @@ describe("User integration with real DB", () => {
         const medic = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        const consultation = await consultationService.create(date, hasFollowUp, patient.id, medic.id, undefined);
+        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, undefined);
         expect(consultation).toHaveProperty("id");
-        expect(consultation.date).toBe(date);
+        expect(consultation.date).toStrictEqual(date);
         expect(consultation.report).toBe(undefined);
     });
 });

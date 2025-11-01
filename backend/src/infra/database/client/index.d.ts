@@ -6831,7 +6831,7 @@ export namespace Prisma {
     id: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription: string | null
     consultationId: string
     _count: ReportCountAggregateOutputType | null
     _min: ReportMinAggregateOutputType | null
@@ -6907,7 +6907,7 @@ export namespace Prisma {
       id: string
       description: string
       diagnosis: string
-      prescription: string
+      prescription: string | null
       consultationId: string
     }, ExtArgs["result"]["report"]>
     composites: {}
@@ -8207,7 +8207,7 @@ export namespace Prisma {
     id?: StringFilter<"Report"> | string
     description?: StringFilter<"Report"> | string
     diagnosis?: StringFilter<"Report"> | string
-    prescription?: StringFilter<"Report"> | string
+    prescription?: StringNullableFilter<"Report"> | string | null
     consultationId?: StringFilter<"Report"> | string
     consultation?: XOR<ConsultationScalarRelationFilter, ConsultationWhereInput>
   }
@@ -8216,7 +8216,7 @@ export namespace Prisma {
     id?: SortOrder
     description?: SortOrder
     diagnosis?: SortOrder
-    prescription?: SortOrder
+    prescription?: SortOrderInput | SortOrder
     consultationId?: SortOrder
     consultation?: ConsultationOrderByWithRelationInput
   }
@@ -8229,7 +8229,7 @@ export namespace Prisma {
     NOT?: ReportWhereInput | ReportWhereInput[]
     description?: StringFilter<"Report"> | string
     diagnosis?: StringFilter<"Report"> | string
-    prescription?: StringFilter<"Report"> | string
+    prescription?: StringNullableFilter<"Report"> | string | null
     consultation?: XOR<ConsultationScalarRelationFilter, ConsultationWhereInput>
   }, "id" | "consultationId">
 
@@ -8237,7 +8237,7 @@ export namespace Prisma {
     id?: SortOrder
     description?: SortOrder
     diagnosis?: SortOrder
-    prescription?: SortOrder
+    prescription?: SortOrderInput | SortOrder
     consultationId?: SortOrder
     _count?: ReportCountOrderByAggregateInput
     _max?: ReportMaxOrderByAggregateInput
@@ -8251,7 +8251,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Report"> | string
     description?: StringWithAggregatesFilter<"Report"> | string
     diagnosis?: StringWithAggregatesFilter<"Report"> | string
-    prescription?: StringWithAggregatesFilter<"Report"> | string
+    prescription?: StringNullableWithAggregatesFilter<"Report"> | string | null
     consultationId?: StringWithAggregatesFilter<"Report"> | string
   }
 
@@ -8559,7 +8559,7 @@ export namespace Prisma {
     id?: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription?: string | null
     consultation: ConsultationCreateNestedOneWithoutReportInput
   }
 
@@ -8567,7 +8567,7 @@ export namespace Prisma {
     id?: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription?: string | null
     consultationId: string
   }
 
@@ -8575,7 +8575,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
     consultation?: ConsultationUpdateOneRequiredWithoutReportNestedInput
   }
 
@@ -8583,7 +8583,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
     consultationId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -8591,7 +8591,7 @@ export namespace Prisma {
     id?: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription?: string | null
     consultationId: string
   }
 
@@ -8599,14 +8599,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ReportUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
     consultationId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -9446,14 +9446,14 @@ export namespace Prisma {
     id?: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription?: string | null
   }
 
   export type ReportUncheckedCreateWithoutConsultationInput = {
     id?: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription?: string | null
   }
 
   export type ReportCreateOrConnectWithoutConsultationInput = {
@@ -9524,14 +9524,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ReportUncheckedUpdateWithoutConsultationInput = {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MedicUpsertWithoutConsultationInput = {

@@ -26,14 +26,14 @@ export class ConsultationService {
             throw new Error("Missing required fields");
         }
 
-        const patient = this.patientRepository.findById(patientId);
+        const patient = await this.patientRepository.findById(patientId);
 
-        if(patient !== null){
+        if(!patient){
             throw new Error("Patient not exists.");
         }
 
-        const medic = this.medicRepository.findById(medicId);
-        if(medic != null){
+        const medic = await this.medicRepository.findById(medicId);
+        if(!medic){
             throw new Error("Medic not exists.");
         }
 

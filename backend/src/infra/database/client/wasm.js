@@ -176,7 +176,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\deyvi\\Desktop\\NeoClinic\\backend\\src\\infra\\database\\client",
+      "value": "C:\\Users\\kaiod\\Desktop\\Computação\\TAES\\NeoClinic\\backend\\src\\infra\\database\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -190,7 +190,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\deyvi\\Desktop\\NeoClinic\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\kaiod\\Desktop\\Computação\\TAES\\NeoClinic\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -204,7 +204,6 @@ const config = {
     "postgres"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "postgres": {
       "url": {
@@ -213,8 +212,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client_postgres {\n  provider = \"prisma-client-js\"\n  output   = \"../src/infra/database/client\"\n}\n\ndatasource postgres {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Secretary {\n  id       String @id @default(uuid()) @map(\"_id\")\n  name     String\n  email    String @unique\n  password String\n}\n\nmodel Medic {\n  id           String         @id @default(uuid()) @map(\"_id\")\n  name         String\n  email        String         @unique\n  password     String\n  specialty    String\n  consultation Consultation[]\n}\n\nmodel Patient {\n  id           String         @id @default(uuid()) @map(\"_id\")\n  name         String\n  birthDay     DateTime\n  sex          String\n  cpf          String         @unique\n  ethnicity    String\n  email        String?        @unique\n  observation  Observation?\n  consultation Consultation[]\n}\n\nmodel Observation {\n  id          String  @id @default(uuid()) @map(\"_id\")\n  comorbidity String?\n  allergies   String?\n  medications String?\n  patientId   String  @unique\n  patient     Patient @relation(fields: [patientId], references: [id])\n}\n\nmodel Consultation {\n  id          String   @id @default(uuid()) @map(\"_id\")\n  date        DateTime\n  hasFollowUp Boolean\n  medicId     String\n  patientId   String\n  report      Report?\n  medic       Medic    @relation(fields: [medicId], references: [id])\n  patient     Patient  @relation(fields: [patientId], references: [id])\n}\n\nmodel Report {\n  id             String       @id @default(uuid()) @map(\"_id\")\n  description    String\n  diagnosis      String\n  prescription   String\n  consultationId String       @unique\n  consultation   Consultation @relation(fields: [consultationId], references: [id])\n}\n",
-  "inlineSchemaHash": "cb8e98f5a3b983fafff68abe1fc085cb5abd8a6b5df3965436045adb01334eac",
+  "inlineSchema": "generator client_postgres {\n  provider = \"prisma-client-js\"\n  output   = \"../src/infra/database/client\"\n}\n\ndatasource postgres {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Secretary {\n  id       String @id @default(uuid()) @map(\"_id\")\n  name     String\n  email    String @unique\n  password String\n}\n\nmodel Medic {\n  id           String         @id @default(uuid()) @map(\"_id\")\n  name         String\n  email        String         @unique\n  password     String\n  specialty    String\n  consultation Consultation[]\n}\n\nmodel Patient {\n  id           String         @id @default(uuid()) @map(\"_id\")\n  name         String\n  birthDay     DateTime\n  sex          String\n  cpf          String         @unique\n  ethnicity    String\n  email        String?        @unique\n  observation  Observation?\n  consultation Consultation[]\n}\n\nmodel Observation {\n  id          String  @id @default(uuid()) @map(\"_id\")\n  comorbidity String?\n  allergies   String?\n  medications String?\n  patientId   String  @unique\n  patient     Patient @relation(fields: [patientId], references: [id])\n}\n\nmodel Consultation {\n  id          String   @id @default(uuid()) @map(\"_id\")\n  date        DateTime\n  hasFollowUp Boolean\n  medicId     String\n  patientId   String\n  report      Report?\n  medic       Medic    @relation(fields: [medicId], references: [id])\n  patient     Patient  @relation(fields: [patientId], references: [id])\n}\n\nmodel Report {\n  id             String       @id @default(uuid()) @map(\"_id\")\n  description    String\n  diagnosis      String\n  prescription   String?\n  consultationId String       @unique\n  consultation   Consultation @relation(fields: [consultationId], references: [id])\n}\n",
+  "inlineSchemaHash": "77141bb8e7395b95fa3e0fe62e9cf9db511173109857e25d6639443d3eeb2e6b",
   "copyEngine": true
 }
 config.dirname = '/'

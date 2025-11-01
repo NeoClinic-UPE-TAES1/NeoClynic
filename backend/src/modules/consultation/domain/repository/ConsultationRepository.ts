@@ -76,6 +76,13 @@ export class ConsultationRepository implements IConsultationRepository{
         hasFollowUp: data.hasFollowUp,
         medicId: data.medicId,
         patientId: data.patientId,
+        report: data.report ? {
+            id: data.report.id,
+            description: data.report.description,
+            diagnosis: data.report.diagnosis,
+            prescription: data.report.prescription ?? '',
+            consultationId: data.report.consultationId
+        } : undefined
         };
     }
     
@@ -90,10 +97,17 @@ export class ConsultationRepository implements IConsultationRepository{
         hasFollowUp: c.hasFollowUp,
         medicId: c.medicId,
         patientId: c.patientId,
+        report: c.report ? {
+            id: c.report.id,
+            description: c.report.description,
+            diagnosis: c.report.diagnosis,
+            prescription: c.report.prescription ?? '',
+            consultationId: c.report.consultationId
+        } : undefined
         }));
     }
 
     async findById(id: string): Promise<Consultation | null> {
-        return await prisma.consultation.findFirst({ where: { id } });
+        return await prisma.consultation.findFirst({ where: { id }});
       }
 } 

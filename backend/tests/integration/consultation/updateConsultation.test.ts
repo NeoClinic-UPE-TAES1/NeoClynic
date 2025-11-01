@@ -37,11 +37,11 @@ describe("User integration with real DB", () => {
         await prismaClient.$disconnect();
     });
     beforeEach(async () => {
-        await prismaClient.patient.deleteMany();
-        await prismaClient.medic.deleteMany();
-        await prismaClient.observation.deleteMany();
         await prismaClient.report.deleteMany();
         await prismaClient.consultation.deleteMany();
+        await prismaClient.observation.deleteMany();
+        await prismaClient.patient.deleteMany();
+        await prismaClient.medic.deleteMany();
     });
 
     test("Update Consultation", async () => {
@@ -56,10 +56,10 @@ describe("User integration with real DB", () => {
         const medic = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        const consultation = await consultationService.create(date, hasFollowUp, patient.id, medic.id, report);
+        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report);
         const newDate = new Date("2033-10-21T17:45:30.123Z");
         const updatedConsultation = await consultationService.update(consultation.id, newDate, undefined, undefined);
-        expect(updatedConsultation.date).toBe(newDate);
+        expect(updatedConsultation.date).toStrictEqual(newDate);
         expect(updatedConsultation.hasFollowUp).toBe(true);
     });
 
@@ -75,7 +75,7 @@ describe("User integration with real DB", () => {
         const medic = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        const consultation = await consultationService.create(date, hasFollowUp, patient.id, medic.id, report);
+        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report);
 
         const newDate = new Date("2033-10-21T17:45:30.123Z");
         const newReport={
@@ -85,7 +85,7 @@ describe("User integration with real DB", () => {
         }
 
         const updatedConsultation = await consultationService.update(consultation.id, newDate, undefined, newReport);
-        expect(updatedConsultation.date).toBe(newDate);
+        expect(updatedConsultation.date).toStrictEqual(newDate);
         expect(updatedConsultation.hasFollowUp).toBe(true);
 
         expect(updatedConsultation.report?.description).toBe("Patient shows symptoms of flu.");

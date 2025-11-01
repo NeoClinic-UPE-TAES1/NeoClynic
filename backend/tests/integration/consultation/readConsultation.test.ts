@@ -37,11 +37,11 @@ describe("User integration with real DB", () => {
         await prismaClient.$disconnect();
     });
     beforeEach(async () => {
-        await prismaClient.patient.deleteMany();
-        await prismaClient.medic.deleteMany();
-        await prismaClient.observation.deleteMany();
         await prismaClient.report.deleteMany();
         await prismaClient.consultation.deleteMany();
+        await prismaClient.observation.deleteMany();
+        await prismaClient.patient.deleteMany();
+        await prismaClient.medic.deleteMany();
     });
 
     test("List All Consultation", async () => {
@@ -56,15 +56,15 @@ describe("User integration with real DB", () => {
         const medic1 = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient1 = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        await consultationService.create(date1, hasFollowUp1, patient1.id, medic1.id, report1);
+        await consultationService.create(date1, hasFollowUp1, medic1.id, patient1.id, report1);
 
         const date2 = new Date("2031-10-22T17:45:30.123Z");
         const hasFollowUp2 = false;
         
         const medic2 = await medicService.create("Bella Doe", "BellaDoe@gmail.com", "123", "Cardiology");
-        const patient2 = await patientService.create("Duda Doe", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "DudaDoe@gmail.com", undefined);
+        const patient2 = await patientService.create("Duda Doe", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567899", "white", "DudaDoe@gmail.com", undefined);
 
-        await consultationService.create(date2, hasFollowUp2, patient2.id, medic2.id, undefined);
+        await consultationService.create(date2, hasFollowUp2, medic2.id, patient2.id, undefined);
 
         const consultations = await consultationService.listAll();
         expect(consultations.length).toBe(2);
@@ -85,12 +85,12 @@ describe("User integration with real DB", () => {
         const medic = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        const consultation = await consultationService.create(date, hasFollowUp, patient.id, medic.id, report);
-
+        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report);
+        
         const foundConsultation = await consultationService.list(consultation.id);
-        expect(foundConsultation.report).toBe(report);
+        expect(foundConsultation.report).toMatchObject(report);
 
-        await expect(consultationService.list("non-existing-id")).rejects.toThrow("consultation not exists.");
+        await expect(consultationService.list("non-existing-id")).rejects.toThrow("Consultation not exists.");
     }
     );
 });

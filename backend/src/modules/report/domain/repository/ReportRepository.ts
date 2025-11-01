@@ -24,7 +24,7 @@ export class ReportRepository implements IReportRepository{
             id: data.id,
             description: data.description,
             diagnosis: data.diagnosis,
-            prescription: data.prescription ?? '',
+            prescription: data.prescription ?? undefined,
             consultationId: data.consultationId,
         };
     }
@@ -44,7 +44,14 @@ export class ReportRepository implements IReportRepository{
                 prescription: data.prescription,
             }
         });
-        return report;
+        
+        return {
+            id: report.id,
+            description: report.description,
+            diagnosis: report.diagnosis,
+            prescription: report.prescription ?? undefined,
+            consultationId: report.consultationId
+        }
     }
 
     async listReport(listReportRequest:ListReportRequest):Promise<ReportResponse>{
@@ -62,7 +69,7 @@ export class ReportRepository implements IReportRepository{
             id: data.id,
             description: data.description,
             diagnosis: data.diagnosis,
-            prescription: data.prescription,
+            prescription: data.prescription ?? undefined,
             consultationId: data.consultationId,
         };
     }

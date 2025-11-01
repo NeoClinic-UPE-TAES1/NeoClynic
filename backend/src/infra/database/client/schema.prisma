@@ -60,7 +60,7 @@ model Report {
   id             String       @id @default(uuid()) @map("_id")
   description    String
   diagnosis      String
-  prescription   String
+  prescription   String?
   consultationId String       @unique
   consultation   Consultation @relation(fields: [consultationId], references: [id])
 }

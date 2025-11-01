@@ -27,7 +27,7 @@ describe("User integration with real DB", () => {
 
     test("List All Patient", async () => {
         const name1 = "John Doe";
-        const birthDay1 = new Date("2025-10-21T17:45:30.123Z");
+        const birthDay1 = new Date("2032-10-21T17:45:30.123Z");
         const sex1 = "M";
         const cpf1 = "12345678900";
         const ethnicity1 = "Pardo";
@@ -60,7 +60,7 @@ describe("User integration with real DB", () => {
     });
     test("List One Patient", async () => {
         const name = "John Doe";
-        const birthDay = new Date("2025-10-21T17:45:30.123Z");
+        const birthDay = new Date("2032-10-21T17:45:30.123Z");
         const sex = "M";
         const cpf = "12345678900";
         const ethnicity = "Pardo";
