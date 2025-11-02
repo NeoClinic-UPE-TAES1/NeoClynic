@@ -52,8 +52,8 @@ model Consultation {
   medicId     String
   patientId   String
   report      Report?
-  medic       Medic    @relation(fields: [medicId], references: [id])
-  patient     Patient  @relation(fields: [patientId], references: [id])
+  medic       Medic    @relation(fields: [medicId], references: [id], onDelete: Cascade)
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
 
 model Report {
@@ -62,5 +62,5 @@ model Report {
   diagnosis      String
   prescription   String?
   consultationId String       @unique
-  consultation   Consultation @relation(fields: [consultationId], references: [id])
+  consultation   Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
 }
