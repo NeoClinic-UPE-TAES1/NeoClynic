@@ -1,5 +1,6 @@
 import { Consultation } from "../../consultation/domain/entity/Consultation";
 import { Observation } from "../../observation/domain/entity/Observation";
+
 export type PatientResponse = {
     id: string
     name: string
@@ -8,5 +9,6 @@ export type PatientResponse = {
     cpf: string
     ethnicity: string
     email?: string
-    observation?: Observation 
+    observation?: Observation
+    consultation?: Consultation[]
 }

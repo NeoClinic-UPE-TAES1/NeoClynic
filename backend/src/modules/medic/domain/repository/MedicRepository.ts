@@ -16,10 +16,7 @@ export class MedicRepository implements IMedicRepository {
         name,
         email,
         specialty,
-        password: hashedPassword,
-      //   consultations: {
-      //   connect: [{ id: consultationId1 }, { id: consultationId2 }]
-      // }
+        password: hashedPassword
     },
     include: { consultation: true },
   });
@@ -42,7 +39,7 @@ export class MedicRepository implements IMedicRepository {
     });
 
     if (!data) {
-      throw new Error(`Médico com id ${id} não encontrado.`);
+      throw new Error(`Medic not found with id: ${id}`);
     }
 
     return {

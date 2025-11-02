@@ -7,7 +7,8 @@ import { PatientResponse } from "../dto/PatientResponseDTO";
 import { UpdatePatientRequest } from "../dto/UpdatePatientRequestDTO";
 import { IObservationRepository } from "../../observation/domain/repository/IObservationRepository";
 import { ObservationService } from "../../observation/service/ObservationService";
-import { ObservationBodyDTO } from "../../observation/dto/ObservationBodyDTO";
+import { ObservationBody } from "../../observation/dto/ObservationBodyDTO";
+import { ObservationResponse } from "../../observation/dto/ObservationResponseDTO";
 
 export class PatientService {
   constructor(
@@ -17,7 +18,7 @@ export class PatientService {
   ) {
   }
 
-  async create(name: string, birthDay: Date, sex: string, cpf: string, ethnicity: string, email: string, observation: ObservationBodyDTO): Promise<PatientResponse> {
+  async create(name: string, birthDay: Date, sex: string, cpf: string, ethnicity: string, email: string, observation: ObservationBody | undefined): Promise<PatientResponse> {
     if (!name || !birthDay || !sex || !cpf || !ethnicity) {
       throw new Error("Name, birthday, sex, cpf, and ethnicity are required.");
     }
@@ -44,12 +45,19 @@ export class PatientService {
     const patient = await this.patientRepository.createPatient(registerData);
 
     if (observation) {
-      patient.observation = await this.observationService.create(
+        const obsRes = await this.observationService.create(
         observation.comorbidity ?? "",
         observation.allergies ?? "",
         observation.medications ?? "",
         patient.id
       );
+        patient.observation = {
+          id: obsRes.id,
+          comorbidity: obsRes.comorbidity ?? null,
+          allergies: obsRes.allergies ?? null,
+          medications: obsRes.medications ?? null,
+          patientId: obsRes.patientId
+        };
     }
 
     return patient
@@ -83,7 +91,7 @@ export class PatientService {
     cpf: string | undefined,
     ethnicity: string | undefined,
     email: string | undefined,
-    observation: Observation | undefined
+    observation: ObservationBody | undefined
   ): Promise<PatientResponse> {
       const patient = await this.patientRepository.findById(id);
       if (!patient) {
@@ -106,16 +114,17 @@ export class PatientService {
         email
       };
 
-      if (observationExists?.patientId === id ) {
-          await this.observationService.update(
-            observationExists.id,
-            observationExists.comorbidity ?? "",
-            observationExists.allergies ?? "",
-            observationExists.medications ?? "",
-            observationExists.patientId
-          );
-        }
-      
+      let updatedObservation : ObservationResponse | undefined = undefined;
+
+      if (observation && observationExists?.patientId === id) {
+          updatedObservation = await this.observationService.update(
+          observationExists.id,
+          observation.comorbidity ?? undefined,
+          observation.allergies ?? undefined,
+          observation.medications ?? undefined
+        );
+      }
+
       const updatedPatient = await this.patientRepository.updatePatient(updateRequest);
 
       const result: PatientResponse = {
@@ -126,55 +135,46 @@ export class PatientService {
         cpf: updatedPatient.cpf,
         ethnicity: updatedPatient.ethnicity,
         email: updatedPatient.email,
-        observation: observationExists ? observationExists : undefined
+        observation: updatedObservation ? {
+          id: updatedObservation.id,
+          comorbidity: updatedObservation.comorbidity ?? null,
+          allergies: updatedObservation.allergies ?? null,
+          medications: updatedObservation.medications ?? null,
+          patientId: updatedObservation.patientId
+        } : undefined
       };
+
 
       return result;
     }
   
-  async listOne(id: string): Promise<PatientResponse> {
+  async list(id: string): Promise<PatientResponse> {
     const patient = await this.patientRepository.findById(id);
     if (!patient) {
       throw new Error("Patient not exists.");
     }
 
-    const observation = await this.observationRepository.findByPatientId(id);
+    // const observation = await this.observationRepository.findByPatientId(id);
 
     const list: ListPatientRequest = { id: patient.id };
 
-    const listedPatient = await this.patientRepository.listPatient(list)
+    const result = await this.patientRepository.listPatient(list)
 
-    const result: PatientResponse = {
-      id: listedPatient.id,
-      name: listedPatient.name,
-      birthDay: listedPatient.birthDay,
-      sex: listedPatient.sex,
-      cpf: listedPatient.cpf,
-      ethnicity: listedPatient.ethnicity,
-      email: listedPatient.email,
-      observation: observation ? observation : undefined};
+    // const result: PatientResponse = {
+    //   id: listedPatient.id,
+    //   name: listedPatient.name,
+    //   birthDay: listedPatient.birthDay,
+    //   sex: listedPatient.sex,
+    //   cpf: listedPatient.cpf,
+    //   ethnicity: listedPatient.ethnicity,
+    //   email: listedPatient.email,
+    //   observation: observation ? observation : undefined};
 
     return result;
   }
   
   async listAll(): Promise<PatientResponse[]> {
-    const patients = await this.patientRepository.listPatients();
-
-    for (const patient of patients) {
-      const observation = await this.observationRepository.findByPatientId(patient.id);
-      patient.observation = observation ? observation : undefined;
-    }
-
-    return patients.map((m) => ({
-      id: m.id,
-      name: m.name,
-      birthDay: m.birthDay,
-      sex: m.sex,
-      cpf: m.cpf,
-      ethnicity: m.ethnicity,
-      email: m.email ?? undefined,
-      observation: m.observation ? m.observation : undefined
-    }));
+    return this.patientRepository.listPatients();
   }
 
 }

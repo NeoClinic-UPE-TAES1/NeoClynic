@@ -156,7 +156,7 @@ exports.Prisma.ObservationScalarFieldEnum = {
 exports.Prisma.ConsultationScalarFieldEnum = {
   id: 'id',
   date: 'date',
-  followUp: 'followUp',
+  hasFollowUp: 'hasFollowUp',
   medicId: 'medicId',
   patientId: 'patientId'
 };

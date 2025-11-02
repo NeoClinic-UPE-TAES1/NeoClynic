@@ -24,7 +24,9 @@ describe("User integration with real DB", () => {
         await prismaClient.$disconnect();
     });
     beforeEach(async () => {
-        await prismaClient.Medic.deleteMany();
+        await prismaClient.report.deleteMany();
+        await prismaClient.consultation.deleteMany();
+        await prismaClient.medic.deleteMany();
     });
 
     test("Create Medic", async () => {

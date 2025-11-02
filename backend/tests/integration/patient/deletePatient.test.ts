@@ -21,13 +21,15 @@ describe("User integration with real DB", () => {
         await prismaClient.$disconnect();
     });
     beforeEach(async () => {
+        await prismaClient.report.deleteMany();
+        await prismaClient.consultation.deleteMany();
         await prismaClient.observation.deleteMany();
         await prismaClient.patient.deleteMany();
     });
 
     test("Delete Patient", async () => {
         const name = "John Doe";
-        const birthDay = new Date("2025-10-21T17:45:30.123Z");
+        const birthDay = new Date("2032-10-21T17:45:30.123Z");
         const sex = "M";
         const cpf = "12345678900";
         const ethnicity = "Pardo";

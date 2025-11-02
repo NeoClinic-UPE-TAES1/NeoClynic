@@ -13,16 +13,16 @@ export class ObservationService {
 
   async create(comorbidity: string, allergies: string, medications: string, patientId: string): Promise<ObservationResponse> {
     const registerData: CreateObservationRequest = {
-      comorbidity: comorbidity ?? '',
-      allergies: allergies ?? '',
-      medications: medications ?? '',
+      comorbidity,
+      allergies,
+      medications,
       patientId,
     };
 
     return await this.observationRepository.createObservation(registerData);
   }
 
-  async update(id:string, comorbidity: string, allergies: string, medications: string, patientId: string): Promise<ObservationResponse> {
+  async update(id:string, comorbidity: string | undefined, allergies: string | undefined, medications: string | undefined): Promise<ObservationResponse> {
     const observation = await this.observationRepository.findById(id);
     if (!observation) {
       throw new Error("Observation not exists.");
@@ -30,9 +30,9 @@ export class ObservationService {
 
     const updateRequest: UpdateObservationRequest = {
     id,
-    comorbidity: comorbidity ?? '',
-    allergies: allergies ?? '',
-    medications: medications ?? '',
+    comorbidity,
+    allergies,
+    medications,
     };
 
     return await this.observationRepository.updateObservation(updateRequest);

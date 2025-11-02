@@ -18,6 +18,8 @@ describe("User integration with real DB", () => {
         await prismaClient.$disconnect();
     });
     beforeEach(async () => {
+        await prismaClient.report.deleteMany();
+        await prismaClient.consultation.deleteMany();
         await prismaClient.medic.deleteMany();
     });
 
@@ -28,7 +30,7 @@ describe("User integration with real DB", () => {
         const specialty = "Cardiology";
         const medic = await medicService.create(name, email, password, specialty);
         const newName = "Jane Doe";
-        const updatedMedic = await medicService.update(medic.id, newName, undefined, undefined, undefined);
+        const updatedMedic = await medicService.update(medic.id, newName, undefined, undefined, undefined, medic.id);
         expect(updatedMedic.name).toBe(newName);
         expect(updatedMedic.email).toBe(email);
     }

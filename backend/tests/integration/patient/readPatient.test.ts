@@ -21,13 +21,15 @@ describe("User integration with real DB", () => {
         await prismaClient.$disconnect();
     });
     beforeEach(async () => {
+        await prismaClient.report.deleteMany();
+        await prismaClient.consultation.deleteMany();
         await prismaClient.observation.deleteMany();
         await prismaClient.patient.deleteMany();
     });
 
     test("List All Patient", async () => {
         const name1 = "John Doe";
-        const birthDay1 = new Date("2025-10-21T17:45:30.123Z");
+        const birthDay1 = new Date("2032-10-21T17:45:30.123Z");
         const sex1 = "M";
         const cpf1 = "12345678900";
         const ethnicity1 = "Pardo";
@@ -60,7 +62,7 @@ describe("User integration with real DB", () => {
     });
     test("List One Patient", async () => {
         const name = "John Doe";
-        const birthDay = new Date("2025-10-21T17:45:30.123Z");
+        const birthDay = new Date("2032-10-21T17:45:30.123Z");
         const sex = "M";
         const cpf = "12345678900";
         const ethnicity = "Pardo";
@@ -71,10 +73,10 @@ describe("User integration with real DB", () => {
             medications: "Ibuprofeno"
         };
         const patient = await patientService.create(name, birthDay, sex, cpf, ethnicity, email, observation);
-        const foundPatient = await patientService.listOne(patient.id);
+        const foundPatient = await patientService.list(patient.id);
         expect(foundPatient.email).toBe(email);
 
-        await expect(patientService.listOne("non-existing-id")).rejects.toThrow("Patient not exists.");
+        await expect(patientService.list("non-existing-id")).rejects.toThrow("Patient not exists.");
     }
     );
 });

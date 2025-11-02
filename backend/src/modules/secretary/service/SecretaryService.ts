@@ -31,15 +31,15 @@ export class SecretaryService {
 
     }
 
-    async delete(id:string, password:string): Promise<void>{
+    async delete(id:string, password:string, userId:string | undefined): Promise<void>{
         const secretary =  await this.secretaryRepository.findById(id)
         
         if (secretary == null){
             throw new Error("Secretary not exists.");
         }
 
-        if (id != secretary.id){
-            throw new Error("Data invalid.");
+        if (userId != secretary.id){
+            throw new Error("Invalid id.");
         }
 
         const isPasswordValid = await bcrypt.compare(password, secretary.password);
@@ -59,11 +59,16 @@ export class SecretaryService {
         id: string,
         name: string | undefined,
         email: string | undefined,
-        password: string | undefined
+        password: string | undefined,
+        userId:string | undefined
     ): Promise<SecretaryResponse> {
         const secretary = await this.secretaryRepository.findById(id);
         if (!secretary) {
             throw new Error("Secretary not exists.");
+        }
+
+        if (userId != secretary.id){
+            throw new Error("Invalid id.");
         }
 
         let hashedPassword: string | undefined = undefined;
@@ -81,11 +86,7 @@ export class SecretaryService {
         return await this.secretaryRepository.updateSecretary(updateRequest);
     }
 
-    async listAll(): Promise<SecretaryResponse[]> {
-        return await this.secretaryRepository.listSecretaries();
-    }
-
-    async listOne(id: string): Promise<SecretaryResponse> {
+    async list(id: string): Promise<SecretaryResponse> {
         const secretary = await this.secretaryRepository.findById(id);
         if (secretary == null) {
             throw new Error("Secretary not exists.");
@@ -95,6 +96,11 @@ export class SecretaryService {
 
         return await this.secretaryRepository.listSecretary(list);
         }
+
+    async listAll(): Promise<SecretaryResponse[]> {
+        return await this.secretaryRepository.listSecretaries();
+    }
+
 
 
 }

@@ -63,9 +63,9 @@ export class ObservationRepository implements IObservationRepository {
 
         return {
             id: data.id,
-            comorbidity: data.comorbidity ?? '',
-            medications: data.medications ?? '',
-            allergies: data.allergies ?? '',
+            comorbidity: data.comorbidity ?? undefined,
+            medications: data.medications ?? undefined,
+            allergies: data.allergies ?? undefined,
             patientId: data.patientId
         };
     }
