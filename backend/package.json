@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "ts-node app.ts ",
+    "dev": "ts-node app.ts",
     "start": "node app.js",
     "build": "tsc",
     "test:integration": "jest --runInBand"
@@ -27,6 +27,7 @@
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^24.3.1",
     "jest": "^30.2.0",
     "prisma": "^6.16.3",

@@ -18,6 +18,8 @@ describe("User integration with real DB", () => {
         await prismaClient.$disconnect();
     });
     beforeEach(async () => {
+        await prismaClient.report.deleteMany();
+        await prismaClient.consultation.deleteMany();
         await prismaClient.medic.deleteMany();
     });
 
@@ -44,10 +46,10 @@ describe("User integration with real DB", () => {
         const password = "password123";
         const specialty = "Cardiology";
         const medic = await medicService.create(name, email, password, specialty);
-        const foundMedic = await medicService.listOne(medic.id);
+        const foundMedic = await medicService.list(medic.id);
         expect(foundMedic.email).toBe(email);
 
-        await expect(medicService.listOne("non-existing-id")).rejects.toThrow("Medic not exists.");
+        await expect(medicService.list("non-existing-id")).rejects.toThrow("Medic not exists.");
     }
     );
 });

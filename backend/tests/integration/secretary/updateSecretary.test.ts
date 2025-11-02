@@ -27,7 +27,7 @@ describe("User integration with real DB", () => {
         const password = "password123";
         const secretary = await secretaryService.create(name, email, password);
         const newName = "Jane Doe";
-        const updatedSecretary = await secretaryService.update(secretary.id, newName, undefined, undefined);
+        const updatedSecretary = await secretaryService.update(secretary.id, newName, undefined, undefined, secretary.id);
         expect(updatedSecretary.name).toBe(newName);
         expect(updatedSecretary.email).toBe(email);
     }

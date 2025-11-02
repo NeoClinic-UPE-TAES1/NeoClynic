@@ -27,19 +27,22 @@ export class MedicService {
     const registerData: CreateMedicRequest = {
       name,
       email,
-      specialty,
-      consultation: [],
       hashedPassword,
+      specialty
     };
 
     return await this.medicRepository.createMedic(registerData);
   }
 
-  async delete(id: string, password: string): Promise<void> {
+  async delete(id: string, password: string, userId:string | undefined): Promise<void> {
     const medic = await this.medicRepository.findById(id);
     if (!medic) {
       throw new Error("Medic not exists.");
     }
+
+    if (userId != medic.id){
+            throw new Error("Invalid id.");
+        }
 
     const isPasswordValid = await bcrypt.compare(password, medic.password);
     if (!isPasswordValid) {
@@ -55,12 +58,17 @@ export class MedicService {
     name: string | undefined,
     email: string | undefined,
     password: string | undefined,
-    specialty: string | undefined
+    specialty: string | undefined,
+    userId:string | undefined
   ): Promise<MedicResponse> {
     const medic = await this.medicRepository.findById(id);
     if (!medic) {
       throw new Error("Medic not exists.");
     }
+
+    if (userId != medic.id){
+            throw new Error("Invalid id.");
+        }
 
     let hashedPassword: string | undefined = undefined;
     if (password) {
@@ -78,7 +86,7 @@ export class MedicService {
     return await this.medicRepository.updateMedic(updateRequest);
   }
   
-  async listOne(id: string): Promise<MedicResponse> {
+  async list(id: string): Promise<MedicResponse> {
     const medic = await this.medicRepository.findById(id);
     if (!medic) {
       throw new Error("Medic not exists.");

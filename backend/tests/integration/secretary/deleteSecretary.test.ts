@@ -26,14 +26,14 @@ describe("User integration with real DB", () => {
         const email = "JohnDoe@gmail.com"
         const password = "password123";
         const secretary = await secretaryService.create(name, email, password);
-        await expect(secretaryService.delete(secretary.id, password)).resolves.toBeUndefined();
+        await expect(secretaryService.delete(secretary.id, password, secretary.id)).resolves.toBeUndefined();
     });
     test("Delete Secretary with wrong password", async () => {
         const name = "John Doe";
         const email = "JohnDoe@gmail.com"
         const password = "password123";
         const secretary = await secretaryService.create(name, email, password);
-        await expect(secretaryService.delete(secretary.id, "wrongpassword")).rejects.toThrow("Password invalid.");
+        await expect(secretaryService.delete(secretary.id, "wrongpassword", secretary.id)).rejects.toThrow("Password invalid.");
     }
     );
     

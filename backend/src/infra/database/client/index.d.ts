@@ -4682,9 +4682,9 @@ export namespace Prisma {
 
   export type ObservationGroupByOutputType = {
     id: string
-    comorbidity: string
-    allergies: string
-    medications: string
+    comorbidity: string | null
+    allergies: string | null
+    medications: string | null
     patientId: string
     _count: ObservationCountAggregateOutputType | null
     _min: ObservationMinAggregateOutputType | null
@@ -4758,9 +4758,9 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      comorbidity: string
-      allergies: string
-      medications: string
+      comorbidity: string | null
+      allergies: string | null
+      medications: string | null
       patientId: string
     }, ExtArgs["result"]["observation"]>
     composites: {}
@@ -5618,7 +5618,7 @@ export namespace Prisma {
   export type ConsultationMinAggregateOutputType = {
     id: string | null
     date: Date | null
-    followUp: boolean | null
+    hasFollowUp: boolean | null
     medicId: string | null
     patientId: string | null
   }
@@ -5626,7 +5626,7 @@ export namespace Prisma {
   export type ConsultationMaxAggregateOutputType = {
     id: string | null
     date: Date | null
-    followUp: boolean | null
+    hasFollowUp: boolean | null
     medicId: string | null
     patientId: string | null
   }
@@ -5634,7 +5634,7 @@ export namespace Prisma {
   export type ConsultationCountAggregateOutputType = {
     id: number
     date: number
-    followUp: number
+    hasFollowUp: number
     medicId: number
     patientId: number
     _all: number
@@ -5644,7 +5644,7 @@ export namespace Prisma {
   export type ConsultationMinAggregateInputType = {
     id?: true
     date?: true
-    followUp?: true
+    hasFollowUp?: true
     medicId?: true
     patientId?: true
   }
@@ -5652,7 +5652,7 @@ export namespace Prisma {
   export type ConsultationMaxAggregateInputType = {
     id?: true
     date?: true
-    followUp?: true
+    hasFollowUp?: true
     medicId?: true
     patientId?: true
   }
@@ -5660,7 +5660,7 @@ export namespace Prisma {
   export type ConsultationCountAggregateInputType = {
     id?: true
     date?: true
-    followUp?: true
+    hasFollowUp?: true
     medicId?: true
     patientId?: true
     _all?: true
@@ -5741,7 +5741,7 @@ export namespace Prisma {
   export type ConsultationGroupByOutputType = {
     id: string
     date: Date
-    followUp: boolean
+    hasFollowUp: boolean
     medicId: string
     patientId: string
     _count: ConsultationCountAggregateOutputType | null
@@ -5766,10 +5766,10 @@ export namespace Prisma {
   export type ConsultationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     date?: boolean
-    followUp?: boolean
+    hasFollowUp?: boolean
     medicId?: boolean
     patientId?: boolean
-    Report?: boolean | Consultation$ReportArgs<ExtArgs>
+    report?: boolean | Consultation$reportArgs<ExtArgs>
     medic?: boolean | MedicDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["consultation"]>
@@ -5777,7 +5777,7 @@ export namespace Prisma {
   export type ConsultationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     date?: boolean
-    followUp?: boolean
+    hasFollowUp?: boolean
     medicId?: boolean
     patientId?: boolean
     medic?: boolean | MedicDefaultArgs<ExtArgs>
@@ -5787,7 +5787,7 @@ export namespace Prisma {
   export type ConsultationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     date?: boolean
-    followUp?: boolean
+    hasFollowUp?: boolean
     medicId?: boolean
     patientId?: boolean
     medic?: boolean | MedicDefaultArgs<ExtArgs>
@@ -5797,14 +5797,14 @@ export namespace Prisma {
   export type ConsultationSelectScalar = {
     id?: boolean
     date?: boolean
-    followUp?: boolean
+    hasFollowUp?: boolean
     medicId?: boolean
     patientId?: boolean
   }
 
-  export type ConsultationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "date" | "followUp" | "medicId" | "patientId", ExtArgs["result"]["consultation"]>
+  export type ConsultationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "date" | "hasFollowUp" | "medicId" | "patientId", ExtArgs["result"]["consultation"]>
   export type ConsultationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    Report?: boolean | Consultation$ReportArgs<ExtArgs>
+    report?: boolean | Consultation$reportArgs<ExtArgs>
     medic?: boolean | MedicDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
@@ -5820,14 +5820,14 @@ export namespace Prisma {
   export type $ConsultationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Consultation"
     objects: {
-      Report: Prisma.$ReportPayload<ExtArgs> | null
+      report: Prisma.$ReportPayload<ExtArgs> | null
       medic: Prisma.$MedicPayload<ExtArgs>
       patient: Prisma.$PatientPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       date: Date
-      followUp: boolean
+      hasFollowUp: boolean
       medicId: string
       patientId: string
     }, ExtArgs["result"]["consultation"]>
@@ -6224,7 +6224,7 @@ export namespace Prisma {
    */
   export interface Prisma__ConsultationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    Report<T extends Consultation$ReportArgs<ExtArgs> = {}>(args?: Subset<T, Consultation$ReportArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    report<T extends Consultation$reportArgs<ExtArgs> = {}>(args?: Subset<T, Consultation$reportArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     medic<T extends MedicDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MedicDefaultArgs<ExtArgs>>): Prisma__MedicClient<$Result.GetResult<Prisma.$MedicPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     patient<T extends PatientDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PatientDefaultArgs<ExtArgs>>): Prisma__PatientClient<$Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
@@ -6258,7 +6258,7 @@ export namespace Prisma {
   interface ConsultationFieldRefs {
     readonly id: FieldRef<"Consultation", 'String'>
     readonly date: FieldRef<"Consultation", 'DateTime'>
-    readonly followUp: FieldRef<"Consultation", 'Boolean'>
+    readonly hasFollowUp: FieldRef<"Consultation", 'Boolean'>
     readonly medicId: FieldRef<"Consultation", 'String'>
     readonly patientId: FieldRef<"Consultation", 'String'>
   }
@@ -6657,9 +6657,9 @@ export namespace Prisma {
   }
 
   /**
-   * Consultation.Report
+   * Consultation.report
    */
-  export type Consultation$ReportArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Consultation$reportArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Report
      */
@@ -6831,7 +6831,7 @@ export namespace Prisma {
     id: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription: string | null
     consultationId: string
     _count: ReportCountAggregateOutputType | null
     _min: ReportMinAggregateOutputType | null
@@ -6907,7 +6907,7 @@ export namespace Prisma {
       id: string
       description: string
       diagnosis: string
-      prescription: string
+      prescription: string | null
       consultationId: string
     }, ExtArgs["result"]["report"]>
     composites: {}
@@ -7814,7 +7814,7 @@ export namespace Prisma {
   export const ConsultationScalarFieldEnum: {
     id: 'id',
     date: 'date',
-    followUp: 'followUp',
+    hasFollowUp: 'hasFollowUp',
     medicId: 'medicId',
     patientId: 'patientId'
   };
@@ -8089,18 +8089,18 @@ export namespace Prisma {
     OR?: ObservationWhereInput[]
     NOT?: ObservationWhereInput | ObservationWhereInput[]
     id?: StringFilter<"Observation"> | string
-    comorbidity?: StringFilter<"Observation"> | string
-    allergies?: StringFilter<"Observation"> | string
-    medications?: StringFilter<"Observation"> | string
+    comorbidity?: StringNullableFilter<"Observation"> | string | null
+    allergies?: StringNullableFilter<"Observation"> | string | null
+    medications?: StringNullableFilter<"Observation"> | string | null
     patientId?: StringFilter<"Observation"> | string
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
   }
 
   export type ObservationOrderByWithRelationInput = {
     id?: SortOrder
-    comorbidity?: SortOrder
-    allergies?: SortOrder
-    medications?: SortOrder
+    comorbidity?: SortOrderInput | SortOrder
+    allergies?: SortOrderInput | SortOrder
+    medications?: SortOrderInput | SortOrder
     patientId?: SortOrder
     patient?: PatientOrderByWithRelationInput
   }
@@ -8111,17 +8111,17 @@ export namespace Prisma {
     AND?: ObservationWhereInput | ObservationWhereInput[]
     OR?: ObservationWhereInput[]
     NOT?: ObservationWhereInput | ObservationWhereInput[]
-    comorbidity?: StringFilter<"Observation"> | string
-    allergies?: StringFilter<"Observation"> | string
-    medications?: StringFilter<"Observation"> | string
+    comorbidity?: StringNullableFilter<"Observation"> | string | null
+    allergies?: StringNullableFilter<"Observation"> | string | null
+    medications?: StringNullableFilter<"Observation"> | string | null
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
   }, "id" | "patientId">
 
   export type ObservationOrderByWithAggregationInput = {
     id?: SortOrder
-    comorbidity?: SortOrder
-    allergies?: SortOrder
-    medications?: SortOrder
+    comorbidity?: SortOrderInput | SortOrder
+    allergies?: SortOrderInput | SortOrder
+    medications?: SortOrderInput | SortOrder
     patientId?: SortOrder
     _count?: ObservationCountOrderByAggregateInput
     _max?: ObservationMaxOrderByAggregateInput
@@ -8133,9 +8133,9 @@ export namespace Prisma {
     OR?: ObservationScalarWhereWithAggregatesInput[]
     NOT?: ObservationScalarWhereWithAggregatesInput | ObservationScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Observation"> | string
-    comorbidity?: StringWithAggregatesFilter<"Observation"> | string
-    allergies?: StringWithAggregatesFilter<"Observation"> | string
-    medications?: StringWithAggregatesFilter<"Observation"> | string
+    comorbidity?: StringNullableWithAggregatesFilter<"Observation"> | string | null
+    allergies?: StringNullableWithAggregatesFilter<"Observation"> | string | null
+    medications?: StringNullableWithAggregatesFilter<"Observation"> | string | null
     patientId?: StringWithAggregatesFilter<"Observation"> | string
   }
 
@@ -8145,10 +8145,10 @@ export namespace Prisma {
     NOT?: ConsultationWhereInput | ConsultationWhereInput[]
     id?: StringFilter<"Consultation"> | string
     date?: DateTimeFilter<"Consultation"> | Date | string
-    followUp?: BoolFilter<"Consultation"> | boolean
+    hasFollowUp?: BoolFilter<"Consultation"> | boolean
     medicId?: StringFilter<"Consultation"> | string
     patientId?: StringFilter<"Consultation"> | string
-    Report?: XOR<ReportNullableScalarRelationFilter, ReportWhereInput> | null
+    report?: XOR<ReportNullableScalarRelationFilter, ReportWhereInput> | null
     medic?: XOR<MedicScalarRelationFilter, MedicWhereInput>
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
   }
@@ -8156,10 +8156,10 @@ export namespace Prisma {
   export type ConsultationOrderByWithRelationInput = {
     id?: SortOrder
     date?: SortOrder
-    followUp?: SortOrder
+    hasFollowUp?: SortOrder
     medicId?: SortOrder
     patientId?: SortOrder
-    Report?: ReportOrderByWithRelationInput
+    report?: ReportOrderByWithRelationInput
     medic?: MedicOrderByWithRelationInput
     patient?: PatientOrderByWithRelationInput
   }
@@ -8170,10 +8170,10 @@ export namespace Prisma {
     OR?: ConsultationWhereInput[]
     NOT?: ConsultationWhereInput | ConsultationWhereInput[]
     date?: DateTimeFilter<"Consultation"> | Date | string
-    followUp?: BoolFilter<"Consultation"> | boolean
+    hasFollowUp?: BoolFilter<"Consultation"> | boolean
     medicId?: StringFilter<"Consultation"> | string
     patientId?: StringFilter<"Consultation"> | string
-    Report?: XOR<ReportNullableScalarRelationFilter, ReportWhereInput> | null
+    report?: XOR<ReportNullableScalarRelationFilter, ReportWhereInput> | null
     medic?: XOR<MedicScalarRelationFilter, MedicWhereInput>
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
   }, "id">
@@ -8181,7 +8181,7 @@ export namespace Prisma {
   export type ConsultationOrderByWithAggregationInput = {
     id?: SortOrder
     date?: SortOrder
-    followUp?: SortOrder
+    hasFollowUp?: SortOrder
     medicId?: SortOrder
     patientId?: SortOrder
     _count?: ConsultationCountOrderByAggregateInput
@@ -8195,7 +8195,7 @@ export namespace Prisma {
     NOT?: ConsultationScalarWhereWithAggregatesInput | ConsultationScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Consultation"> | string
     date?: DateTimeWithAggregatesFilter<"Consultation"> | Date | string
-    followUp?: BoolWithAggregatesFilter<"Consultation"> | boolean
+    hasFollowUp?: BoolWithAggregatesFilter<"Consultation"> | boolean
     medicId?: StringWithAggregatesFilter<"Consultation"> | string
     patientId?: StringWithAggregatesFilter<"Consultation"> | string
   }
@@ -8207,7 +8207,7 @@ export namespace Prisma {
     id?: StringFilter<"Report"> | string
     description?: StringFilter<"Report"> | string
     diagnosis?: StringFilter<"Report"> | string
-    prescription?: StringFilter<"Report"> | string
+    prescription?: StringNullableFilter<"Report"> | string | null
     consultationId?: StringFilter<"Report"> | string
     consultation?: XOR<ConsultationScalarRelationFilter, ConsultationWhereInput>
   }
@@ -8216,7 +8216,7 @@ export namespace Prisma {
     id?: SortOrder
     description?: SortOrder
     diagnosis?: SortOrder
-    prescription?: SortOrder
+    prescription?: SortOrderInput | SortOrder
     consultationId?: SortOrder
     consultation?: ConsultationOrderByWithRelationInput
   }
@@ -8229,7 +8229,7 @@ export namespace Prisma {
     NOT?: ReportWhereInput | ReportWhereInput[]
     description?: StringFilter<"Report"> | string
     diagnosis?: StringFilter<"Report"> | string
-    prescription?: StringFilter<"Report"> | string
+    prescription?: StringNullableFilter<"Report"> | string | null
     consultation?: XOR<ConsultationScalarRelationFilter, ConsultationWhereInput>
   }, "id" | "consultationId">
 
@@ -8237,7 +8237,7 @@ export namespace Prisma {
     id?: SortOrder
     description?: SortOrder
     diagnosis?: SortOrder
-    prescription?: SortOrder
+    prescription?: SortOrderInput | SortOrder
     consultationId?: SortOrder
     _count?: ReportCountOrderByAggregateInput
     _max?: ReportMaxOrderByAggregateInput
@@ -8251,7 +8251,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Report"> | string
     description?: StringWithAggregatesFilter<"Report"> | string
     diagnosis?: StringWithAggregatesFilter<"Report"> | string
-    prescription?: StringWithAggregatesFilter<"Report"> | string
+    prescription?: StringNullableWithAggregatesFilter<"Report"> | string | null
     consultationId?: StringWithAggregatesFilter<"Report"> | string
   }
 
@@ -8444,64 +8444,64 @@ export namespace Prisma {
 
   export type ObservationCreateInput = {
     id?: string
-    comorbidity: string
-    allergies: string
-    medications: string
+    comorbidity?: string | null
+    allergies?: string | null
+    medications?: string | null
     patient: PatientCreateNestedOneWithoutObservationInput
   }
 
   export type ObservationUncheckedCreateInput = {
     id?: string
-    comorbidity: string
-    allergies: string
-    medications: string
+    comorbidity?: string | null
+    allergies?: string | null
+    medications?: string | null
     patientId: string
   }
 
   export type ObservationUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    comorbidity?: StringFieldUpdateOperationsInput | string
-    allergies?: StringFieldUpdateOperationsInput | string
-    medications?: StringFieldUpdateOperationsInput | string
+    comorbidity?: NullableStringFieldUpdateOperationsInput | string | null
+    allergies?: NullableStringFieldUpdateOperationsInput | string | null
+    medications?: NullableStringFieldUpdateOperationsInput | string | null
     patient?: PatientUpdateOneRequiredWithoutObservationNestedInput
   }
 
   export type ObservationUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    comorbidity?: StringFieldUpdateOperationsInput | string
-    allergies?: StringFieldUpdateOperationsInput | string
-    medications?: StringFieldUpdateOperationsInput | string
+    comorbidity?: NullableStringFieldUpdateOperationsInput | string | null
+    allergies?: NullableStringFieldUpdateOperationsInput | string | null
+    medications?: NullableStringFieldUpdateOperationsInput | string | null
     patientId?: StringFieldUpdateOperationsInput | string
   }
 
   export type ObservationCreateManyInput = {
     id?: string
-    comorbidity: string
-    allergies: string
-    medications: string
+    comorbidity?: string | null
+    allergies?: string | null
+    medications?: string | null
     patientId: string
   }
 
   export type ObservationUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    comorbidity?: StringFieldUpdateOperationsInput | string
-    allergies?: StringFieldUpdateOperationsInput | string
-    medications?: StringFieldUpdateOperationsInput | string
+    comorbidity?: NullableStringFieldUpdateOperationsInput | string | null
+    allergies?: NullableStringFieldUpdateOperationsInput | string | null
+    medications?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ObservationUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    comorbidity?: StringFieldUpdateOperationsInput | string
-    allergies?: StringFieldUpdateOperationsInput | string
-    medications?: StringFieldUpdateOperationsInput | string
+    comorbidity?: NullableStringFieldUpdateOperationsInput | string | null
+    allergies?: NullableStringFieldUpdateOperationsInput | string | null
+    medications?: NullableStringFieldUpdateOperationsInput | string | null
     patientId?: StringFieldUpdateOperationsInput | string
   }
 
   export type ConsultationCreateInput = {
     id?: string
     date: Date | string
-    followUp: boolean
-    Report?: ReportCreateNestedOneWithoutConsultationInput
+    hasFollowUp: boolean
+    report?: ReportCreateNestedOneWithoutConsultationInput
     medic: MedicCreateNestedOneWithoutConsultationInput
     patient: PatientCreateNestedOneWithoutConsultationInput
   }
@@ -8509,17 +8509,17 @@ export namespace Prisma {
   export type ConsultationUncheckedCreateInput = {
     id?: string
     date: Date | string
-    followUp: boolean
+    hasFollowUp: boolean
     medicId: string
     patientId: string
-    Report?: ReportUncheckedCreateNestedOneWithoutConsultationInput
+    report?: ReportUncheckedCreateNestedOneWithoutConsultationInput
   }
 
   export type ConsultationUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
-    Report?: ReportUpdateOneWithoutConsultationNestedInput
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    report?: ReportUpdateOneWithoutConsultationNestedInput
     medic?: MedicUpdateOneRequiredWithoutConsultationNestedInput
     patient?: PatientUpdateOneRequiredWithoutConsultationNestedInput
   }
@@ -8527,16 +8527,16 @@ export namespace Prisma {
   export type ConsultationUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
     medicId?: StringFieldUpdateOperationsInput | string
     patientId?: StringFieldUpdateOperationsInput | string
-    Report?: ReportUncheckedUpdateOneWithoutConsultationNestedInput
+    report?: ReportUncheckedUpdateOneWithoutConsultationNestedInput
   }
 
   export type ConsultationCreateManyInput = {
     id?: string
     date: Date | string
-    followUp: boolean
+    hasFollowUp: boolean
     medicId: string
     patientId: string
   }
@@ -8544,13 +8544,13 @@ export namespace Prisma {
   export type ConsultationUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ConsultationUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
     medicId?: StringFieldUpdateOperationsInput | string
     patientId?: StringFieldUpdateOperationsInput | string
   }
@@ -8559,7 +8559,7 @@ export namespace Prisma {
     id?: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription?: string | null
     consultation: ConsultationCreateNestedOneWithoutReportInput
   }
 
@@ -8567,7 +8567,7 @@ export namespace Prisma {
     id?: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription?: string | null
     consultationId: string
   }
 
@@ -8575,7 +8575,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
     consultation?: ConsultationUpdateOneRequiredWithoutReportNestedInput
   }
 
@@ -8583,7 +8583,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
     consultationId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -8591,7 +8591,7 @@ export namespace Prisma {
     id?: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription?: string | null
     consultationId: string
   }
 
@@ -8599,14 +8599,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ReportUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
     consultationId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -8843,7 +8843,7 @@ export namespace Prisma {
   export type ConsultationCountOrderByAggregateInput = {
     id?: SortOrder
     date?: SortOrder
-    followUp?: SortOrder
+    hasFollowUp?: SortOrder
     medicId?: SortOrder
     patientId?: SortOrder
   }
@@ -8851,7 +8851,7 @@ export namespace Prisma {
   export type ConsultationMaxOrderByAggregateInput = {
     id?: SortOrder
     date?: SortOrder
-    followUp?: SortOrder
+    hasFollowUp?: SortOrder
     medicId?: SortOrder
     patientId?: SortOrder
   }
@@ -8859,7 +8859,7 @@ export namespace Prisma {
   export type ConsultationMinOrderByAggregateInput = {
     id?: SortOrder
     date?: SortOrder
-    followUp?: SortOrder
+    hasFollowUp?: SortOrder
     medicId?: SortOrder
     patientId?: SortOrder
   }
@@ -9246,17 +9246,17 @@ export namespace Prisma {
   export type ConsultationCreateWithoutMedicInput = {
     id?: string
     date: Date | string
-    followUp: boolean
-    Report?: ReportCreateNestedOneWithoutConsultationInput
+    hasFollowUp: boolean
+    report?: ReportCreateNestedOneWithoutConsultationInput
     patient: PatientCreateNestedOneWithoutConsultationInput
   }
 
   export type ConsultationUncheckedCreateWithoutMedicInput = {
     id?: string
     date: Date | string
-    followUp: boolean
+    hasFollowUp: boolean
     patientId: string
-    Report?: ReportUncheckedCreateNestedOneWithoutConsultationInput
+    report?: ReportUncheckedCreateNestedOneWithoutConsultationInput
   }
 
   export type ConsultationCreateOrConnectWithoutMedicInput = {
@@ -9291,23 +9291,23 @@ export namespace Prisma {
     NOT?: ConsultationScalarWhereInput | ConsultationScalarWhereInput[]
     id?: StringFilter<"Consultation"> | string
     date?: DateTimeFilter<"Consultation"> | Date | string
-    followUp?: BoolFilter<"Consultation"> | boolean
+    hasFollowUp?: BoolFilter<"Consultation"> | boolean
     medicId?: StringFilter<"Consultation"> | string
     patientId?: StringFilter<"Consultation"> | string
   }
 
   export type ObservationCreateWithoutPatientInput = {
     id?: string
-    comorbidity: string
-    allergies: string
-    medications: string
+    comorbidity?: string | null
+    allergies?: string | null
+    medications?: string | null
   }
 
   export type ObservationUncheckedCreateWithoutPatientInput = {
     id?: string
-    comorbidity: string
-    allergies: string
-    medications: string
+    comorbidity?: string | null
+    allergies?: string | null
+    medications?: string | null
   }
 
   export type ObservationCreateOrConnectWithoutPatientInput = {
@@ -9318,17 +9318,17 @@ export namespace Prisma {
   export type ConsultationCreateWithoutPatientInput = {
     id?: string
     date: Date | string
-    followUp: boolean
-    Report?: ReportCreateNestedOneWithoutConsultationInput
+    hasFollowUp: boolean
+    report?: ReportCreateNestedOneWithoutConsultationInput
     medic: MedicCreateNestedOneWithoutConsultationInput
   }
 
   export type ConsultationUncheckedCreateWithoutPatientInput = {
     id?: string
     date: Date | string
-    followUp: boolean
+    hasFollowUp: boolean
     medicId: string
-    Report?: ReportUncheckedCreateNestedOneWithoutConsultationInput
+    report?: ReportUncheckedCreateNestedOneWithoutConsultationInput
   }
 
   export type ConsultationCreateOrConnectWithoutPatientInput = {
@@ -9354,16 +9354,16 @@ export namespace Prisma {
 
   export type ObservationUpdateWithoutPatientInput = {
     id?: StringFieldUpdateOperationsInput | string
-    comorbidity?: StringFieldUpdateOperationsInput | string
-    allergies?: StringFieldUpdateOperationsInput | string
-    medications?: StringFieldUpdateOperationsInput | string
+    comorbidity?: NullableStringFieldUpdateOperationsInput | string | null
+    allergies?: NullableStringFieldUpdateOperationsInput | string | null
+    medications?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ObservationUncheckedUpdateWithoutPatientInput = {
     id?: StringFieldUpdateOperationsInput | string
-    comorbidity?: StringFieldUpdateOperationsInput | string
-    allergies?: StringFieldUpdateOperationsInput | string
-    medications?: StringFieldUpdateOperationsInput | string
+    comorbidity?: NullableStringFieldUpdateOperationsInput | string | null
+    allergies?: NullableStringFieldUpdateOperationsInput | string | null
+    medications?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ConsultationUpsertWithWhereUniqueWithoutPatientInput = {
@@ -9446,14 +9446,14 @@ export namespace Prisma {
     id?: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription?: string | null
   }
 
   export type ReportUncheckedCreateWithoutConsultationInput = {
     id?: string
     description: string
     diagnosis: string
-    prescription: string
+    prescription?: string | null
   }
 
   export type ReportCreateOrConnectWithoutConsultationInput = {
@@ -9524,14 +9524,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ReportUncheckedUpdateWithoutConsultationInput = {
     id?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     diagnosis?: StringFieldUpdateOperationsInput | string
-    prescription?: StringFieldUpdateOperationsInput | string
+    prescription?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MedicUpsertWithoutConsultationInput = {
@@ -9597,7 +9597,7 @@ export namespace Prisma {
   export type ConsultationCreateWithoutReportInput = {
     id?: string
     date: Date | string
-    followUp: boolean
+    hasFollowUp: boolean
     medic: MedicCreateNestedOneWithoutConsultationInput
     patient: PatientCreateNestedOneWithoutConsultationInput
   }
@@ -9605,7 +9605,7 @@ export namespace Prisma {
   export type ConsultationUncheckedCreateWithoutReportInput = {
     id?: string
     date: Date | string
-    followUp: boolean
+    hasFollowUp: boolean
     medicId: string
     patientId: string
   }
@@ -9629,7 +9629,7 @@ export namespace Prisma {
   export type ConsultationUpdateWithoutReportInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
     medic?: MedicUpdateOneRequiredWithoutConsultationNestedInput
     patient?: PatientUpdateOneRequiredWithoutConsultationNestedInput
   }
@@ -9637,7 +9637,7 @@ export namespace Prisma {
   export type ConsultationUncheckedUpdateWithoutReportInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
     medicId?: StringFieldUpdateOperationsInput | string
     patientId?: StringFieldUpdateOperationsInput | string
   }
@@ -9645,60 +9645,60 @@ export namespace Prisma {
   export type ConsultationCreateManyMedicInput = {
     id?: string
     date: Date | string
-    followUp: boolean
+    hasFollowUp: boolean
     patientId: string
   }
 
   export type ConsultationUpdateWithoutMedicInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
-    Report?: ReportUpdateOneWithoutConsultationNestedInput
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    report?: ReportUpdateOneWithoutConsultationNestedInput
     patient?: PatientUpdateOneRequiredWithoutConsultationNestedInput
   }
 
   export type ConsultationUncheckedUpdateWithoutMedicInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
     patientId?: StringFieldUpdateOperationsInput | string
-    Report?: ReportUncheckedUpdateOneWithoutConsultationNestedInput
+    report?: ReportUncheckedUpdateOneWithoutConsultationNestedInput
   }
 
   export type ConsultationUncheckedUpdateManyWithoutMedicInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
     patientId?: StringFieldUpdateOperationsInput | string
   }
 
   export type ConsultationCreateManyPatientInput = {
     id?: string
     date: Date | string
-    followUp: boolean
+    hasFollowUp: boolean
     medicId: string
   }
 
   export type ConsultationUpdateWithoutPatientInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
-    Report?: ReportUpdateOneWithoutConsultationNestedInput
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    report?: ReportUpdateOneWithoutConsultationNestedInput
     medic?: MedicUpdateOneRequiredWithoutConsultationNestedInput
   }
 
   export type ConsultationUncheckedUpdateWithoutPatientInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
     medicId?: StringFieldUpdateOperationsInput | string
-    Report?: ReportUncheckedUpdateOneWithoutConsultationNestedInput
+    report?: ReportUncheckedUpdateOneWithoutConsultationNestedInput
   }
 
   export type ConsultationUncheckedUpdateManyWithoutPatientInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
-    followUp?: BoolFieldUpdateOperationsInput | boolean
+    hasFollowUp?: BoolFieldUpdateOperationsInput | boolean
     medicId?: StringFieldUpdateOperationsInput | string
   }
 
