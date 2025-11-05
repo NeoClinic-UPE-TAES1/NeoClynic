@@ -170,7 +170,17 @@ const Login = () => {
           {isSubmitting ? 'Entrando...' : 'Entrar'}
         </LoginButton>
 
-        <Forgot href="#">Esqueci minha senha</Forgot>
+        <Forgot
+          as="button"
+          onClick={(e) => {
+            e.preventDefault();
+            setFormData({ email: '', password: '' });
+            navigate('/forgot-password');
+          }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+        >
+          Esqueci minha senha
+        </Forgot>
       </LoginForm>
     </LoginContainer>
   );
