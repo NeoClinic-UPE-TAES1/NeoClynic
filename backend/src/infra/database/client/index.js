@@ -177,7 +177,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\kaiod\\Desktop\\Computação\\TAES\\NeoClinic\\backend\\src\\infra\\database\\client",
+      "value": "C:\\Users\\Casa\\Documents\\Faculdade, Programacao\\Programação\\NeoClynic\\backend\\src\\infra\\database\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -191,7 +191,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\kaiod\\Desktop\\Computação\\TAES\\NeoClinic\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Casa\\Documents\\Faculdade, Programacao\\Programação\\NeoClynic\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

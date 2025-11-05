@@ -109,13 +109,8 @@ const ManageSecretaries = () => {
 
     const loadSecretaries = async () => {
         try {
-            // Em produção: const data = await apiCall('/secretary/list');
-            // Por enquanto, mock
-            const mockData = [
-                { id: 'uuid1', name: 'Ana Silva', email: 'ana.silva@neoclinic.com' },
-                { id: 'uuid2', name: 'Beatriz Costa', email: 'beatriz.costa@neoclinic.com' },
-            ];
-            setSecretaries(mockData);
+            const data = await apiCall('/secretary/list');
+            setSecretaries(data);
         } catch (err) {
             console.error('Erro ao carregar secretárias:', err);
         }
@@ -132,16 +127,16 @@ const ManageSecretaries = () => {
         try {
             if (editingId) {
                 // Atualizar
-                // await apiCall(`/secretary/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
+                await apiCall(`/secretary/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
                 setSecretaries(secretaries.map(sec => 
                     sec.id === editingId ? { ...sec, name: formData.name, email: formData.email } : sec
                 ));
                 alert('Secretária atualizada com sucesso!');
             } else {
                 // Criar
-                // const data = await apiCall('/secretary/register', { method: 'POST', body: JSON.stringify(formData) });
+                const data = await apiCall('/secretary/register', { method: 'POST', body: JSON.stringify(formData) });
                 const newSecretary = { 
-                    id: `uuid${Date.now()}`, // ID mock
+                    id: data.id,
                     ...formData 
                 };
                 setSecretaries([...secretaries, newSecretary]);
@@ -165,7 +160,7 @@ const ManageSecretaries = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Tem certeza que deseja excluir esta secretária?')) {
             try {
-                // await apiCall(`/secretary/delete/${id}`, { method: 'DELETE' });
+                await apiCall(`/secretary/delete/${id}`, { method: 'DELETE' });
                 setSecretaries(secretaries.filter(sec => sec.id !== id));
                 alert('Secretária excluída!');
             } catch (err) {

@@ -113,13 +113,8 @@ const ManageMedics = () => {
 
     const loadMedics = async () => {
         try {
-            // Em produção: const data = await apiCall('/medic/list');
-            // Por enquanto, mock
-            const mockData = [
-                { id: 'uuid10', name: 'Dr. Carlos Moreira', email: 'carlos.moreira@neoclinic.com', specialty: 'Cardiologia' },
-                { id: 'uuid11', name: 'Dra. Helena Braga', email: 'helena.braga@neoclinic.com', specialty: 'Pediatria' },
-            ];
-            setMedics(mockData);
+            const data = await apiCall('/medic/list');
+            setMedics(data);
         } catch (err) {
             console.error('Erro ao carregar médicos:', err);
         }
@@ -136,16 +131,16 @@ const ManageMedics = () => {
         try {
             if (editingId) {
                 // Atualizar
-                // await apiCall(`/medic/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
+                await apiCall(`/medic/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
                 setMedics(medics.map(med => 
                     med.id === editingId ? { ...med, name: formData.name, email: formData.email, specialty: formData.specialty } : med
                 ));
                 alert('Médico atualizado com sucesso!');
             } else {
                 // Criar
-                // const data = await apiCall('/medic/register', { method: 'POST', body: JSON.stringify(formData) });
+                const data = await apiCall('/medic/register', { method: 'POST', body: JSON.stringify(formData) });
                 const newMedic = { 
-                    id: `uuid${Date.now()}`, // ID mock
+                    id: data.id, // Usar ID retornado da API
                     ...formData 
                 };
                 setMedics([...medics, newMedic]);
@@ -169,7 +164,7 @@ const ManageMedics = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Tem certeza que deseja excluir este médico?')) {
             try {
-                // await apiCall(`/medic/delete/${id}`, { method: 'DELETE' });
+                await apiCall(`/medic/delete/${id}`, { method: 'DELETE' });
                 setMedics(medics.filter(med => med.id !== id));
                 alert('Médico excluído!');
             } catch (err) {

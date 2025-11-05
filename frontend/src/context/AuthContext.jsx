@@ -18,10 +18,24 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    const login = (token, role) => {
-        localStorage.setItem('token', token);
-        localStorage.setItem('role', role);
-        setUser({ role });
+    const login = async (email, password) => {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const response = await fetch(`${baseUrl}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Credenciais inválidas');
+        }
+
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+        setUser({ role: data.role });
         setIsAuthenticated(true);
         setLoading(false);
     };

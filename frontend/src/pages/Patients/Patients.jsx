@@ -239,39 +239,8 @@ const Patients = () => {
 
     const loadPatients = async () => {
         try {
-            // Em produção: const data = await apiCall('/patient/list');
-            // Por enquanto, mock
-            const mockData = [
-                { 
-                    id: 'p1', 
-                    name: 'Carlos Batista', 
-                    birthDay: '1985-04-12T00:00:00.000Z', 
-                    sex: 'Masculino', 
-                    cpf: '111.222.333-44', 
-                    ethnicity: 'Branco', 
-                    email: 'carlos.batista@email.com',
-                    observation: {
-                        comorbidity: 'Hipertensão',
-                        allergies: 'Poeira',
-                        medications: 'Losartana 50mg (contínuo)'
-                    }
-                },
-                { 
-                    id: 'p2', 
-                    name: 'Mariana Oliveira', 
-                    birthDay: '1992-09-30T00:00:00.000Z', 
-                    sex: 'Feminino', 
-                    cpf: '555.666.777-88', 
-                    ethnicity: 'Pardo', 
-                    email: 'mari.oli@email.com',
-                    observation: {
-                        comorbidity: 'Asma',
-                        allergies: 'Penicilina, Camarão',
-                        medications: 'Aerolin (quando necessário)'
-                    }
-                }
-            ];
-            setPatients(mockData);
+            const data = await apiCall('/patient/list');
+            setPatients(data.patients || []);
         } catch (err) {
             console.error('Erro ao carregar pacientes:', err);
         }
@@ -320,12 +289,12 @@ const Patients = () => {
         e.preventDefault();
         try {
             if (currentPatient.id) {
-                // await apiCall(`/patient/update/${currentPatient.id}`, { method: 'PATCH', body: JSON.stringify(currentPatient) });
+                await apiCall(`/patient/update/${currentPatient.id}`, 'PATCH', currentPatient);
                 setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
                 alert('Paciente atualizado com sucesso!');
             } else {
-                // const data = await apiCall('/patient/create', { method: 'POST', body: JSON.stringify(currentPatient) });
-                const newPatient = { ...currentPatient, id: `p${Date.now()}` };
+                const data = await apiCall('/patient/register', 'POST', currentPatient);
+                const newPatient = { ...currentPatient, id: data.patient.id };
                 setPatients([...patients, newPatient]);
                 alert('Paciente cadastrado com sucesso!');
             }
@@ -339,7 +308,7 @@ const Patients = () => {
     const handleSaveObservation = async (e) => {
         e.preventDefault();
         try {
-            // await apiCall(`/patient/observation/${currentPatient.id}`, { method: 'PATCH', body: JSON.stringify(currentPatient.observation) });
+            await apiCall(`/patient/observation/${currentPatient.id}`, 'PATCH', currentPatient.observation);
             setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
             alert('Observações clínicas atualizadas!');
             handleCloseModal();
@@ -352,7 +321,7 @@ const Patients = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
             try {
-                // await apiCall(`/patient/delete/${id}`, { method: 'DELETE' });
+                await apiCall(`/patient/delete/${id}`, 'DELETE');
                 setPatients(patients.filter(p => p.id !== id));
                 alert('Paciente excluído.');
             } catch (err) {

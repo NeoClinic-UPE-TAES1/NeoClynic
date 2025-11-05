@@ -10,6 +10,9 @@ const useApi = () => {
         setLoading(true);
         setError(null);
 
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const fullUrl = `${baseUrl}${url}`;
+
         const token = localStorage.getItem('token');
         const headers = {
             'Content-Type': 'application/json',
@@ -21,7 +24,7 @@ const useApi = () => {
         }
 
         try {
-            const response = await fetch(url, {
+            const response = await fetch(fullUrl, {
                 ...options,
                 headers,
             });
