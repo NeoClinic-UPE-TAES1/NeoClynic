@@ -139,6 +139,32 @@ export class PatientRepository implements IPatientRepository {
     }
 
     async deletePatient(id: string): Promise<void> {
+        // Deletar em ordem: primeiro as relações, depois o paciente
+        
+        // 1. Deletar observações (se existirem)
+        await prisma.observation.deleteMany({
+            where: { patientId: id }
+        });
+        
+        // 2. Deletar consultas e seus relatórios (se existirem)
+        const consultations = await prisma.consultation.findMany({
+            where: { patientId: id },
+            select: { id: true }
+        });
+        
+        for (const consultation of consultations) {
+            // Deletar relatórios da consulta
+            await prisma.report.deleteMany({
+                where: { consultationId: consultation.id }
+            });
+        }
+        
+        // Deletar as consultas
+        await prisma.consultation.deleteMany({
+            where: { patientId: id }
+        });
+        
+        // 3. Deletar o paciente
         await prisma.patient.delete({
             where: { id }
         });

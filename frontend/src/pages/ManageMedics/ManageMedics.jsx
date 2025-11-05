@@ -114,9 +114,20 @@ const ManageMedics = () => {
     const loadMedics = async () => {
         try {
             const data = await apiCall('/medic/list');
-            setMedics(data);
+            // Verifica se data é um array, caso contrário, tenta acessar a propriedade que contém os médicos
+            if (Array.isArray(data)) {
+                setMedics(data);
+            } else if (data && Array.isArray(data.medics)) {
+                setMedics(data.medics);
+            } else if (data && Array.isArray(data.data)) {
+                setMedics(data.data);
+            } else {
+                console.error('Formato de resposta inesperado:', data);
+                setMedics([]);
+            }
         } catch (err) {
             console.error('Erro ao carregar médicos:', err);
+            setMedics([]); // Garante que medics seja sempre um array
         }
     };
 
@@ -131,18 +142,16 @@ const ManageMedics = () => {
         try {
             if (editingId) {
                 // Atualizar
-                await apiCall(`/medic/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
+                const response = await apiCall(`/medic/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
+                const updatedMedic = response.medic || response;
                 setMedics(medics.map(med => 
-                    med.id === editingId ? { ...med, name: formData.name, email: formData.email, specialty: formData.specialty } : med
+                    med.id === editingId ? { ...med, ...updatedMedic } : med
                 ));
                 alert('Médico atualizado com sucesso!');
             } else {
                 // Criar
-                const data = await apiCall('/medic/register', { method: 'POST', body: JSON.stringify(formData) });
-                const newMedic = { 
-                    id: data.id, // Usar ID retornado da API
-                    ...formData 
-                };
+                const response = await apiCall('/medic/register', { method: 'POST', body: JSON.stringify(formData) });
+                const newMedic = response.medic || response;
                 setMedics([...medics, newMedic]);
                 alert('Médico cadastrado com sucesso!');
             }
@@ -162,12 +171,22 @@ const ManageMedics = () => {
     };
 
     const handleDelete = async (id) => {
+        const password = window.prompt('Para confirmar a exclusão, digite a senha do médico:');
+        
+        if (!password) {
+            return; // Usuário cancelou
+        }
+        
         if (window.confirm('Tem certeza que deseja excluir este médico?')) {
             try {
-                await apiCall(`/medic/delete/${id}`, { method: 'DELETE' });
+                await apiCall(`/medic/delete/${id}`, { 
+                    method: 'DELETE',
+                    body: JSON.stringify({ password })
+                });
                 setMedics(medics.filter(med => med.id !== id));
                 alert('Médico excluído!');
             } catch (err) {
+                console.error('Erro ao excluir médico:', err);
                 alert('Erro ao excluir médico: ' + err.message);
             }
         }
@@ -218,7 +237,7 @@ const ManageMedics = () => {
             {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
 
             <List>
-                {medics.map(med => (
+                {Array.isArray(medics) && medics.map(med => (
                     <ListItem key={med.id}>
                         <ItemInfo>
                             <strong>{med.name}</strong>
@@ -231,6 +250,11 @@ const ManageMedics = () => {
                         </ItemActions>
                     </ListItem>
                 ))}
+                {(!Array.isArray(medics) || medics.length === 0) && (
+                    <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
+                        Nenhum médico cadastrado
+                    </p>
+                )}
             </List>
         </Container>
     );

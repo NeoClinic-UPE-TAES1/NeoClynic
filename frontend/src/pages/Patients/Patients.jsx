@@ -211,11 +211,7 @@ const emptyPatient = {
     cpf: '',
     ethnicity: 'Pardo',
     email: '',
-    observation: {
-        comorbidity: '',
-        allergies: '',
-        medications: ''
-    }
+    observation: null
 };
 
 // --- Componente ---
@@ -240,9 +236,18 @@ const Patients = () => {
     const loadPatients = async () => {
         try {
             const data = await apiCall('/patient/list');
-            setPatients(data.patients || []);
+            // Verificar o formato da resposta
+            if (Array.isArray(data)) {
+                setPatients(data);
+            } else if (data && Array.isArray(data.patients)) {
+                setPatients(data.patients);
+            } else {
+                console.error('Formato de resposta inesperado:', data);
+                setPatients([]);
+            }
         } catch (err) {
             console.error('Erro ao carregar pacientes:', err);
+            setPatients([]);
         }
     };
     
@@ -288,18 +293,38 @@ const Patients = () => {
     const handleSavePatient = async (e) => {
         e.preventDefault();
         try {
+            // Preparar dados do paciente
+            const patientData = {
+                name: currentPatient.name,
+                birthDay: currentPatient.birthDay,
+                sex: currentPatient.sex,
+                cpf: currentPatient.cpf,
+                ethnicity: currentPatient.ethnicity,
+                email: currentPatient.email.trim() || null  // null se vazio
+            };
+            
             if (currentPatient.id) {
-                await apiCall(`/patient/update/${currentPatient.id}`, 'PATCH', currentPatient);
-                setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
+                // Atualizar paciente existente
+                const response = await apiCall(`/patient/update/${currentPatient.id}`, { 
+                    method: 'PATCH', 
+                    body: JSON.stringify(patientData)
+                });
+                const updatedPatient = response.patient || response;
+                setPatients(patients.map(p => p.id === currentPatient.id ? updatedPatient : p));
                 alert('Paciente atualizado com sucesso!');
             } else {
-                const data = await apiCall('/patient/register', 'POST', currentPatient);
-                const newPatient = { ...currentPatient, id: data.patient.id };
+                // Criar novo paciente
+                const response = await apiCall('/patient/create', { 
+                    method: 'POST', 
+                    body: JSON.stringify(patientData)
+                });
+                const newPatient = response.patient || response;
                 setPatients([...patients, newPatient]);
                 alert('Paciente cadastrado com sucesso!');
             }
             handleCloseModal();
         } catch (err) {
+            console.error('Erro ao salvar paciente:', err);
             alert('Erro ao salvar paciente: ' + err.message);
         }
     };
@@ -308,11 +333,22 @@ const Patients = () => {
     const handleSaveObservation = async (e) => {
         e.preventDefault();
         try {
-            await apiCall(`/patient/observation/${currentPatient.id}`, 'PATCH', currentPatient.observation);
-            setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
+            await apiCall(`/patient/observation/${currentPatient.id}`, { 
+                method: 'PATCH', 
+                body: JSON.stringify({
+                    comorbidity: currentPatient.observation?.comorbidity || '',
+                    allergies: currentPatient.observation?.allergies || '',
+                    medications: currentPatient.observation?.medications || ''
+                })
+            });
+            
+            // Recarregar a lista de pacientes para obter dados atualizados
+            await loadPatients();
+            
             alert('Observações clínicas atualizadas!');
             handleCloseModal();
         } catch (err) {
+            console.error('Erro ao salvar observações:', err);
             alert('Erro ao salvar observações: ' + err.message);
         }
     };
@@ -321,10 +357,11 @@ const Patients = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
             try {
-                await apiCall(`/patient/delete/${id}`, 'DELETE');
+                await apiCall(`/patient/delete/${id}`, { method: 'DELETE' });
                 setPatients(patients.filter(p => p.id !== id));
                 alert('Paciente excluído.');
             } catch (err) {
+                console.error('Erro ao excluir paciente:', err);
                 alert('Erro ao excluir paciente: ' + err.message);
             }
         }
@@ -351,32 +388,38 @@ const Patients = () => {
             </Header>
             
             <List>
-                {filteredPatients.map(patient => (
-                    <ListItem key={patient.id}>
-                        <ItemInfo>
-                            <strong>{patient.name}</strong>
-                            <span>CPF: {patient.cpf}</span>
-                        </ItemInfo>
-                        <ItemActions>
-                            {isSecretary ? (
-                                // Ações da Secretária: [RF05] Editar, [RF05] Deletar
-                                <>
-                                    <button className="edit" onClick={() => handleOpenModal(patient)}>
-                                        Editar
+                {filteredPatients.length > 0 ? (
+                    filteredPatients.map(patient => (
+                        <ListItem key={patient.id}>
+                            <ItemInfo>
+                                <strong>{patient.name}</strong>
+                                <span>CPF: {patient.cpf}</span>
+                            </ItemInfo>
+                            <ItemActions>
+                                {isSecretary ? (
+                                    // Ações da Secretária: [RF05] Editar, [RF05] Deletar
+                                    <>
+                                        <button className="edit" onClick={() => handleOpenModal(patient)}>
+                                            Editar
+                                        </button>
+                                        <button className="delete" onClick={() => handleDelete(patient.id)}>
+                                            Excluir
+                                        </button>
+                                    </>
+                                ) : (
+                                    // Ação do Médico: [RF-Implícito] Ver prontuário
+                                    <button className="view" onClick={() => handleOpenModal(patient)}>
+                                        Ver Prontuário
                                     </button>
-                                    <button className="delete" onClick={() => handleDelete(patient.id)}>
-                                        Excluir
-                                    </button>
-                                </>
-                            ) : (
-                                // Ação do Médico: [RF-Implícito] Ver prontuário
-                                <button className="view" onClick={() => handleOpenModal(patient)}>
-                                    Ver Prontuário
-                                </button>
-                            )}
-                        </ItemActions>
-                    </ListItem>
-                ))}
+                                )}
+                            </ItemActions>
+                        </ListItem>
+                    ))
+                ) : (
+                    <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
+                        {searchTerm ? 'Nenhum paciente encontrado' : 'Nenhum paciente cadastrado'}
+                    </p>
+                )}
             </List>
             
             {/* Modal de Cadastro/Edição (Secretária) ou Visualização (Médico) */}
@@ -394,26 +437,51 @@ const Patients = () => {
                         {isSecretary && (
                             <Form onSubmit={handleSavePatient}>
                                 <Label htmlFor="name">Nome Completo</Label>
-                                <Input id="name" name="name" value={currentPatient.name} onChange={handleInputChange} required />
+                                <Input 
+                                    id="name" 
+                                    name="name" 
+                                    value={currentPatient.name || ''} 
+                                    onChange={handleInputChange} 
+                                    required 
+                                />
                                 
                                 <Label htmlFor="cpf">CPF</Label>
-                                <Input id="cpf" name="cpf" value={currentPatient.cpf} onChange={handleInputChange} required />
+                                <Input 
+                                    id="cpf" 
+                                    name="cpf" 
+                                    value={currentPatient.cpf || ''} 
+                                    onChange={handleInputChange} 
+                                    required 
+                                />
                                 
                                 <Label htmlFor="birthDay">Data de Nascimento</Label>
-                                <Input id="birthDay" name="birthDay" type="date" value={currentPatient.birthDay.split('T')[0]} onChange={handleInputChange} required />
+                                <Input 
+                                    id="birthDay" 
+                                    name="birthDay" 
+                                    type="date" 
+                                    value={currentPatient.birthDay ? currentPatient.birthDay.split('T')[0] : ''} 
+                                    onChange={handleInputChange} 
+                                    required 
+                                />
                                 
                                 <Label htmlFor="email">Email</Label>
-                                <Input id="email" name="email" type="email" value={currentPatient.email} onChange={handleInputChange} />
+                                <Input 
+                                    id="email" 
+                                    name="email" 
+                                    type="email" 
+                                    value={currentPatient.email || ''} 
+                                    onChange={handleInputChange} 
+                                />
                                 
                                 <Label htmlFor="sex">Sexo</Label>
-                                <Select id="sex" name="sex" value={currentPatient.sex} onChange={handleInputChange}>
+                                <Select id="sex" name="sex" value={currentPatient.sex || 'Masculino'} onChange={handleInputChange}>
                                     <option>Masculino</option>
                                     <option>Feminino</option>
                                     <option>Outro</option>
                                 </Select>
                                 
                                 <Label htmlFor="ethnicity">Etnia</Label>
-                                <Select id="ethnicity" name="ethnicity" value={currentPatient.ethnicity} onChange={handleInputChange}>
+                                <Select id="ethnicity" name="ethnicity" value={currentPatient.ethnicity || 'Pardo'} onChange={handleInputChange}>
                                     <option>Branco</option>
                                     <option>Pardo</option>
                                     <option>Preto</option>
@@ -439,13 +507,28 @@ const Patients = () => {
                                 
                                 {/* Médico gerencia o histórico clínico (Observações) */}
                                 <Label htmlFor="comorbidity">Comorbidades</Label>
-                                <TextArea id="comorbidity" name="comorbidity" value={currentPatient.observation.comorbidity} onChange={handleObservationChange} />
+                                <TextArea 
+                                    id="comorbidity" 
+                                    name="comorbidity" 
+                                    value={currentPatient.observation?.comorbidity || ''} 
+                                    onChange={handleObservationChange} 
+                                />
                                 
                                 <Label htmlFor="allergies">Alergias</Label>
-                                <TextArea id="allergies" name="allergies" value={currentPatient.observation.allergies} onChange={handleObservationChange} />
+                                <TextArea 
+                                    id="allergies" 
+                                    name="allergies" 
+                                    value={currentPatient.observation?.allergies || ''} 
+                                    onChange={handleObservationChange} 
+                                />
                                 
                                 <Label htmlFor="medications">Medicamentos em Uso</Label>
-                                <TextArea id="medications" name="medications" value={currentPatient.observation.medications} onChange={handleObservationChange} />
+                                <TextArea 
+                                    id="medications" 
+                                    name="medications" 
+                                    value={currentPatient.observation?.medications || ''} 
+                                    onChange={handleObservationChange} 
+                                />
                                 
                                 <SaveButton type="submit">Salvar Observações</SaveButton>
                             </Form>

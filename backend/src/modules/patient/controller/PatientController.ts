@@ -12,10 +12,31 @@ export class PatientController {
         const { name, birthDay, sex, cpf, ethnicity, email } = req.body;
 
         try {
-            const result = await this.patientService.create(name, birthDay, sex, cpf, ethnicity, email);
+            // Converter birthDay string para Date
+            const birthDayDate = new Date(birthDay);
+            
+            // Validar se a data é válida
+            if (isNaN(birthDayDate.getTime())) {
+                return res.status(400).json({ message: 'Invalid birthDay format' });
+            }
+            
+            const result = await this.patientService.create(
+                name, 
+                birthDayDate, 
+                sex, 
+                cpf, 
+                ethnicity, 
+                email || undefined
+            );
             return res.status(201).json({ patient: result });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating patient:', error);
+            
+            // Retornar mensagem de erro mais específica
+            if (error.message) {
+                return res.status(400).json({ message: error.message });
+            }
+            
             return res.status(500).json({ message: 'Internal server error' });
         }
     }
@@ -47,10 +68,32 @@ export class PatientController {
         const { name, birthDay, sex, cpf, ethnicity, email } = req.body;
 
         try {
-            const result = await this.patientService.update(id, name, birthDay, sex, cpf, ethnicity, email);
+            // Converter birthDay string para Date
+            const birthDayDate = new Date(birthDay);
+            
+            // Validar se a data é válida
+            if (isNaN(birthDayDate.getTime())) {
+                return res.status(400).json({ message: 'Invalid birthDay format' });
+            }
+            
+            const result = await this.patientService.update(
+                id, 
+                name, 
+                birthDayDate, 
+                sex, 
+                cpf, 
+                ethnicity, 
+                email || undefined
+            );
             return res.status(200).json({ patient: result });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating patient:', error);
+            
+            // Retornar mensagem de erro mais específica
+            if (error.message) {
+                return res.status(400).json({ message: error.message });
+            }
+            
             return res.status(500).json({ message: 'Internal server error' });
         }
     }
@@ -74,8 +117,14 @@ export class PatientController {
         try {
             await this.patientService.delete(id);
             return res.status(200).json({ message: 'Patient deleted' });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting patient:', error);
+            
+            // Retornar mensagem de erro mais específica
+            if (error.message) {
+                return res.status(400).json({ message: error.message });
+            }
+            
             return res.status(500).json({ message: 'Internal server error' });
         }
     }

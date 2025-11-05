@@ -110,9 +110,20 @@ const ManageSecretaries = () => {
     const loadSecretaries = async () => {
         try {
             const data = await apiCall('/secretary/list');
-            setSecretaries(data);
+            // Verifica se data é um array, caso contrário, tenta acessar a propriedade que contém as secretárias
+            if (Array.isArray(data)) {
+                setSecretaries(data);
+            } else if (data && Array.isArray(data.secretaries)) {
+                setSecretaries(data.secretaries);
+            } else if (data && Array.isArray(data.data)) {
+                setSecretaries(data.data);
+            } else {
+                console.error('Formato de resposta inesperado:', data);
+                setSecretaries([]);
+            }
         } catch (err) {
             console.error('Erro ao carregar secretárias:', err);
+            setSecretaries([]); // Garante que secretaries seja sempre um array
         }
     };
 
@@ -127,18 +138,16 @@ const ManageSecretaries = () => {
         try {
             if (editingId) {
                 // Atualizar
-                await apiCall(`/secretary/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
+                const response = await apiCall(`/secretary/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
+                const updatedSecretary = response.secretary || response;
                 setSecretaries(secretaries.map(sec => 
-                    sec.id === editingId ? { ...sec, name: formData.name, email: formData.email } : sec
+                    sec.id === editingId ? { ...sec, ...updatedSecretary } : sec
                 ));
                 alert('Secretária atualizada com sucesso!');
             } else {
                 // Criar
-                const data = await apiCall('/secretary/register', { method: 'POST', body: JSON.stringify(formData) });
-                const newSecretary = { 
-                    id: data.id,
-                    ...formData 
-                };
+                const response = await apiCall('/secretary/register', { method: 'POST', body: JSON.stringify(formData) });
+                const newSecretary = response.secretary || response;
                 setSecretaries([...secretaries, newSecretary]);
                 alert('Secretária cadastrada com sucesso!');
             }
@@ -158,12 +167,22 @@ const ManageSecretaries = () => {
     };
 
     const handleDelete = async (id) => {
+        const password = window.prompt('Para confirmar a exclusão, digite a senha da secretária:');
+        
+        if (!password) {
+            return; // Usuário cancelou
+        }
+        
         if (window.confirm('Tem certeza que deseja excluir esta secretária?')) {
             try {
-                await apiCall(`/secretary/delete/${id}`, { method: 'DELETE' });
+                await apiCall(`/secretary/delete/${id}`, { 
+                    method: 'DELETE',
+                    body: JSON.stringify({ password })
+                });
                 setSecretaries(secretaries.filter(sec => sec.id !== id));
                 alert('Secretária excluída!');
             } catch (err) {
+                console.error('Erro ao excluir secretária:', err);
                 alert('Erro ao excluir secretária: ' + err.message);
             }
         }
@@ -206,7 +225,7 @@ const ManageSecretaries = () => {
             {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
 
             <List>
-                {secretaries.map(sec => (
+                {Array.isArray(secretaries) && secretaries.map(sec => (
                     <ListItem key={sec.id}>
                         <ItemInfo>
                             <strong>{sec.name}</strong>
@@ -218,6 +237,11 @@ const ManageSecretaries = () => {
                         </ItemActions>
                     </ListItem>
                 ))}
+                {(!Array.isArray(secretaries) || secretaries.length === 0) && (
+                    <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
+                        Nenhuma secretária cadastrada
+                    </p>
+                )}
             </List>
         </Container>
     );

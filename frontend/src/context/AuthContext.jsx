@@ -11,8 +11,11 @@ export const AuthProvider = ({ children }) => {
         // Verificar se há token no localStorage
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role');
+        const userData = localStorage.getItem('user');
+        
         if (token && role) {
-            setUser({ role });
+            const parsedUser = userData ? JSON.parse(userData) : { role };
+            setUser(parsedUser);
             setIsAuthenticated(true);
         }
         setLoading(false);
@@ -35,7 +38,15 @@ export const AuthProvider = ({ children }) => {
         const data = await response.json();
         localStorage.setItem('token', data.token);
         localStorage.setItem('role', data.role);
-        setUser({ role: data.role });
+        
+        // Salvar dados completos do usuário
+        const userData = {
+            role: data.role,
+            ...data.user
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        setUser(userData);
         setIsAuthenticated(true);
         setLoading(false);
     };
@@ -43,13 +54,20 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
+        localStorage.removeItem('user');
         setUser(null);
         setIsAuthenticated(false);
         setLoading(false);
     };
 
+    const updateUser = (updatedData) => {
+        const updatedUser = { ...user, ...updatedData };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+    };
+
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout, updateUser }}>
             {children}
         </AuthContext.Provider>
     );
