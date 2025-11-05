@@ -11,7 +11,8 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${LOCAL_POSTGRES_USER} -d $${LOCAL_POSTGRES_DB}"]
+      # Use the env vars actually available inside the container (POSTGRES_USER/POSTGRES_DB)
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -23,7 +24,9 @@ services:
       - "8050:3000"
     environment:
       DATABASE_URL: ${LOCAL_DATABASE_URL}
-      PRISMA_CLI_BINARY_TARGETS: "native,debian-openssl-3.0.x"
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      PRISMA_CLI_BINARY_TARGETS: "debian-openssl-3.0.x"
       PRISMA_CLIENT_ENGINE_TYPE: "binary"
     depends_on:
       - db
@@ -39,6 +42,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     depends_on:
       - backend
 
