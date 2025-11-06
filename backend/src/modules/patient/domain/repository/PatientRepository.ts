@@ -122,6 +122,26 @@ export class PatientRepository implements IPatientRepository {
     return await prisma.patient.findFirst({ where: { id } });
   }
 
+  async listPatientsByIds(patientIds: string[]): Promise<PatientResponse[]> {
+    const patients =  await prisma.patient.findMany({
+      where: {
+        id: { in: patientIds }
+      },
+      include: {
+          observation: true,
+          consultation: true
+      }
+    });
+    return patients.map((m) => ({
+      id: m.id,
+      birthDay: m.birthDay,
+      sex: m.sex,
+      cpf: m.cpf,
+      ethnicity: m.ethnicity,
+      name: m.name,
+      email: m.email ?? undefined,
+      observations: m.observation ?? undefined,
+      consultation: m.consultation ?? undefined
+    }));
+  }
 }
-
-    

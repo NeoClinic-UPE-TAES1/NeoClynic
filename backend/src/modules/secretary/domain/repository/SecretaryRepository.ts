@@ -11,11 +11,11 @@ export class SecretaryRepository implements ISecretaryRepository {
     async createSecretary(createSecretary: CreateSecretaryRequest): Promise<SecretaryResponse> {
         const { name, email, hashedPassword} = createSecretary
         const data = await prisma.secretary.create({
-        data: {
-            name,
-            email,
-            password: hashedPassword
-        }
+            data: {
+                name,
+                email,
+                password: hashedPassword
+            }
         });
 
         return {
@@ -82,6 +82,36 @@ export class SecretaryRepository implements ISecretaryRepository {
              }
         });
     }
+
+    async saveResetToken(secretaryId: string, token: string, expiresAt: Date): Promise<void> {
+    await prisma.secretary.update({
+      where: { id: secretaryId },
+      data: {
+        resetToken: token,
+        resetTokenExpiresAt: expiresAt
+      }
+    });
+  }
+
+  async invalidateResetToken(token: string): Promise<void> {
+    await prisma.secretary.update({
+      where: { resetToken: token },
+      data: {
+        resetToken: null,
+        resetTokenExpiresAt: null
+      }
+    });
+  }
+
+  async findByResetToken(token: string): Promise<{ secretaryId: string; expiresAt: Date } | null> {
+    const secretary = await prisma.secretary.findFirst({
+      where: { resetToken: token }
+    });
+
+    if (!secretary) return null;
+  
+    return { secretaryId: secretary.id, expiresAt: secretary.resetTokenExpiresAt! };
+  }
 
     async findByEmail(email: string): Promise<Secretary | null> {
         const data = await prisma.secretary.findFirst({

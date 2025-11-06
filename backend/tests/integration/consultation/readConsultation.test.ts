@@ -30,7 +30,7 @@ describe("User integration with real DB", () => {
         patientRepository = new PatientRepository();
         medicRepository = new MedicRepository();
         consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository);
-        patientService = new PatientService(patientRepository, observationRepository);
+        patientService = new PatientService(patientRepository, observationRepository, consultationRepository);
         medicService = new MedicService(medicRepository);
     });
     afterAll(async () => {
@@ -56,7 +56,7 @@ describe("User integration with real DB", () => {
         const medic1 = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient1 = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        await consultationService.create(date1, hasFollowUp1, medic1.id, patient1.id, report1);
+        await consultationService.create(date1, hasFollowUp1, medic1.id, patient1.id, report1, 'MEDIC');
 
         const date2 = new Date("2031-10-22T17:45:30.123Z");
         const hasFollowUp2 = false;
@@ -64,7 +64,7 @@ describe("User integration with real DB", () => {
         const medic2 = await medicService.create("Bella Doe", "BellaDoe@gmail.com", "123", "Cardiology");
         const patient2 = await patientService.create("Duda Doe", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567899", "white", "DudaDoe@gmail.com", undefined);
 
-        await consultationService.create(date2, hasFollowUp2, medic2.id, patient2.id, undefined);
+        await consultationService.create(date2, hasFollowUp2, medic2.id, patient2.id, undefined, 'MEDIC');
 
         const consultations = await consultationService.listAll();
         expect(consultations.length).toBe(2);
@@ -85,7 +85,7 @@ describe("User integration with real DB", () => {
         const medic = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report);
+        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report, 'MEDIC');
         
         const foundConsultation = await consultationService.list(consultation.id);
         expect(foundConsultation.report).toMatchObject(report);

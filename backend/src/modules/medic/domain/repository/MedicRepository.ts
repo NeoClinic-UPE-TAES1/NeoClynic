@@ -94,6 +94,36 @@ export class MedicRepository implements IMedicRepository {
     await prisma.medic.delete({ where: { id } });
   }
 
+  async saveResetToken(medicId: string, token: string, expiresAt: Date): Promise<void> {
+    await prisma.medic.update({
+      where: { id: medicId },
+      data: {
+        resetToken: token,
+        resetTokenExpiresAt: expiresAt
+      }
+    });
+  }
+
+  async invalidateResetToken(token: string): Promise<void> {
+    await prisma.medic.update({
+      where: { resetToken: token },
+      data: {
+        resetToken: null,
+        resetTokenExpiresAt: null
+      }
+    });
+  }
+
+  async findByResetToken(token: string): Promise<{ medicId: string; expiresAt: Date } | null> {
+    const medic = await prisma.medic.findFirst({
+      where: { resetToken: token }
+    });
+
+    if (!medic) return null;
+  
+    return { medicId: medic.id, expiresAt: medic.resetTokenExpiresAt! };
+  }
+
   async findByEmail(email: string): Promise<Medic | null> {
     return await prisma.medic.findFirst({ where: { email } });
   }

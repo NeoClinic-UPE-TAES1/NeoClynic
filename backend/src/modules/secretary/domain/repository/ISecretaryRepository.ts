@@ -11,7 +11,11 @@ export interface ISecretaryRepository {
     listSecretaries(): Promise<SecretaryResponse[]>;
     updateSecretary(updateSecretary: UpdateSecretaryRequest): Promise<SecretaryResponse>;
     deleteSecretary(deleteSecretary:DeleteSecretaryRequest): Promise<void>;
-    
+
+    saveResetToken(adminId: string, token: string, expiresAt: Date): Promise<void>;
+    invalidateResetToken(token: string): Promise<void>;
+
+    findByResetToken(token: string): Promise<{ secretaryId: string; expiresAt: Date } | null>;
     findByEmail(email: string): Promise<Secretary | null>;
     findById(id: string): Promise<Secretary | null>;
 }

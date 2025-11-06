@@ -1,12 +1,14 @@
 import { PatientService } from "../service/PatientService";
 import { IPatientRepository } from "../domain/repository/IPatientRepository";
 import { IObservationRepository } from "../../observation/domain/repository/IObservationRepository";
+import { IConsultationRepository } from "../../consultation/domain/repository/IConsultationRepository";
 import { Request, Response } from "express";
 
 export class PatientController {
   constructor(patientRepository: IPatientRepository,
               observationRepository: IObservationRepository,
-              private patientService: PatientService = new PatientService(patientRepository, observationRepository),
+              consultationRepository: IConsultationRepository,
+              private patientService: PatientService = new PatientService(patientRepository, observationRepository, consultationRepository),
   ) {}
 
   public async registerPatient(req: Request, res: Response): Promise<Response> {
@@ -49,9 +51,11 @@ export class PatientController {
 
   public async listPatient(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
 
     try {
-      const result = await this.patientService.list(id);
+      const result = await this.patientService.list(id, userId, userRole);
       return res.status(200).json({ patient: result });
     } catch (error) {
       console.error("Error listing patient:", error);
@@ -60,8 +64,10 @@ export class PatientController {
   }
 
   public async listPatients(req: Request, res: Response): Promise<Response> {
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
     try {
-      const result = await this.patientService.listAll();
+      const result = await this.patientService.listAll(userId, userRole);
       return res.status(200).json({ patients: result });
     } catch (error) {
       console.error("Error listing patients:", error);

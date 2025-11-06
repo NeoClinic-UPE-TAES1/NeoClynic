@@ -11,7 +11,11 @@ export interface IMedicRepository {
     listMedics(): Promise<MedicResponse[]>;
     updateMedic(updateMedic: UpdateMedicRequest): Promise<MedicResponse>;
     deleteMedic(deleteMedic:DeleteMedicRequest): Promise<void>;
-    
+
+    saveResetToken(adminId: string, token: string, expiresAt: Date): Promise<void>;
+    invalidateResetToken(token: string): Promise<void>;
+
+    findByResetToken(token: string): Promise<{ medicId: string; expiresAt: Date } | null>;
     findByEmail(email: string): Promise<Medic | null>;
     findById(id: string): Promise<Medic | null>;
 }

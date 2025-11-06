@@ -110,4 +110,12 @@ export class ConsultationRepository implements IConsultationRepository{
     async findById(id: string): Promise<Consultation | null> {
         return await prisma.consultation.findFirst({ where: { id }});
       }
+
+    async findByPatientAndMedic(patientId: string, medicId: string): Promise<Consultation[]> {
+        return await prisma.consultation.findMany({ where: { patientId, medicId }});
+      }
+
+    async findByPatientsAndMedic(patientId: string[], medicId: string): Promise<Consultation[]> {
+        return await prisma.consultation.findMany({ where: { patientId: { in: patientId }, medicId } });
+    }
 } 

@@ -8,21 +8,36 @@ datasource postgres {
   url  	    = env("DATABASE_URL")
 }
 
+model Admin {
+  id              String    @id @default(uuid()) @map("_id")
+  name            String
+  email           String    @unique
+  password        String
+  twoFactorSecret String?
+  resetToken      String?   @unique
+  resetTokenExpiresAt  DateTime?
+
+}
+
 model Secretary {
-  id        String    @id @default(uuid()) @map("_id")
-  name      String
-  email     String    @unique
-  password  String
+  id             String    @id @default(uuid()) @map("_id")
+  name           String
+  email          String    @unique
+  password       String
+  resetToken     String?   @unique
+  resetTokenExpiresAt DateTime?
 
 }
 
 model Medic {
-  id            String @id @default(uuid()) @map("_id")
-  name          String
-  email         String @unique
-  password      String
-  specialty     String
-  consultation      Consultation[]
+  id             String @id @default(uuid()) @map("_id")
+  name           String
+  email          String @unique
+  password       String
+  specialty      String
+  consultation   Consultation[]
+  resetToken     String?   @unique
+  resetTokenExpiresAt DateTime?
 }
 
 model Patient {

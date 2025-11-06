@@ -10,11 +10,12 @@ export class SecretaryService {
     constructor(private secretaryRepository: ISecretaryRepository) {}
 
     async create(name: string, email: string, password: string): Promise<SecretaryResponse> {
-        const secretary =  await this.secretaryRepository.findByEmail(email)
-
+        
         if (!name || !email || !password){
             throw new Error("Name, email, and password are required.");
         }
+        
+        const secretary =  await this.secretaryRepository.findByEmail(email)
 
         if (secretary != null){
             throw new Error("Secretary already exists.");

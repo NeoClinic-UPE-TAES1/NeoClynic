@@ -1,4 +1,3 @@
-import { Observation } from "../../../infra/database/client";
 import { IPatientRepository } from "../domain/repository/IPatientRepository";
 import { CreatePatientRequest } from "../dto/CreatePatientRequestDTO";
 import { DeletePatientRequest } from "../dto/DeletePatientRequestDTO";
@@ -6,6 +5,7 @@ import { ListPatientRequest } from "../dto/ListPatientRequestDTO";
 import { PatientResponse } from "../dto/PatientResponseDTO";
 import { UpdatePatientRequest } from "../dto/UpdatePatientRequestDTO";
 import { IObservationRepository } from "../../observation/domain/repository/IObservationRepository";
+import { IConsultationRepository } from "../../consultation/domain/repository/IConsultationRepository";
 import { ObservationService } from "../../observation/service/ObservationService";
 import { ObservationBody } from "../../observation/dto/ObservationBodyDTO";
 import { ObservationResponse } from "../../observation/dto/ObservationResponseDTO";
@@ -14,6 +14,7 @@ export class PatientService {
   constructor(
     private patientRepository: IPatientRepository,
     private observationRepository: IObservationRepository,
+    private consultationRepository: IConsultationRepository,
     private observationService = new ObservationService(observationRepository)
   ) {
   }
@@ -147,34 +148,47 @@ export class PatientService {
 
       return result;
     }
-  
-  async list(id: string): Promise<PatientResponse> {
+
+  async list(id: string, userId:string | undefined, userRole:string | undefined): Promise<PatientResponse> {
     const patient = await this.patientRepository.findById(id);
     if (!patient) {
       throw new Error("Patient not exists.");
     }
 
-    // const observation = await this.observationRepository.findByPatientId(id);
+    if (!userId || !userRole) {
+      throw new Error("User authentication required.");
+    }
+
+    if (userRole === 'MEDIC') {
+      const consultations = await this.consultationRepository.findByPatientAndMedic(patient.id, userId);
+
+      if (consultations.length === 0) {
+        throw new Error("Access denied to this patient.");
+      }
+    }
 
     const list: ListPatientRequest = { id: patient.id };
 
     const result = await this.patientRepository.listPatient(list)
 
-    // const result: PatientResponse = {
-    //   id: listedPatient.id,
-    //   name: listedPatient.name,
-    //   birthDay: listedPatient.birthDay,
-    //   sex: listedPatient.sex,
-    //   cpf: listedPatient.cpf,
-    //   ethnicity: listedPatient.ethnicity,
-    //   email: listedPatient.email,
-    //   observation: observation ? observation : undefined};
-
     return result;
   }
   
-  async listAll(): Promise<PatientResponse[]> {
-    return this.patientRepository.listPatients();
+  async listAll(userId:string | undefined, userRole:string | undefined): Promise<PatientResponse[]> {
+    if (!userId || !userRole) {
+      throw new Error("User authentication required.");
+    }
+
+    const patients = await this.patientRepository.listPatients();
+
+    if (userRole === 'MEDIC') {
+      const patientIds = patients.map(c => c.id);
+
+      const consultations = await this.consultationRepository.findByPatientsAndMedic(patientIds, userId);
+      return this.patientRepository.listPatientsByIds(consultations.map(c => c.patientId));
+    }
+
+    return patients;
   }
 
 }

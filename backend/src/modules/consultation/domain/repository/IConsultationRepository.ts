@@ -12,5 +12,7 @@ export interface IConsultationRepository {
     listConsultation(listConsultationRequest:ListConsultationRequest):Promise<ConsultationResponse>;
     listConsultations():Promise<ConsultationResponse[]>;
 
+    findByPatientsAndMedic(patientId: string[], medicId: string): Promise<Consultation[]>;
+    findByPatientAndMedic(patientId: string, medicId: string): Promise<Consultation[]>;
     findById(id: string): Promise<Consultation | null>;
 }

@@ -20,7 +20,7 @@ export class ConsultationService {
         private reportService =  new ReportService(reportRepository)
     ) { }
 
-    public async create(date: Date, hasFollowUp: boolean, medicId: string, patientId: string, report: CreateReportBody | undefined) : Promise<ConsultationResponse> {
+    public async create(date: Date, hasFollowUp: boolean, medicId: string, patientId: string, report: CreateReportBody | undefined, userRole: string | undefined) : Promise<ConsultationResponse> {
 
         if (!date || hasFollowUp===undefined || !medicId || !patientId) {
             throw new Error("Missing required fields");
@@ -46,7 +46,7 @@ export class ConsultationService {
 
         const consultation = await this.consultationRepository.createConsultation(createConsultation);
 
-        if (report) {
+        if (report && userRole != 'SECRETARY') {
             const createdReport = await this.reportService.create(
                 report.description,
                 report.diagnosis,
@@ -83,7 +83,9 @@ export class ConsultationService {
         return await this.consultationRepository.deleteConsultation(deleteConsultation);
     }
 
-    public async update(id:string, date: Date | undefined, hasFollowUp: boolean | undefined, report: UpdateReportBody | undefined) : Promise<ConsultationResponse>{
+    public async update(id:string, date: Date | undefined, hasFollowUp: boolean | undefined, report: UpdateReportBody | undefined,
+        userRole:string | undefined
+    ) : Promise<ConsultationResponse>{
         const consultation = await this.consultationRepository.findById(id);
         if (!consultation) {
             throw new Error("Consultation not exists.");
@@ -97,7 +99,7 @@ export class ConsultationService {
 
         const updatedConsultation = await this.consultationRepository.updateConsultation(updateRequest);
 
-        if (report) {
+        if (report && userRole != 'SECRETARY') {
             const existingReport = await this.reportRepository.findByConsultationId(consultation.id);
 
             if (existingReport) {

@@ -14,4 +14,5 @@ export interface IPatientRepository {
     
     findByCPF(cpf: string): Promise<Patient | null>;
     findById(id: string): Promise<Patient | null>;
+    listPatientsByIds(ids: string[]): Promise<PatientResponse[]>;
 }

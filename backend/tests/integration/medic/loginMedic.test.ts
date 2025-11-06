@@ -5,6 +5,7 @@ import { prisma } from "../../../src/infra/database/prismaClient";
 import { MedicRepository } from "../../../src/modules/medic/domain/repository/MedicRepository";
 import { AuthMedicService } from "../../../src/modules/medic/service/AuthMedicService";
 import { JWTProvider } from "../../../src/infra/providers/auth/JWTProvider";
+import { NodemailerProvider } from "../../../src/infra/providers/email/NodeMailerProvider";
 
 describe("User integration with real DB", () => {
     let prismaClient: PrismaClient;
@@ -12,13 +13,15 @@ describe("User integration with real DB", () => {
     let medicService: MedicService;
     let authMedicService: AuthMedicService;
     let jwtProvider: JWTProvider;
+    let emailProvider: NodemailerProvider;
 
     beforeAll(() => {
         prismaClient = prisma;
         jwtProvider = new JWTProvider();
+        emailProvider = new NodemailerProvider();
         medicRepository = new MedicRepository();
         medicService = new MedicService(medicRepository);
-        authMedicService = new AuthMedicService(medicRepository, jwtProvider);
+        authMedicService = new AuthMedicService(medicRepository, jwtProvider, emailProvider);
     });
     afterAll(async () => {
         await prismaClient.$disconnect();
@@ -29,7 +32,7 @@ describe("User integration with real DB", () => {
         await prismaClient.medic.deleteMany();
     });
 
-    test("Create Medic", async () => {
+    test("Login Medic", async () => {
         const name = "John Doe";
         const email = "JohnDoe@gmail.com"
         const password = "password123";

@@ -12,10 +12,9 @@ export function authenticateToken(authProvider: IAuthProvider) {
 
         const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
 
-        let payload: { id: string } | null = null;
+        let payload: { id: string; role?: string } | null = null;
         try {
-            payload = authProvider.verify(token) as { id: string } | null;
-
+            payload = authProvider.verify(token) as { id: string; role?: string } | null;
             if (!payload || !payload.id) {
                 res.status(403).json({ error: 'Invalid token payload' });
                 return;
@@ -27,6 +26,17 @@ export function authenticateToken(authProvider: IAuthProvider) {
         }
 
         req.user = { id: payload.id };
+        next();
+    };
+}
+
+export function authorizeRoles(...allowedRoles: string[]) {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const role = req.user?.role;
+        if (!role || !allowedRoles.includes(role)) {
+            res.status(403).json({ error: 'Forbidden: insufficient permissions' });
+            return;
+        }
         next();
     };
 }

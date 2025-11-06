@@ -19,9 +19,10 @@ export class ConsultationController {
 
     public async registerConsultation(req: Request, res: Response): Promise<Response> {
     const { date, hasFollowUp, medicId, patiendId, report } = req.body;
+    const userRole = req.user?.role;
 
     try {
-      const result = await this.consultationService.create(date, hasFollowUp, medicId, patiendId, report);
+      const result = await this.consultationService.create(date, hasFollowUp, medicId, patiendId, report, userRole);
       return res.status(201).json({ consultation: result });
     } catch (error) {
       console.error("Error registering consultation:", error);
@@ -44,9 +45,10 @@ export class ConsultationController {
   public async updateConsultation(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
     const { date, hasFollowUp, report } = req.body;
+    const userRole = req.user?.role;
 
     try {
-      const result = await this.consultationService.update(id, date, hasFollowUp, report);
+      const result = await this.consultationService.update(id, date, hasFollowUp, report, userRole);
       return res.status(200).json({ consultation: result });
     } catch (error) {
       console.error("Error updating consultation:", error);

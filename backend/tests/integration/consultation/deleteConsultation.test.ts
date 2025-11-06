@@ -30,7 +30,7 @@ describe("User integration with real DB", () => {
         patientRepository = new PatientRepository();
         medicRepository = new MedicRepository();
         consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository);
-        patientService = new PatientService(patientRepository, observationRepository);
+        patientService = new PatientService(patientRepository, observationRepository, consultationRepository);
         medicService = new MedicService(medicRepository);
     });
     afterAll(async () => {
@@ -56,7 +56,7 @@ describe("User integration with real DB", () => {
         const medic = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report);
+        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report, 'MEDIC');
 
         await expect(consultationService.delete(consultation.id)).resolves.toBeUndefined();
     });
