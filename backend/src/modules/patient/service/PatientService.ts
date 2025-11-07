@@ -19,7 +19,7 @@ export class PatientService {
   ) {
   }
 
-  async create(name: string, birthDay: Date, sex: string, cpf: string, ethnicity: string, email: string, observation: ObservationBody | undefined): Promise<PatientResponse> {
+  async create(name: string, birthDay: Date, sex: string, cpf: string, ethnicity: string, email: string | undefined, observation: ObservationBody | undefined): Promise<PatientResponse> {
     if (!name || !birthDay || !sex || !cpf || !ethnicity) {
       throw new Error("Name, birthday, sex, cpf, and ethnicity are required.");
     }
