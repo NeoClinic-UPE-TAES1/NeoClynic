@@ -34,4 +34,10 @@ medicRoutes.patch('/medic/update/:id', authenticateToken(jwtProvider), authorize
 medicRoutes.delete('/medic/delete/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN'), (req: Request, res: Response) => {
     medicController.deleteMedic(req, res) });
 
+medicRoutes.post('/medic/password/request', (req: Request, res: Response) => {
+    authMedicController.request(req, res) });
+
+medicRoutes.post('/medic/password/reset', (req: Request, res: Response) => {
+        authMedicController.reset(req, res) });
+
 export default medicRoutes;

@@ -34,4 +34,10 @@ secretaryRoutes.patch('/secretary/update/:id', authenticateToken(jwtProvider), a
 secretaryRoutes.delete('/secretary/delete/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN'), (req: Request, res: Response) => {
     secretaryController.deleteSecretary(req, res) });
 
+secretaryRoutes.post('/secretary/password/request', (req: Request, res: Response) => {
+        authSecretaryController.request(req, res) });
+
+secretaryRoutes.post('/secretary/password/reset', (req: Request, res: Response) => {
+            authSecretaryController.reset(req, res) });
+
 export default secretaryRoutes;
