@@ -8,7 +8,7 @@ import { ListSecretaryRequest } from "../../dto/ListSecretaryRequestDTO";
 export interface ISecretaryRepository {
     createSecretary(createSecretary: CreateSecretaryRequest): Promise<SecretaryResponse>;
     listSecretary(ListSecretary:ListSecretaryRequest): Promise<SecretaryResponse>;
-    listSecretaries(): Promise<SecretaryResponse[]>;
+    listSecretaries(page:number | undefined, limit:number | undefined): Promise<SecretaryResponse[]>;
     updateSecretary(updateSecretary: UpdateSecretaryRequest): Promise<SecretaryResponse>;
     deleteSecretary(deleteSecretary:DeleteSecretaryRequest): Promise<void>;
 

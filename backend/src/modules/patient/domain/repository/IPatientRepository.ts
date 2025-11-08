@@ -8,11 +8,12 @@ import { ListPatientRequest } from "../../dto/ListPatientRequestDTO";
 export interface IPatientRepository {
     createPatient(createPatient: CreatePatientRequest): Promise<PatientResponse>;
     listPatient(ListPatient:ListPatientRequest): Promise<PatientResponse>;
-    listPatients(): Promise<PatientResponse[]>;
+    listPatients(page:number|undefined, limit:number|undefined): Promise<PatientResponse[]>;
     updatePatient(updatePatient: UpdatePatientRequest): Promise<PatientResponse>;
     deletePatient(deletePatient:DeletePatientRequest): Promise<void>;
     
     findByCPF(cpf: string): Promise<Patient | null>;
     findById(id: string): Promise<Patient | null>;
-    listPatientsByIds(ids: string[]): Promise<PatientResponse[]>;
+    listPatientsByMedic(medicId: string, page?: number, limit?: number): Promise<PatientResponse[]>;
+    listPatientByMedic(id:string, medicId: string): Promise<PatientResponse | null>;
 }

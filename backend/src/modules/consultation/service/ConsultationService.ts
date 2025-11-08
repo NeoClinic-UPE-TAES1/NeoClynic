@@ -123,17 +123,31 @@ export class ConsultationService {
         return await updatedConsultation;
     }
 
-    public async list(id:string) : Promise<ConsultationResponse>{
+    public async list(id:string, userId: string, userRole: string) : Promise<ConsultationResponse>{
         const consultation = await this.consultationRepository.findById(id);
             if (!consultation) {
               throw new Error("Consultation not exists.");
             }
-        
-            const list: ListConsultationRequest = { id: consultation.id };
-            return await this.consultationRepository.listConsultation(list);
+
+        if (userRole === 'MEDIC') {
+            const consultations = await this.consultationRepository.findByMedic(userId, undefined, undefined);
+
+            if (consultations.length === 0) {
+              throw new Error("Access denied to this consultation.");
+            }
+
+            return consultations[0];
+        }
+
+        const list: ListConsultationRequest = { id: consultation.id };
+        return await this.consultationRepository.listConsultation(list);
     }
 
-    public async listAll() : Promise<ConsultationResponse[]> {
-        return await this.consultationRepository.listConsultations();
+    public async listAll(userId: string, userRole: string, page:number|undefined, limit:number|undefined) : Promise<ConsultationResponse[]> {
+        if (userRole === 'MEDIC') {
+            return await this.consultationRepository.findByMedic(userId, page, limit);
+        }
+
+        return await this.consultationRepository.listConsultations(page, limit);
     }
 }

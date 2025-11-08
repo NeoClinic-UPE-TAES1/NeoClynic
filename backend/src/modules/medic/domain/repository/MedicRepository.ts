@@ -51,8 +51,10 @@ export class MedicRepository implements IMedicRepository {
     };
   }
 
-  async listMedics(): Promise<MedicResponse[]> {
+  async listMedics(page:number|undefined, limit:number|undefined): Promise<MedicResponse[]> {
     const medics = await prisma.medic.findMany({
+      skip: page && limit ? (page - 1) * limit : undefined,
+      take: limit,
       include: { consultation: true },
     });
 

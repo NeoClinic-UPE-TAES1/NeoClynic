@@ -160,10 +160,9 @@ export class PatientService {
     }
 
     if (userRole === 'MEDIC') {
-      const consultations = await this.consultationRepository.findByPatientAndMedic(patient.id, userId);
-
-      if (consultations.length === 0) {
-        throw new Error("Access denied to this patient.");
+      const listedPatient = await this.patientRepository.listPatientByMedic(id, userId);
+      if (listedPatient) {
+        return listedPatient;
       }
     }
 
@@ -174,21 +173,16 @@ export class PatientService {
     return result;
   }
   
-  async listAll(userId:string | undefined, userRole:string | undefined): Promise<PatientResponse[]> {
+  async listAll(userId:string | undefined, userRole:string | undefined, page:number|undefined, limit:number|undefined): Promise<PatientResponse[]> {
     if (!userId || !userRole) {
       throw new Error("User authentication required.");
     }
 
-    const patients = await this.patientRepository.listPatients();
-
-    if (userRole === 'MEDIC') {
-      const patientIds = patients.map(c => c.id);
-
-      const consultations = await this.consultationRepository.findByPatientsAndMedic(patientIds, userId);
-      return this.patientRepository.listPatientsByIds(consultations.map(c => c.patientId));
+    if (userRole === "MEDIC") {
+      return await this.patientRepository.listPatientsByMedic(userId, page, limit);
     }
 
-    return patients;
+    return await this.patientRepository.listPatients(page, limit);
   }
 
 }

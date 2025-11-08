@@ -7,7 +7,7 @@ import { Request, Response } from "express";
 import { registerConsultationBodySchema, registerConsultationAuthSchema } from '../schema/registerSchema';
 import { deleteConsultationParamsSchema } from '../schema/deleteSchema';
 import { updateConsultationParamsSchema, updateConsultationBodySchema, updateConsultationAuthSchema } from '../schema/updateSchema';
-import { listConsultationParamsSchema } from '../schema/listSchema';
+import { listConsultationParamsSchema, listConsultationAuthSchema, listConsultationQuerySchema } from '../schema/listSchema';
 import { ZodError } from "zod";
 
 export class ConsultationController {
@@ -75,9 +75,13 @@ export class ConsultationController {
 
   public async listConsultation(req: Request, res: Response): Promise<Response> {
     const { id } = listConsultationParamsSchema.parse(req.params);
+    const { userId, userRole } = listConsultationAuthSchema.parse({
+          userId: req.user?.id,
+          userRole: req.user?.role,
+        });
 
     try {
-      const result = await this.consultationService.list(id);
+      const result = await this.consultationService.list(id, userId, userRole);
       return res.status(200).json({ consultation: result });
     } catch (error) {
               if (error instanceof ZodError) {
@@ -90,17 +94,24 @@ export class ConsultationController {
   }
 
   public async listConsultations(req: Request, res: Response): Promise<Response> {
+    const { userId, userRole } = listConsultationAuthSchema.parse({
+          userId: req.user?.id,
+          userRole: req.user?.role,
+        });
+
+    const { page, limit } = listConsultationQuerySchema.parse(req.query);
+
     try {
-      const result = await this.consultationService.listAll();
+      const result = await this.consultationService.listAll(userId, userRole, page, limit);
       return res.status(200).json({ consultations: result });
     } catch (error) {
-              if (error instanceof ZodError) {
-                  return res.status(400).json({ message: "Validation error", errors: error.issues });
-              }
+      if (error instanceof ZodError) {
+          return res.status(400).json({ message: "Validation error", errors: error.issues });
+      }
 
-              console.error("Error listing consultations:", error);
-              return res.status(500).json({ message: "Internal server error" });
-          }
+      console.error("Error listing consultations:", error);
+      return res.status(500).json({ message: "Internal server error" });
+      }
   }
   
 }

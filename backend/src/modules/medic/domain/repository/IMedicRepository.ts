@@ -8,7 +8,7 @@ import { ListMedicRequest } from "../../dto/ListMedicRequestDTO";
 export interface IMedicRepository {
     createMedic(createMedic: CreateMedicRequest): Promise<MedicResponse>;
     listMedic(ListMedic:ListMedicRequest): Promise<MedicResponse>;
-    listMedics(): Promise<MedicResponse[]>;
+    listMedics(page:number|undefined, limit:number|undefined): Promise<MedicResponse[]>;
     updateMedic(updateMedic: UpdateMedicRequest): Promise<MedicResponse>;
     deleteMedic(deleteMedic:DeleteMedicRequest): Promise<void>;
 

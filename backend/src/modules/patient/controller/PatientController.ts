@@ -6,9 +6,8 @@ import { Request, Response } from "express";
 import { registerPatientBodySchema } from "../schema/registerSchema";
 import { deletePatientBodySchema, deletePatientParamsSchema } from "../schema/deleteSchema";
 import { updatePatientParamsSchema, updatePatientBodySchema } from "../schema/updateSchema";
-import { listPatientParamsSchema, listPatientAuthSchema } from "../schema/listSchema";
+import { listPatientParamsSchema, listPatientAuthSchema, listPatientQuerySchema } from "../schema/listSchema";
 import { ZodError } from "zod";
-import { de } from "zod/v4/locales";
 
 export class PatientController {
   constructor(patientRepository: IPatientRepository,
@@ -93,16 +92,18 @@ export class PatientController {
       userRole: req.user?.role,
     });
 
+    const { page, limit } = listPatientQuerySchema.parse(req.query);
+
     try {
-      const result = await this.patientService.listAll(userId, userRole);
+      const result = await this.patientService.listAll(userId, userRole, page, limit);
       return res.status(200).json({ patients: result });
     } catch (error) {
       if (error instanceof ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.issues });
+          return res.status(400).json({ message: "Invalid query parameters", errors: error.issues });
       }
 
       console.error("Error listing patients:", error);
       return res.status(500).json({ message: "Internal server error" });
-    }
+      }
   }
 }

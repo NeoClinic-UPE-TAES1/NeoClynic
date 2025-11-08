@@ -86,9 +86,11 @@ export class ConsultationRepository implements IConsultationRepository{
         };
     }
     
-    async listConsultations():Promise<ConsultationResponse[]>{
+    async listConsultations(page: number | undefined, limit:number | undefined):Promise<ConsultationResponse[]>{
         const consultations = await prisma.consultation.findMany({
             include: { report: true },
+            skip: page && limit ? (page - 1) * limit : undefined,
+            take: limit
         });
 
         return consultations.map((c) => ({
@@ -111,9 +113,27 @@ export class ConsultationRepository implements IConsultationRepository{
         return await prisma.consultation.findFirst({ where: { id }});
       }
 
-    async findByPatientAndMedic(patientId: string, medicId: string): Promise<Consultation[]> {
-        return await prisma.consultation.findMany({ where: { patientId, medicId }});
-      }
+    async findByMedic(medicId: string, page: number | undefined, limit:number | undefined): Promise<ConsultationResponse[]> {
+        const data = await prisma.consultation.findMany({ 
+            where: { medicId }, 
+            skip: page && limit ? (page - 1) * limit : undefined,
+            take: limit,
+            include: { report: true } });
+        return data.map((c) => ({
+            id: c.id,
+            date: c.date,
+            hasFollowUp: c.hasFollowUp,
+            medicId: c.medicId,
+            patientId: c.patientId,
+            report: c.report ? {
+                id: c.report.id,
+                description: c.report.description,
+                diagnosis: c.report.diagnosis,
+                prescription: c.report.prescription ?? '',
+                consultationId: c.report.consultationId
+            } : undefined
+        }));
+    }
 
     async findByPatientsAndMedic(patientId: string[], medicId: string): Promise<Consultation[]> {
         return await prisma.consultation.findMany({ where: { patientId: { in: patientId }, medicId } });

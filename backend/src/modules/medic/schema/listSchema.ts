@@ -5,6 +5,6 @@ export const listMedicParamsSchema = z.object({
 });
 
 export const listMedicQuerySchema = z.object({
-    page: z.string().optional(),
-    limit: z.string().optional(),
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().optional().default(10),
 });

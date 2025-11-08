@@ -30,7 +30,7 @@ describe("User integration with real DB", () => {
         const password2 = "password456";
         await secretaryService.create(name1, email1, password1);
         await secretaryService.create(name2, email2, password2);
-        const secretaries = await secretaryService.listAll();
+        const secretaries = await secretaryService.listAll(undefined, undefined);
         expect(secretaries.length).toBe(2);
         const emails = secretaries.map(s => s.email);
         expect(emails).toContain(email1);

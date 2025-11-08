@@ -60,8 +60,10 @@ export class PatientRepository implements IPatientRepository {
     };
   }
 
-  async listPatients(): Promise<PatientResponse[]> {
+  async listPatients(page:number|undefined, limit:number|undefined): Promise<PatientResponse[]> {
     const patients = await prisma.patient.findMany({
+      skip: page && limit ? (page - 1) * limit : undefined,
+      take: limit,
       include: { 
          observation: true,
          consultation: true},
@@ -122,16 +124,56 @@ export class PatientRepository implements IPatientRepository {
     return await prisma.patient.findFirst({ where: { id } });
   }
 
-  async listPatientsByIds(patientIds: string[]): Promise<PatientResponse[]> {
-    const patients =  await prisma.patient.findMany({
+  async listPatientByMedic(id:string, medicId: string): Promise<PatientResponse | null> {
+    const patients = await prisma.patient.findFirst({
       where: {
-        id: { in: patientIds }
+        consultation: {
+          some: { medicId },
+        },
       },
       include: {
-          observation: true,
-          consultation: true
-      }
+        consultation: {
+          where: { patientId: id, medicId },
+          select: { id: true, medicId: true, patientId: true, date: true, hasFollowUp: true },
+        },
+      },
+      orderBy: { name: "asc" },
     });
+
+    if (!patients) {
+      return null;
+    }
+
+    return {
+      id: patients.id,
+      birthDay: patients.birthDay,
+      sex: patients.sex,
+      cpf: patients.cpf,
+      ethnicity: patients.ethnicity,
+      name: patients.name,
+      email: patients.email ?? undefined,
+      consultation: patients.consultation ?? undefined,
+    };
+  }
+
+  async listPatientsByMedic(medicId: string, page?: number, limit?: number): Promise<PatientResponse[]> {
+    const patients = await prisma.patient.findMany({
+      where: {
+        consultation: {
+          some: { medicId },
+        },
+      },
+      skip: page && limit ? (page - 1) * limit : undefined,
+      take: limit,
+      include: {
+        consultation: {
+          where: { medicId },
+          select: { id: true, medicId: true, patientId: true, date: true, hasFollowUp: true },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+
     return patients.map((m) => ({
       id: m.id,
       birthDay: m.birthDay,
@@ -140,8 +182,7 @@ export class PatientRepository implements IPatientRepository {
       ethnicity: m.ethnicity,
       name: m.name,
       email: m.email ?? undefined,
-      observations: m.observation ?? undefined,
-      consultation: m.consultation ?? undefined
+      consultation: m.consultation ?? undefined,
     }));
   }
 }

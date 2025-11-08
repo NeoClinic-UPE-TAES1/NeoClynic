@@ -1,3 +1,4 @@
+import { integrations_v1alpha } from "googleapis";
 import { ISecretaryRepository } from "../domain/repository/ISecretaryRepository";
 import { CreateSecretaryRequest } from "../dto/CreateSecretaryRequestDTO";
 import { DeleteSecretaryRequest } from "../dto/DeleteSecretaryRequestDTO";
@@ -98,8 +99,8 @@ export class SecretaryService {
         return await this.secretaryRepository.listSecretary(list);
         }
 
-    async listAll(): Promise<SecretaryResponse[]> {
-        return await this.secretaryRepository.listSecretaries();
+    async listAll(page:number | undefined, limit:number | undefined): Promise<SecretaryResponse[]> {
+        return await this.secretaryRepository.listSecretaries(page, limit);
     }
 
 

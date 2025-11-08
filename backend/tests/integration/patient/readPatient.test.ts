@@ -70,7 +70,7 @@ describe("User integration with real DB", () => {
         };
         await patientService.create(name2, birthDay2, sex2, cpf2, ethnicity2, email2, observation2);
 
-        const patienties = await patientService.listAll('ID', 'SECRETARY');
+        const patienties = await patientService.listAll('ID', 'SECRETARY', undefined, undefined);
         expect(patienties.length).toBe(2);
         const emails = patienties.map(s => s.email);
         expect(emails).toContain(email1);
@@ -125,7 +125,7 @@ describe("User integration with real DB", () => {
         };
         await patientService.create(name2, birthDay2, sex2, cpf2, ethnicity2, email2, observation2);
 
-        const patienties = await patientService.listAll(medic.id, 'MEDIC');
+        const patienties = await patientService.listAll(medic.id, 'MEDIC', undefined, undefined);
         expect(patienties.length).toBe(1);
         const emails = patienties.map(s => s.email);
         expect(emails).toContain(email1);

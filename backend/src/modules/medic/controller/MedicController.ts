@@ -3,7 +3,7 @@ import { IMedicRepository } from "../domain/repository/IMedicRepository";
 import { Request, Response } from "express";
 import { authenticatedUserSchema } from "../schema/medicSchema";
 import { registerMedicBodySchema } from "../schema/registerSchema";
-import { listMedicParamsSchema } from "../schema/listSchema";
+import { listMedicParamsSchema, listMedicQuerySchema } from "../schema/listSchema";
 import { deleteMedicParamsSchema, deleteMedicBodySchema } from "../schema/deleteSchema";
 import { updateMedicParamsSchema, updateMedicBodySchema } from "../schema/updateSchema";
 import { ZodError } from "zod";
@@ -82,12 +82,17 @@ export class MedicController {
   }
 
   public async listMedics(req: Request, res: Response): Promise<Response> {
+    const { page, limit } = listMedicQuerySchema.parse(req.query);
     try {
-      const result = await this.medicService.listAll();
+      const result = await this.medicService.listAll(page, limit);
       return res.status(200).json({ medics: result });
     } catch (error) {
-      console.error("Error listing medics:", error);
-      return res.status(500).json({ message: "Internal server error" });
+        if (error instanceof ZodError) {
+            return res.status(400).json({ message: "Invalid query parameters", errors: error.issues });
+        }
+
+        console.error("Error listing medic:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
   }
 }

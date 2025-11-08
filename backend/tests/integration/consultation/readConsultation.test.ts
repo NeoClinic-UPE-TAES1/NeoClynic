@@ -66,7 +66,7 @@ describe("User integration with real DB", () => {
 
         await consultationService.create(date2, hasFollowUp2, medic2.id, patient2.id, undefined, 'MEDIC');
 
-        const consultations = await consultationService.listAll();
+        const consultations = await consultationService.listAll('ID', 'SECRETARY', undefined, undefined);
         expect(consultations.length).toBe(2);
         const followUps = consultations.map(s => s.hasFollowUp);
         expect(followUps).toContain(true);
@@ -87,10 +87,10 @@ describe("User integration with real DB", () => {
 
         const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report, 'MEDIC');
         
-        const foundConsultation = await consultationService.list(consultation.id);
+        const foundConsultation = await consultationService.list(consultation.id, 'ID', 'SECRETARY');
         expect(foundConsultation.report).toMatchObject(report);
 
-        await expect(consultationService.list("non-existing-id")).rejects.toThrow("Consultation not exists.");
+        await expect(consultationService.list("non-existing-id", 'ID', 'SECRETARY')).rejects.toThrow("Consultation not exists.");
     }
     );
 });

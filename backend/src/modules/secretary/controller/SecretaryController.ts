@@ -6,7 +6,7 @@ import { authenticatedUserSchema } from "../schema/secretarySchema";
 import { registerSecretaryBodySchema } from "../schema/registerSchema";
 import { deleteSecretaryParamsSchema, deleteSecretaryBodySchema } from "../schema/deleteSchema";
 import { updateSecretaryParamsSchema, updateSecretaryBodySchema } from "../schema/updateSchema";
-import { listSecretaryParamsSchema } from "../schema/listSchema";
+import { listSecretaryParamsSchema, listSecretaryQuerySchema } from "../schema/listSchema";
 
 export class SecretaryController {
 
@@ -88,10 +88,15 @@ export class SecretaryController {
 
     
     public async listSecretaries(req: Request, res: Response): Promise<Response> {
+        const { page, limit } = listSecretaryQuerySchema.parse(req.query);
         try {
-            const result = await this.secretaryService.listAll();
+            const result = await this.secretaryService.listAll(page, limit);
             return res.status(200).json({ secretaries: result });
         } catch (error) {
+            if (error instanceof ZodError) {
+                return res.status(400).json({ message: "Invalid query parameters", errors: error.issues });
+            }
+
             console.error("Error listing secretaries:", error);
             return res.status(500).json({ message: "Internal server error" });
         }

@@ -44,8 +44,11 @@ export class SecretaryRepository implements ISecretaryRepository {
     }
 
 
-    async listSecretaries(): Promise<SecretaryResponse[]> {
-        const secretaries = await prisma.secretary.findMany();
+    async listSecretaries(page:number | undefined, limit:number | undefined): Promise<SecretaryResponse[]> {
+        const secretaries = await prisma.secretary.findMany({
+            skip: page && limit ? (page - 1) * limit : undefined,
+            take: limit
+        });
 
         return secretaries.map((s: { id: string; name: string; email: string; }) => ({
             id: s.id,

@@ -5,6 +5,6 @@ export const listSecretaryParamsSchema = z.object({
 });
 
 export const listSecretaryQuerySchema = z.object({
-    page: z.string().optional(),
-    limit: z.string().optional(),
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().optional().default(10),
 });

@@ -96,8 +96,8 @@ export class MedicService {
     return await this.medicRepository.listMedic(list);
   }
   
-  async listAll(): Promise<MedicResponse[]> {
-    return await this.medicRepository.listMedics();
+  async listAll(page:number|undefined, limit:number|undefined): Promise<MedicResponse[]> {
+    return await this.medicRepository.listMedics(page, limit);
   }
 
 }

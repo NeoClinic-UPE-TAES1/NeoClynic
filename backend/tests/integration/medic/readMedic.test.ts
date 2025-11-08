@@ -34,7 +34,7 @@ describe("User integration with real DB", () => {
         const specialty2 = "Neurology";
         await medicService.create(name1, email1, password1, specialty1);
         await medicService.create(name2, email2, password2, specialty2);
-        const medics = await medicService.listAll();
+        const medics = await medicService.listAll(undefined, undefined);
         expect(medics.length).toBe(2);
         const emails = medics.map(s => s.email);
         expect(emails).toContain(email1);
