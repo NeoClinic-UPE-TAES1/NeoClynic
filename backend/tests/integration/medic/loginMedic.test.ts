@@ -6,10 +6,12 @@ import { MedicRepository } from "../../../src/modules/medic/domain/repository/Me
 import { AuthMedicService } from "../../../src/modules/medic/service/AuthMedicService";
 import { JWTProvider } from "../../../src/infra/providers/auth/JWTProvider";
 import { NodemailerProvider } from "../../../src/infra/providers/email/NodeMailerProvider";
+import { AdminRepository } from "../../../src/modules/admin/domain/repository/AdminRepository";
 
 describe("User integration with real DB", () => {
     let prismaClient: PrismaClient;
     let medicRepository: MedicRepository;
+    let adminRepository: AdminRepository;
     let medicService: MedicService;
     let authMedicService: AuthMedicService;
     let jwtProvider: JWTProvider;
@@ -20,7 +22,8 @@ describe("User integration with real DB", () => {
         jwtProvider = new JWTProvider();
         emailProvider = new NodemailerProvider();
         medicRepository = new MedicRepository();
-        medicService = new MedicService(medicRepository);
+        adminRepository = new AdminRepository();
+        medicService = new MedicService(medicRepository, adminRepository);
         authMedicService = new AuthMedicService(medicRepository, jwtProvider, emailProvider);
     });
     afterAll(async () => {

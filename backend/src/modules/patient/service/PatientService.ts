@@ -5,16 +5,17 @@ import { ListPatientRequest } from "../dto/ListPatientRequestDTO";
 import { PatientResponse } from "../dto/PatientResponseDTO";
 import { UpdatePatientRequest } from "../dto/UpdatePatientRequestDTO";
 import { IObservationRepository } from "../../observation/domain/repository/IObservationRepository";
-import { IConsultationRepository } from "../../consultation/domain/repository/IConsultationRepository";
+import { ISecretaryRepository } from "../../secretary/domain/repository/ISecretaryRepository";
 import { ObservationService } from "../../observation/service/ObservationService";
 import { ObservationBody } from "../../observation/dto/ObservationBodyDTO";
 import { ObservationResponse } from "../../observation/dto/ObservationResponseDTO";
+import bcrypt from "bcrypt";
 
 export class PatientService {
   constructor(
     private patientRepository: IPatientRepository,
     private observationRepository: IObservationRepository,
-    private consultationRepository: IConsultationRepository,
+    private secretaryRepository: ISecretaryRepository,
     private observationService = new ObservationService(observationRepository)
   ) {
   }
@@ -64,21 +65,25 @@ export class PatientService {
     return patient
   }
 
-  async delete(id: string, cpf: string): Promise<void> {
+  async delete(id: string, secretaryPassword: string, userId: string | undefined): Promise<void> {
     const patient = await this.patientRepository.findById(id);
     if (!patient) {
       throw new Error("Patient not exists.");
     }
 
-    if (patient.cpf !== cpf) {
-      throw new Error("CPF invalid.");
+    if (!userId) {
+      throw new Error("User authentication required.");
     }
 
-    const observationExists = await this.observationRepository.findByPatientId(id);
-
-    if (observationExists) {
-      await this.observationService.delete(observationExists.id);
+    const secretary = await this.secretaryRepository.findById(userId);
+    if (!secretary) {
+      throw new Error("Secretary not found.");
     }
+
+    const passwordMatch = await bcrypt.compare(secretaryPassword, secretary.password);
+            if (!passwordMatch){
+                throw new Error("Password invalid.");
+            }
 
     const deleteRequest: DeletePatientRequest = { id };
     await this.patientRepository.deletePatient(deleteRequest);

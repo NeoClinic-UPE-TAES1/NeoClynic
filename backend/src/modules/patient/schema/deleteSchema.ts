@@ -1,4 +1,3 @@
-import { validateCPF } from "./validation";
 import z from "zod";
 
 export const deletePatientParamsSchema = z.object({
@@ -6,9 +5,9 @@ export const deletePatientParamsSchema = z.object({
 });
 
 export const deletePatientBodySchema = z.object({
-    cpf: z.string()
-                .min(11, { message: "CPF must have 11 digits" })
-                .max(11, { message: "CPF must have 11 digits" })
-                .regex(/^\d+$/, { message: "CPF must contain only numbers" })
-                .refine((cpf) => validateCPF(cpf), { message: "Invalid CPF" }),
+    secretaryPassword: z.string().min(6, { message: "Password must be at least 6 characters" })
+});
+
+export const deletePatientAuthSchema = z.object({
+    userId: z.string().uuid({ message: "Invalid user ID format" })
 });

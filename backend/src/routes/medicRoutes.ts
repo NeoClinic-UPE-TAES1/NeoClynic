@@ -3,6 +3,7 @@ import { authenticateToken, authorizeRoles } from '../infra/middlewares/authMidd
 import { JWTProvider } from '../infra/providers/auth/JWTProvider'; 
 import { MedicController } from '../modules/medic/controller/MedicController';
 import { MedicRepository } from '../modules/medic/domain/repository/MedicRepository';
+import { AdminRepository } from '../modules/admin/domain/repository/AdminRepository';
 import { AuthMedicController } from '../modules/medic/controller/AuthMedicController';
 import { NodemailerProvider } from '../infra/providers/email/NodeMailerProvider';
 
@@ -11,7 +12,8 @@ const medicRoutes = Router();
 const jwtProvider = new JWTProvider();
 const emailProvider = new NodemailerProvider();
 const medicRepository = new MedicRepository();
-const medicController = new MedicController(medicRepository);
+const adminRepository = new AdminRepository();
+const medicController = new MedicController(medicRepository, adminRepository);
 const authMedicController = new AuthMedicController(medicRepository, jwtProvider, emailProvider);
 
 medicRoutes.post('/medic/register', authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response) => {

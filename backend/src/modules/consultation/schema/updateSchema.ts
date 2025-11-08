@@ -7,8 +7,13 @@ export const updateConsultationParamsSchema = z.object({
 
 export const updateConsultationBodySchema = z.object({
     date: z.string()
-                .refine((date) => !isNaN(Date.parse(date)), { message: "Invalid date format" })
-                .transform((date) => new Date(date)),
+                .refine((date) => !isNaN(Date.parse(date)), {
+                    message: "Invalid date format",
+                })
+                .transform((date) => new Date(date))
+                .refine((date) => date > new Date(), {
+                    message: "Date must be in the future",
+                }).optional(),
     hasFollowUp: z.boolean().optional(),
     report: reportSchema.optional(),
     userRole: z.enum(["MEDIC", "SECRETARY"], { message: "Unauthorized role" })

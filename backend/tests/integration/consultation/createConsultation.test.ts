@@ -9,6 +9,8 @@ import { ReportRepository } from "../../../src/modules/report/domain/repository/
 import { ObservationRepository } from "../../../src/modules/observation/domain/repository/ObservationRepository";
 import { PatientRepository } from "../../../src/modules/patient/domain/repository/PatientRepository";
 import { MedicRepository } from "../../../src/modules/medic/domain/repository/MedicRepository";
+import { SecretaryRepository } from "../../../src/modules/secretary/domain/repository/SecretaryRepository";
+import { AdminRepository } from "../../../src/modules/admin/domain/repository/AdminRepository";
 
 
 describe("User integration with real DB", () => {
@@ -21,17 +23,21 @@ describe("User integration with real DB", () => {
     let observationRepository: ObservationRepository;
     let patientRepository: PatientRepository;
     let medicRepository: MedicRepository;
+    let adminRepository: AdminRepository;
+    let secretaryRepository: SecretaryRepository;
 
     beforeAll(() => {
         prismaClient = prisma;
         consultationRepository = new ConsultationRepository();
         reportRepository = new ReportRepository();
         observationRepository = new ObservationRepository();
+        adminRepository = new AdminRepository();
         patientRepository = new PatientRepository();
+        secretaryRepository = new SecretaryRepository();
         medicRepository = new MedicRepository();
-        consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository);
-        patientService = new PatientService(patientRepository, observationRepository, consultationRepository);
-        medicService = new MedicService(medicRepository);
+        consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository, secretaryRepository);
+        patientService = new PatientService(patientRepository, observationRepository, secretaryRepository);
+        medicService = new MedicService(medicRepository, adminRepository);
     });
     afterAll(async () => {
         await prismaClient.$disconnect();

@@ -2,16 +2,16 @@ import { Router, Request, Response } from 'express';
 import { PatientController } from '../modules/patient/controller/PatientController';
 import { PatientRepository } from '../modules/patient/domain/repository/PatientRepository';
 import { ObservationRepository } from '../modules/observation/domain/repository/ObservationRepository';
-import { ConsultationRepository } from '../modules/consultation/domain/repository/ConsultationRepository';
 import { authenticateToken, authorizeRoles } from '../infra/middlewares/authMiddleware';
 import { JWTProvider } from '../infra/providers/auth/JWTProvider'; 
+import { SecretaryRepository } from '../modules/secretary/domain/repository/SecretaryRepository';
 
 const patientRoutes = Router();
 
 const patientRepository = new PatientRepository();
 const observationRepository = new ObservationRepository();
-const consultationRepository = new ConsultationRepository();
-const patientController = new PatientController(patientRepository, observationRepository, consultationRepository);
+const secretaryRepository = new SecretaryRepository();
+const patientController = new PatientController(patientRepository, observationRepository, secretaryRepository);
 const jwtProvider = new JWTProvider();
 
 patientRoutes.use(authenticateToken(jwtProvider));

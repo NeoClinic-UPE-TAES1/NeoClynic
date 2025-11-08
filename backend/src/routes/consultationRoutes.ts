@@ -3,6 +3,7 @@ import { ConsultationController } from '../modules/consultation/controller/Consu
 import { ConsultationRepository } from '../modules/consultation/domain/repository/ConsultationRepository';
 import { ReportRepository } from '../modules/report/domain/repository/ReportRepository';
 import { PatientRepository } from '../modules/patient/domain/repository/PatientRepository';
+import { SecretaryRepository } from '../modules/secretary/domain/repository/SecretaryRepository';
 import { MedicRepository } from '../modules/medic/domain/repository/MedicRepository';
 import { authenticateToken, authorizeRoles } from '../infra/middlewares/authMiddleware';
 import { JWTProvider } from '../infra/providers/auth/JWTProvider'; 
@@ -13,7 +14,8 @@ const reportRepository = new ReportRepository();
 const consultationRepository = new ConsultationRepository();
 const patientRepository = new PatientRepository();
 const medicRepository = new MedicRepository();
-const consultationController = new ConsultationController(consultationRepository, reportRepository, patientRepository, medicRepository);
+const secretaryRepository = new SecretaryRepository();
+const consultationController = new ConsultationController(consultationRepository, reportRepository, patientRepository, medicRepository, secretaryRepository);
 const jwtProvider = new JWTProvider();
 
 consultationRoutes.use(authenticateToken(jwtProvider));

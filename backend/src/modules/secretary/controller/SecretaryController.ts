@@ -1,5 +1,6 @@
 import {SecretaryService} from "../service/SecretaryService";
 import { ISecretaryRepository } from "../domain/repository/ISecretaryRepository";
+import { IAdminRepository } from "../../admin/domain/repository/IAdminRepository";
 import { Request, Response } from 'express';
 import { ZodError } from "zod";
 import { authenticatedUserSchema } from "../schema/secretarySchema";
@@ -11,7 +12,8 @@ import { listSecretaryParamsSchema, listSecretaryQuerySchema } from "../schema/l
 export class SecretaryController {
 
     constructor(secretaryRepository: ISecretaryRepository,
-                private secretaryService: SecretaryService = new SecretaryService(secretaryRepository)
+                adminRepository: IAdminRepository,
+                private secretaryService: SecretaryService = new SecretaryService(secretaryRepository, adminRepository)
     ) {}
 
     public async registerSecretary(req: Request, res: Response): Promise<Response> {
@@ -32,12 +34,12 @@ export class SecretaryController {
 
 
     public async deleteSecretary(req: Request, res: Response):Promise<Response>{
-        const { password } = deleteSecretaryBodySchema.parse(req.body);
+        const { adminPassword } = deleteSecretaryBodySchema.parse(req.body);
         const { id } = deleteSecretaryParamsSchema.parse(req.params);
         const { id: userId } = authenticatedUserSchema.parse({ id: req.user?.id });
 
         try{
-            await this.secretaryService.delete(id, password, userId);
+            await this.secretaryService.delete(id, adminPassword, userId);
             return res.status(200).json({ message: 'Ok' });
 
         } catch (error) {

@@ -1,8 +1,9 @@
 // tests/integration/user.integration.test.ts
 import { PrismaClient } from "@prisma/client";
-import { SecretaryService } from "../../../src/modules/secretary/service/SecretaryService";
 import { prisma } from "../../../src/infra/database/prismaClient";
+import { SecretaryService } from "../../../src/modules/secretary/service/SecretaryService";
 import { SecretaryRepository } from "../../../src/modules/secretary/domain/repository/SecretaryRepository";
+import { AdminRepository } from "../../../src/modules/admin/domain/repository/AdminRepository";
 import { AuthSecretaryService } from "../../../src/modules/secretary/service/AuthSecretaryService";
 import { JWTProvider } from "../../../src/infra/providers/auth/JWTProvider";
 import { NodemailerProvider } from "../../../src/infra/providers/email/NodeMailerProvider";
@@ -10,6 +11,7 @@ import { NodemailerProvider } from "../../../src/infra/providers/email/NodeMaile
 describe("User integration with real DB", () => {
     let prismaClient: PrismaClient;
     let secretaryRepository: SecretaryRepository;
+    let adminRepository: AdminRepository;
     let secretaryService: SecretaryService;
     let authSecretaryService: AuthSecretaryService;
     let jwtProvider: JWTProvider;
@@ -20,7 +22,8 @@ describe("User integration with real DB", () => {
         jwtProvider = new JWTProvider();
         emailProvider = new NodemailerProvider();
         secretaryRepository = new SecretaryRepository();
-        secretaryService = new SecretaryService(secretaryRepository);
+        adminRepository = new AdminRepository();
+        secretaryService = new SecretaryService(secretaryRepository, adminRepository);
         authSecretaryService = new AuthSecretaryService(secretaryRepository, jwtProvider, emailProvider);
     });
     afterAll(async () => {

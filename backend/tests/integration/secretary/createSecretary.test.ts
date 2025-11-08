@@ -1,18 +1,21 @@
 // tests/integration/user.integration.test.ts
 import { PrismaClient } from "@prisma/client";
 import { SecretaryService } from "../../../src/modules/secretary/service/SecretaryService";
-import { prisma } from "../../../src/infra/database/prismaClient";
+import { AdminRepository } from "../../../src/modules/admin/domain/repository/AdminRepository";
 import { SecretaryRepository } from "../../../src/modules/secretary/domain/repository/SecretaryRepository";
+import { prisma } from "../../../src/infra/database/prismaClient";
 
 describe("User integration with real DB", () => {
     let prismaClient: PrismaClient;
-    let secretaryRepository: SecretaryRepository;
+    let secretaryRepository: SecretaryRepository
+    let adminRepository: AdminRepository
     let secretaryService: SecretaryService;
 
     beforeAll(() => {
         prismaClient = prisma;
         secretaryRepository = new SecretaryRepository();
-        secretaryService = new SecretaryService(secretaryRepository);
+        adminRepository = new AdminRepository();
+        secretaryService = new SecretaryService(secretaryRepository, adminRepository);
     });
     afterAll(async () => {
         await prismaClient.$disconnect();

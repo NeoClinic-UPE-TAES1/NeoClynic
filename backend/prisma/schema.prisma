@@ -58,7 +58,7 @@ model Observation{
   allergies     String?
   medications   String?
   patientId     String @unique
-  patient       Patient @relation(fields: [patientId], references: [id])
+  patient       Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
 
 model Consultation {

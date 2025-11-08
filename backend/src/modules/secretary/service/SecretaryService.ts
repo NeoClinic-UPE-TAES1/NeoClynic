@@ -1,5 +1,5 @@
-import { integrations_v1alpha } from "googleapis";
 import { ISecretaryRepository } from "../domain/repository/ISecretaryRepository";
+import { IAdminRepository } from "../../admin/domain/repository/IAdminRepository";
 import { CreateSecretaryRequest } from "../dto/CreateSecretaryRequestDTO";
 import { DeleteSecretaryRequest } from "../dto/DeleteSecretaryRequestDTO";
 import { ListSecretaryRequest } from "../dto/ListSecretaryRequestDTO";
@@ -8,7 +8,9 @@ import { UpdateSecretaryRequest } from "../dto/UpdateSecretaryRequestDTO";
 import bcrypt from "bcrypt";
 
 export class SecretaryService {
-    constructor(private secretaryRepository: ISecretaryRepository) {}
+    constructor(private secretaryRepository: ISecretaryRepository,
+                private adminRepository: IAdminRepository
+    ) {}
 
     async create(name: string, email: string, password: string): Promise<SecretaryResponse> {
         
@@ -33,19 +35,24 @@ export class SecretaryService {
 
     }
 
-    async delete(id:string, password:string, userId:string | undefined): Promise<void>{
+    async delete(id:string, adminPassword:string, userId:string | undefined): Promise<void>{
         const secretary =  await this.secretaryRepository.findById(id)
         
         if (secretary == null){
             throw new Error("Secretary not exists.");
         }
 
-        if (userId != secretary.id){
-            throw new Error("Invalid id.");
+        if (userId == undefined){
+            throw new Error("User id is required.");
         }
 
-        const isPasswordValid = await bcrypt.compare(password, secretary.password);
-        if (!isPasswordValid){
+        const isAdmin = await this.adminRepository.findById(userId);
+        if (!isAdmin) {
+            throw new Error("User is not an admin.");
+        }
+
+        const passwordMatch = await bcrypt.compare(adminPassword, isAdmin.password);
+        if (!passwordMatch){
             throw new Error("Password invalid.");
         }
 

@@ -1,6 +1,7 @@
 import { IConsultationRepository } from '../domain/repository/IConsultationRepository';
 import { IPatientRepository } from '../../patient/domain/repository/IPatientRepository';
 import { IMedicRepository } from '../../medic/domain/repository/IMedicRepository';
+import { ISecretaryRepository } from '../../secretary/domain/repository/ISecretaryRepository';
 import { IReportRepository } from '../../report/domain/repository/IReportRepository';
 import { ConsultationResponse } from '../dto/ConsultationResponseDTO';
 import { CreateConsultationRequest } from '../dto/CreateConsultationRequestDTO';
@@ -10,6 +11,7 @@ import { UpdateConsultationRequest } from '../dto/UpdateConsultationRequestDTO';
 import { CreateReportBody } from '../../report/dto/CreateReportBodyDTO';
 import { UpdateReportBody } from '../../report/dto/UpdateReportBodyDTO';
 import { ReportService } from '../../report/service/ReportService';
+import bcrypt from 'bcrypt';
 
 export class ConsultationService {
     constructor(
@@ -17,6 +19,7 @@ export class ConsultationService {
         private reportRepository: IReportRepository,
         private patientRepository: IPatientRepository,
         private medicRepository: IMedicRepository,
+        private secretaryRepository: ISecretaryRepository,
         private reportService =  new ReportService(reportRepository)
     ) { }
 
@@ -67,18 +70,23 @@ export class ConsultationService {
     }
     
 
-    public async delete(id: string) : Promise<void> {
+    public async delete(id: string, secretaryPassword: string, userId: string) : Promise<void> {
+        const secretary = await this.secretaryRepository.findById(userId);
+        if (!secretary) {
+            throw new Error("Secretary not found.");
+        }
+
+        const passwordMatch = await bcrypt.compare(secretaryPassword, secretary.password);
+                    if (!passwordMatch){
+                        throw new Error("Password invalid.");
+                    }
+
         const consultation = await this.consultationRepository.findById(id);
         if (!consultation) {
             throw new Error("Consultation not exists.");
         }
         
         const deleteConsultation: DeleteConsultationRequest = { id: consultation.id };
-
-        const report = await this.reportRepository.findByConsultationId(consultation.id);
-        if (report){
-            await this.reportService.delete(report.id);
-        }
 
         return await this.consultationRepository.deleteConsultation(deleteConsultation);
     }

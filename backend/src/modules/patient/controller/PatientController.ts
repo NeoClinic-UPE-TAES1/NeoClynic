@@ -1,10 +1,10 @@
 import { PatientService } from "../service/PatientService";
 import { IPatientRepository } from "../domain/repository/IPatientRepository";
 import { IObservationRepository } from "../../observation/domain/repository/IObservationRepository";
-import { IConsultationRepository } from "../../consultation/domain/repository/IConsultationRepository";
+import { ISecretaryRepository } from "../../secretary/domain/repository/ISecretaryRepository";
 import { Request, Response } from "express";
 import { registerPatientBodySchema } from "../schema/registerSchema";
-import { deletePatientBodySchema, deletePatientParamsSchema } from "../schema/deleteSchema";
+import { deletePatientBodySchema, deletePatientParamsSchema, deletePatientAuthSchema } from "../schema/deleteSchema";
 import { updatePatientParamsSchema, updatePatientBodySchema } from "../schema/updateSchema";
 import { listPatientParamsSchema, listPatientAuthSchema, listPatientQuerySchema } from "../schema/listSchema";
 import { ZodError } from "zod";
@@ -12,8 +12,8 @@ import { ZodError } from "zod";
 export class PatientController {
   constructor(patientRepository: IPatientRepository,
               observationRepository: IObservationRepository,
-              consultationRepository: IConsultationRepository,
-              private patientService: PatientService = new PatientService(patientRepository, observationRepository, consultationRepository),
+              secretaryRepository: ISecretaryRepository,
+              private patientService: PatientService = new PatientService(patientRepository, observationRepository, secretaryRepository),
   ) {}
 
   public async registerPatient(req: Request, res: Response): Promise<Response> {
@@ -34,10 +34,13 @@ export class PatientController {
 
   public async deletePatient(req: Request, res: Response): Promise<Response> {
     const { id } = deletePatientParamsSchema.parse(req.params);
-    const { cpf } = deletePatientBodySchema.parse(req.body);
+    const { secretaryPassword } = deletePatientBodySchema.parse(req.body);
+    const { userId } = deletePatientAuthSchema.parse({
+      userId: req.user?.id,
+    });
 
     try {
-      await this.patientService.delete(id, cpf);
+      await this.patientService.delete(id, secretaryPassword, userId);
       return res.status(200).json({ message: "Ok" });
     } catch (error) {
             if (error instanceof ZodError) {

@@ -1,4 +1,5 @@
 import { IMedicRepository } from "../domain/repository/IMedicRepository";
+import { IAdminRepository } from "../../admin/domain/repository/IAdminRepository";
 import { CreateMedicRequest } from "../dto/CreateMedicRequestDTO";
 import { DeleteMedicRequest } from "../dto/DeleteMedicRequestDTO";
 import { ListMedicRequest } from "../dto/ListMedicRequestDTO";
@@ -8,7 +9,8 @@ import bcrypt from "bcrypt";
 
 export class MedicService {
   constructor(
-    private medicRepository: IMedicRepository
+    private medicRepository: IMedicRepository,
+    private adminRepository: IAdminRepository
   ) {
   }
 
@@ -34,19 +36,24 @@ export class MedicService {
     return await this.medicRepository.createMedic(registerData);
   }
 
-  async delete(id: string, password: string, userId:string | undefined): Promise<void> {
+  async delete(id: string, adminPassword: string, userId:string | undefined): Promise<void> {
     const medic = await this.medicRepository.findById(id);
     if (!medic) {
       throw new Error("Medic not exists.");
     }
 
-    if (userId != medic.id){
-            throw new Error("Invalid id.");
-        }
+    if (userId == undefined){
+                throw new Error("User id is required.");
+            }
+    
+    const isAdmin = await this.adminRepository.findById(userId);
+    if (!isAdmin) {
+        throw new Error("User is not an admin.");
+    }
 
-    const isPasswordValid = await bcrypt.compare(password, medic.password);
-    if (!isPasswordValid) {
-      throw new Error("Password invalid.");
+    const passwordMatch = await bcrypt.compare(adminPassword, isAdmin.password);
+    if (!passwordMatch){
+        throw new Error("Password invalid.");
     }
 
     const deleteRequest: DeleteMedicRequest = { id };

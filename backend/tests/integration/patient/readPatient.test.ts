@@ -9,6 +9,8 @@ import { MedicRepository } from "../../../src/modules/medic/domain/repository/Me
 import { ObservationRepository } from "../../../src/modules/observation/domain/repository/ObservationRepository";
 import { ConsultationRepository } from "../../../src/modules/consultation/domain/repository/ConsultationRepository";
 import { ReportRepository } from "../../../src/modules/report/domain/repository/ReportRepository";
+import { SecretaryRepository } from "../../../src/modules/secretary/domain/repository/SecretaryRepository";
+import { AdminRepository } from "../../../src/modules/admin/domain/repository/AdminRepository";
 
 describe("User integration with real DB", () => {
     let prismaClient: PrismaClient;
@@ -18,6 +20,8 @@ describe("User integration with real DB", () => {
     let consultationService: ConsultationService;
     let observationRepository: ObservationRepository;
     let consultationRepository: ConsultationRepository;
+    let secretaryRepository: SecretaryRepository;
+    let adminRepository: AdminRepository;
     let medicRepository: MedicRepository;
     let reportRepository: ReportRepository;
 
@@ -25,12 +29,14 @@ describe("User integration with real DB", () => {
         prismaClient = prisma;
         patientRepository = new PatientRepository();
         observationRepository = new ObservationRepository();
+        secretaryRepository = new SecretaryRepository();
+        adminRepository = new AdminRepository();
         medicRepository = new MedicRepository();
         reportRepository = new ReportRepository();
         consultationRepository = new ConsultationRepository();
-        patientService = new PatientService(patientRepository, observationRepository, consultationRepository);
-        medicService = new MedicService(medicRepository);
-        consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository);
+        patientService = new PatientService(patientRepository, observationRepository, secretaryRepository);
+        medicService = new MedicService(medicRepository, adminRepository);
+        consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository, secretaryRepository);
     });
     afterAll(async () => {
         await prismaClient.$disconnect();

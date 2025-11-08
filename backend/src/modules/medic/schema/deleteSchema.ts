@@ -5,5 +5,5 @@ export const deleteMedicParamsSchema = z.object({
 });
 
 export const deleteMedicBodySchema = z.object({
-    password: z.string().min(6, { message: "Password is too short" }),
+    adminPassword: z.string().min(6, { message: "Password is too short" }),
 });

@@ -1,18 +1,21 @@
 // tests/integration/user.integration.test.ts
 import { PrismaClient } from "@prisma/client";
 import { MedicService } from "../../../src/modules/medic/service/MedicService";
-import { prisma } from "../../../src/infra/database/prismaClient";
 import { MedicRepository } from "../../../src/modules/medic/domain/repository/MedicRepository";
+import { AdminRepository } from "../../../src/modules/admin/domain/repository/AdminRepository";
+import { prisma } from "../../../src/infra/database/prismaClient";
 
 describe("User integration with real DB", () => {
     let prismaClient: PrismaClient;
-    let medicRepository: MedicRepository;
+    let medicRepository: MedicRepository
+    let adminRepository: AdminRepository
     let medicService: MedicService;
 
     beforeAll(() => {
         prismaClient = prisma;
+        adminRepository = new AdminRepository();
         medicRepository = new MedicRepository();
-        medicService = new MedicService(medicRepository);
+        medicService = new MedicService(medicRepository, adminRepository);
     });
     afterAll(async () => {
         await prismaClient.$disconnect();

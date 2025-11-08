@@ -5,13 +5,15 @@ import { SecretaryController } from '../modules/secretary/controller/SecretaryCo
 import { SecretaryRepository } from '../modules/secretary/domain/repository/SecretaryRepository';
 import { AuthSecretaryController } from '../modules/secretary/controller/AuthSecretaryController';
 import { NodemailerProvider } from '../infra/providers/email/NodeMailerProvider';
+import { AdminRepository } from '../modules/admin/domain/repository/AdminRepository';
 
 const secretaryRoutes = Router();
 
 const jwtProvider = new JWTProvider();
 const emailProvider = new NodemailerProvider();
 const secretaryRepository = new SecretaryRepository();
-const secretaryController = new SecretaryController(secretaryRepository);
+const adminRepository = new AdminRepository();
+const secretaryController = new SecretaryController(secretaryRepository, adminRepository);
 const authSecretaryController = new AuthSecretaryController(secretaryRepository, jwtProvider, emailProvider);
 
 secretaryRoutes.post('/secretary/register', authorizeRoles('ADMIN'), (req: Request, res: Response) => {

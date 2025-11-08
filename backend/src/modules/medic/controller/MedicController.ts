@@ -1,4 +1,5 @@
 import { MedicService } from "../service/MedicService";
+import { IAdminRepository } from "../../admin/domain/repository/IAdminRepository";
 import { IMedicRepository } from "../domain/repository/IMedicRepository";
 import { Request, Response } from "express";
 import { authenticatedUserSchema } from "../schema/medicSchema";
@@ -10,7 +11,8 @@ import { ZodError } from "zod";
 
 export class MedicController {
   constructor(medicRepository: IMedicRepository,
-              private medicService: MedicService = new MedicService(medicRepository)
+              adminRepository: IAdminRepository,
+              private medicService: MedicService = new MedicService(medicRepository, adminRepository)
   ) {}
 
   public async registerMedic(req: Request, res: Response): Promise<Response> {
@@ -30,12 +32,12 @@ export class MedicController {
   }
 
   public async deleteMedic(req: Request, res: Response): Promise<Response> {
+    const { adminPassword } = deleteMedicBodySchema.parse(req.body);
     const { id } = deleteMedicParamsSchema.parse(req.params);
-    const { password } = deleteMedicBodySchema.parse(req.body);
     const { id: userId } = authenticatedUserSchema.parse({ id: req.user?.id });
 
     try {
-      await this.medicService.delete(id, password, userId);
+      await this.medicService.delete(id, adminPassword, userId);
       return res.status(200).json({ message: "Ok" });
     } catch (error) {
         if (error instanceof ZodError) {

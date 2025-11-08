@@ -5,5 +5,5 @@ export const deleteSecretaryParamsSchema = z.object({
 });
 
 export const deleteSecretaryBodySchema = z.object({
-  password: z.string().min(6, { message: "Password must be at least 6 characters" })
+  adminPassword: z.string().min(6, { message: "Password must be at least 6 characters" })
 });

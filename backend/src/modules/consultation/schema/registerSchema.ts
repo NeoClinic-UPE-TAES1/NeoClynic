@@ -3,8 +3,13 @@ import z from "zod";
 
 export const registerConsultationBodySchema = z.object({
     date: z.string()
-            .refine((date) => !isNaN(Date.parse(date)), { message: "Invalid date format" })
-            .transform((date) => new Date(date)),
+            .refine((date) => !isNaN(Date.parse(date)), {
+                message: "Invalid date format",
+            })
+            .transform((date) => new Date(date))
+            .refine((date) => date > new Date(), {
+                message: "Date must be in the future",
+            }),
     hasFollowUp: z.boolean(),
     medicId: z.string().uuid({ message: "Invalid medic ID format" }),
     patientId: z.string().uuid({ message: "Invalid patient ID format" }),

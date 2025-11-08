@@ -2,10 +2,11 @@ import { IConsultationRepository } from '../domain/repository/IConsultationRepos
 import { IReportRepository } from '../../report/domain/repository/IReportRepository';
 import { IPatientRepository } from '../../patient/domain/repository/IPatientRepository';
 import { IMedicRepository } from '../../medic/domain/repository/IMedicRepository';
+import { ISecretaryRepository } from '../../secretary/domain/repository/ISecretaryRepository';
 import { ConsultationService } from '../service/ConsultationService';
 import { Request, Response } from "express";
 import { registerConsultationBodySchema, registerConsultationAuthSchema } from '../schema/registerSchema';
-import { deleteConsultationParamsSchema } from '../schema/deleteSchema';
+import { deleteConsultationParamsSchema, deleteConsultationAuthSchema, deleteConsultationBodySchema } from '../schema/deleteSchema';
 import { updateConsultationParamsSchema, updateConsultationBodySchema, updateConsultationAuthSchema } from '../schema/updateSchema';
 import { listConsultationParamsSchema, listConsultationAuthSchema, listConsultationQuerySchema } from '../schema/listSchema';
 import { ZodError } from "zod";
@@ -17,7 +18,8 @@ export class ConsultationController {
         reportRepository: IReportRepository,
         patientRepository: IPatientRepository,
         medicRepository: IMedicRepository,
-        private consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository)
+        secretaryRepository: ISecretaryRepository,
+        private consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository, secretaryRepository)
     ){
         
     }
@@ -41,9 +43,11 @@ export class ConsultationController {
 
   public async deleteConsultation(req: Request, res: Response): Promise<Response> {
     const { id } = deleteConsultationParamsSchema.parse(req.params);
-
+    const { secretaryPassword } = deleteConsultationBodySchema.parse(req.body);
+    const { userId } = deleteConsultationAuthSchema.parse({ userId: req.user?.id });
+    
     try {
-      await this.consultationService.delete(id);
+      await this.consultationService.delete(id, secretaryPassword, userId);
       return res.status(200).json({ message: "Ok" });
     } catch (error) {
               if (error instanceof ZodError) {
