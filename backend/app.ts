@@ -10,11 +10,11 @@ const PORT = 3000;
 
 app.use(express.json());
 
+app.use("/", adminRoutes)
 app.use("/", secretaryRoutes)
 app.use("/", medicRoutes);
 app.use("/", patientRoutes);
 app.use("/", consultationRoutes)
-app.use("/", adminRoutes)
 
 app.listen(PORT, () => {
   console.log(`http://localhost:${PORT}`);
