@@ -4,6 +4,7 @@ import { IAdminRepository } from "../domain/repository/IAdminRepository";
 import { LoginAdminResponse } from "../dto/LoginAdminResponse";
 import { IEmailProvider } from "../../../infra/providers/email/IEmailProvider";
 import { UpdateAdminRequest } from "../dto/UpdateAdminRequestDTO";
+import { AppError } from "../../../core/errors/AppError";
 import bcrypt from 'bcrypt';
 import speakeasy from "speakeasy";
 
@@ -17,16 +18,16 @@ export class AuthAdminService{
     async authenticate(email: string, password: string, twoFactorCode: string): Promise<LoginAdminResponse | null> {
         const admin = await this.adminRepository.findByEmail(email);
         if (!admin) {
-            throw new Error("Admin not found.");
+            throw new AppError("Invalid credentials", 401);
         }
 
         const isPasswordValid = await bcrypt.compare(password, admin.password);
         if (!isPasswordValid) {
-            throw new Error("Invalid password.");
+            throw new AppError("Invalid credentials", 401);
         }
 
         if (!twoFactorCode) {
-        throw new Error("Two-factor authentication code required.");
+        throw new AppError("Two-factor authentication code required.", 401);
         }
 
         const verified = speakeasy.totp.verify({
@@ -37,7 +38,7 @@ export class AuthAdminService{
         });
 
         if (!verified) {
-            throw new Error("Invalid two-factor authentication code.");
+            throw new AppError("Invalid two-factor authentication code.", 401);
         }
 
         const role = (admin as any).role ?? 'ADMIN';
@@ -90,7 +91,7 @@ export class AuthAdminService{
     const record = await this.adminRepository.findByResetToken(hashedToken);
 
     if (!record || record.expiresAt < new Date()) {
-        throw new Error("Token inválido ou expirado.");
+        throw new AppError("Token inválido ou expirado.", 401);
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);

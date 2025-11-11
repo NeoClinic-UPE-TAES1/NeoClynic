@@ -5,6 +5,7 @@ import { DeleteSecretaryRequest } from "../dto/DeleteSecretaryRequestDTO";
 import { ListSecretaryRequest } from "../dto/ListSecretaryRequestDTO";
 import { SecretaryResponse } from "../dto/SecretaryResponseDTO";
 import { UpdateSecretaryRequest } from "../dto/UpdateSecretaryRequestDTO";
+import { AppError } from "../../../core/errors/AppError";
 import bcrypt from "bcrypt";
 
 export class SecretaryService {
@@ -15,13 +16,13 @@ export class SecretaryService {
     async create(name: string, email: string, password: string): Promise<SecretaryResponse> {
         
         if (!name || !email || !password){
-            throw new Error("Name, email, and password are required.");
+            throw new AppError("Missing required field", 400);
         }
         
         const secretary =  await this.secretaryRepository.findByEmail(email)
 
         if (secretary != null){
-            throw new Error("Secretary already exists.");
+            throw new AppError("Secretary already exists.", 409);
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -36,24 +37,23 @@ export class SecretaryService {
     }
 
     async delete(id:string, adminPassword:string, userId:string | undefined): Promise<void>{
-        const secretary =  await this.secretaryRepository.findById(id)
-        
+        const secretary =  await this.secretaryRepository.findById(id);
         if (secretary == null){
-            throw new Error("Secretary not exists.");
+            throw new AppError("Secretary not exists.", 404);
         }
 
         if (userId == undefined){
-            throw new Error("User id is required.");
+            throw new AppError("User id is required.", 400);
         }
 
         const isAdmin = await this.adminRepository.findById(userId);
         if (!isAdmin) {
-            throw new Error("User is not an admin.");
+            throw new AppError("User is not an admin.", 403);
         }
 
         const passwordMatch = await bcrypt.compare(adminPassword, isAdmin.password);
         if (!passwordMatch){
-            throw new Error("Password invalid.");
+            throw new AppError("Password invalid.", 401);
         }
 
         const deleteRequest:DeleteSecretaryRequest = {
@@ -73,11 +73,11 @@ export class SecretaryService {
     ): Promise<SecretaryResponse> {
         const secretary = await this.secretaryRepository.findById(id);
         if (!secretary) {
-            throw new Error("Secretary not exists.");
+            throw new AppError("Secretary not exists.", 404);
         }
 
         if (userId != secretary.id){
-            throw new Error("Invalid id.");
+            throw new AppError("Invalid id.", 400);
         }
 
         let hashedPassword: string | undefined = undefined;
@@ -98,7 +98,7 @@ export class SecretaryService {
     async list(id: string): Promise<SecretaryResponse> {
         const secretary = await this.secretaryRepository.findById(id);
         if (secretary == null) {
-            throw new Error("Secretary not exists.");
+            throw new AppError("Secretary not exists.", 404);
         }
 
         const list: ListSecretaryRequest = { id: secretary.id };

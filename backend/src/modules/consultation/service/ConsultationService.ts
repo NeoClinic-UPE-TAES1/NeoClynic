@@ -11,6 +11,7 @@ import { UpdateConsultationRequest } from '../dto/UpdateConsultationRequestDTO';
 import { CreateReportBody } from '../../report/dto/CreateReportBodyDTO';
 import { UpdateReportBody } from '../../report/dto/UpdateReportBodyDTO';
 import { ReportService } from '../../report/service/ReportService';
+import { AppError } from '../../../core/errors/AppError';
 import bcrypt from 'bcrypt';
 
 export class ConsultationService {
@@ -26,18 +27,18 @@ export class ConsultationService {
     public async create(date: Date, hasFollowUp: boolean, medicId: string, patientId: string, report: CreateReportBody | undefined, userRole: string | undefined) : Promise<ConsultationResponse> {
 
         if (!date || hasFollowUp===undefined || !medicId || !patientId) {
-            throw new Error("Missing required fields");
+            throw new AppError("Missing required fields", 400);
         }
 
         const patient = await this.patientRepository.findById(patientId);
 
         if(!patient){
-            throw new Error("Patient not exists.");
+            throw new AppError("Patient not exists.", 404);
         }
 
         const medic = await this.medicRepository.findById(medicId);
         if(!medic){
-            throw new Error("Medic not exists.");
+            throw new AppError("Medic not exists.", 404);
         }
 
         const createConsultation:CreateConsultationRequest = {
@@ -73,17 +74,17 @@ export class ConsultationService {
     public async delete(id: string, secretaryPassword: string, userId: string) : Promise<void> {
         const secretary = await this.secretaryRepository.findById(userId);
         if (!secretary) {
-            throw new Error("Secretary not found.");
+            throw new AppError("Secretary not found.", 404);
         }
 
         const passwordMatch = await bcrypt.compare(secretaryPassword, secretary.password);
-                    if (!passwordMatch){
-                        throw new Error("Password invalid.");
-                    }
+            if (!passwordMatch){
+                throw new AppError("Password invalid.", 401);
+            }
 
         const consultation = await this.consultationRepository.findById(id);
         if (!consultation) {
-            throw new Error("Consultation not exists.");
+            throw new AppError("Consultation not exists.", 404);
         }
         
         const deleteConsultation: DeleteConsultationRequest = { id: consultation.id };
@@ -96,7 +97,7 @@ export class ConsultationService {
     ) : Promise<ConsultationResponse>{
         const consultation = await this.consultationRepository.findById(id);
         if (!consultation) {
-            throw new Error("Consultation not exists.");
+            throw new AppError("Consultation not exists.", 404);
         }
 
         const updateRequest: UpdateConsultationRequest = { 
@@ -134,14 +135,14 @@ export class ConsultationService {
     public async list(id:string, userId: string, userRole: string) : Promise<ConsultationResponse>{
         const consultation = await this.consultationRepository.findById(id);
             if (!consultation) {
-              throw new Error("Consultation not exists.");
+              throw new AppError("Consultation not exists.", 404);
             }
 
         if (userRole === 'MEDIC') {
             const consultations = await this.consultationRepository.findByMedic(userId, undefined, undefined);
 
             if (consultations.length === 0) {
-              throw new Error("Access denied to this consultation.");
+              throw new AppError("Access denied to this consultation.", 403);
             }
 
             return consultations[0];

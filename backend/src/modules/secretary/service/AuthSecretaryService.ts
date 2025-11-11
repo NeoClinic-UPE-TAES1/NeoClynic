@@ -3,6 +3,7 @@ import { ISecretaryRepository } from "../domain/repository/ISecretaryRepository"
 import { LoginSecretaryResponse } from "../dto/LoginSecretaryResponse";
 import { IEmailProvider } from "../../../infra/providers/email/IEmailProvider";
 import { UpdateSecretaryRequest } from "../dto/UpdateSecretaryRequestDTO";
+import { AppError } from "../../../core/errors/AppError";
 import bcrypt from 'bcrypt';
 import crypto from "crypto";
 
@@ -16,12 +17,12 @@ export class AuthSecretaryService{
     async authenticate(email: string, password: string): Promise<LoginSecretaryResponse | null> {
         const secretary = await this.secretaryRepository.findByEmail(email);
         if (!secretary) {
-            throw new Error("Secretary not found.");
+            throw new AppError("Secretary not found.", 404);
         }
 
         const isPasswordValid = await bcrypt.compare(password, secretary.password);
         if (!isPasswordValid) {
-            throw new Error("Invalid password.");
+            throw new AppError("Invalid password.", 401);
         }
 
         const role = (secretary as any).role ?? 'SECRETARY';
@@ -73,7 +74,7 @@ export class AuthSecretaryService{
         const record = await this.secretaryRepository.findByResetToken(hashedToken);
     
         if (!record || record.expiresAt < new Date()) {
-          throw new Error("Token inválido ou expirado.");
+          throw new AppError("Token inválido ou expirado.", 400);
         }
     
         const hashedPassword = await bcrypt.hash(newPassword, 10);

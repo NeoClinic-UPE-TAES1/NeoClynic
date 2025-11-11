@@ -1,7 +1,7 @@
 import { IAdminRepository } from "../domain/repository/IAdminRepository";
-import { DeleteAdminRequest } from "../dto/DeleteAdminRequestDTO";
 import { AdminResponse } from "../dto/AdminResponseDTO";
 import { UpdateAdminRequest } from "../dto/UpdateAdminRequestDTO";
+import { AppError } from "../../../core/errors/AppError";
 import bcrypt from "bcrypt";
 
 export class AdminService {
@@ -19,11 +19,11 @@ export class AdminService {
   ): Promise<AdminResponse> {
     const admin = await this.adminRepository.findById(id);
     if (!admin) {
-      throw new Error("Admin not exists.");
+      throw new AppError("Admin not exists.", 404);
     }
 
     if (userId != admin.id){
-            throw new Error("Invalid id.");
+            throw new AppError("Invalid user id.", 403);
         }
 
     let hashedPassword: string | undefined = undefined;

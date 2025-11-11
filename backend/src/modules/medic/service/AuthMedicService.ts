@@ -3,6 +3,7 @@ import { IMedicRepository } from "../domain/repository/IMedicRepository";
 import { LoginMedicResponse } from "../dto/LoginMedicResponse";
 import { IEmailProvider } from "../../../infra/providers/email/IEmailProvider";
 import { UpdateMedicRequest } from "../dto/UpdateMedicRequestDTO";
+import { AppError } from "../../../core/errors/AppError";
 import bcrypt from 'bcrypt';
 import crypto from "crypto";
 
@@ -16,12 +17,12 @@ export class AuthMedicService{
     async authenticate(email: string, password: string): Promise<LoginMedicResponse | null> {
         const medic = await this.medicRepository.findByEmail(email);
         if (!medic) {
-            throw new Error("Medic not found.");
+            throw new AppError("Medic not found.", 404);
         }
 
         const isPasswordValid = await bcrypt.compare(password, medic.password);
         if (!isPasswordValid) {
-            throw new Error("Invalid password.");
+            throw new AppError("Invalid password.", 401);
         }
 
         const role = (medic as any).role ?? 'MEDIC';
@@ -74,7 +75,7 @@ export class AuthMedicService{
         const record = await this.medicRepository.findByResetToken(hashedToken);
     
         if (!record || record.expiresAt < new Date()) {
-          throw new Error("Token inválido ou expirado.");
+          throw new AppError("Token inválido ou expirado.", 400);
         }
     
         const hashedPassword = await bcrypt.hash(newPassword, 10);

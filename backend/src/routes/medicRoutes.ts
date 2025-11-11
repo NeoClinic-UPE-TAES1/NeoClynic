@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { authenticateToken, authorizeRoles } from '../infra/middlewares/authMiddleware';
 import { JWTProvider } from '../infra/providers/auth/JWTProvider'; 
 import { MedicController } from '../modules/medic/controller/MedicController';
@@ -16,28 +16,28 @@ const adminRepository = new AdminRepository();
 const medicController = new MedicController(medicRepository, adminRepository);
 const authMedicController = new AuthMedicController(medicRepository, jwtProvider, emailProvider);
 
-medicRoutes.post('/medic/register', authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response) => {
-    medicController.registerMedic(req, res) });
+medicRoutes.post('/medic/register', authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
+    medicController.registerMedic(req, res, next) });
 
-medicRoutes.post('/medic/login', (req: Request, res: Response) => {
-    authMedicController.login(req, res) });
+medicRoutes.post('/medic/login', (req: Request, res: Response, next: NextFunction) => {
+    authMedicController.login(req, res, next) });
 
-medicRoutes.get('/medic/list/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response) => {
-    medicController.listMedic(req, res);  });
+medicRoutes.get('/medic/list/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
+    medicController.listMedic(req, res, next);  });
 
-medicRoutes.get('/medic/list', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response) => {
-    medicController.listMedics(req, res);  });
+medicRoutes.get('/medic/list', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
+    medicController.listMedics(req, res, next);  });
 
-medicRoutes.patch('/medic/update/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'MEDIC'), (req: Request, res: Response) => {
-    medicController.updateMedic(req, res) });
+medicRoutes.patch('/medic/update/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {
+    medicController.updateMedic(req, res, next) });
 
-medicRoutes.delete('/medic/delete/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN'), (req: Request, res: Response) => {
-    medicController.deleteMedic(req, res) });
+medicRoutes.delete('/medic/delete/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN'), (req: Request, res: Response, next: NextFunction) => {
+    medicController.deleteMedic(req, res, next) });
 
-medicRoutes.post('/medic/password/request', (req: Request, res: Response) => {
-    authMedicController.request(req, res) });
+medicRoutes.post('/medic/password/request', (req: Request, res: Response, next: NextFunction) => {
+    authMedicController.request(req, res, next) });
 
-medicRoutes.post('/medic/password/reset', (req: Request, res: Response) => {
-        authMedicController.reset(req, res) });
+medicRoutes.post('/medic/password/reset', (req: Request, res: Response, next: NextFunction) => {
+        authMedicController.reset(req, res, next) });
 
 export default medicRoutes;

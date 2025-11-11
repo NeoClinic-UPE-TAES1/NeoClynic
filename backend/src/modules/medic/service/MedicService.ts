@@ -5,6 +5,7 @@ import { DeleteMedicRequest } from "../dto/DeleteMedicRequestDTO";
 import { ListMedicRequest } from "../dto/ListMedicRequestDTO";
 import { MedicResponse } from "../dto/MedicResponseDTO";
 import { UpdateMedicRequest } from "../dto/UpdateMedicRequestDTO";
+import { AppError } from "../../../core/errors/AppError";
 import bcrypt from "bcrypt";
 
 export class MedicService {
@@ -16,12 +17,12 @@ export class MedicService {
 
   async create(name: string, email: string, password: string, specialty: string): Promise<MedicResponse> {
     if (!name || !email || !password || !specialty) {
-      throw new Error("Name, email, password and specialty are required.");
+      throw new AppError("Missing required fields.", 400);
     }
 
     const medicExists = await this.medicRepository.findByEmail(email);
     if (medicExists) {
-      throw new Error("Medic already exists.");
+      throw new AppError("Medic already exists.", 409);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -39,21 +40,21 @@ export class MedicService {
   async delete(id: string, adminPassword: string, userId:string | undefined): Promise<void> {
     const medic = await this.medicRepository.findById(id);
     if (!medic) {
-      throw new Error("Medic not exists.");
+      throw new AppError("Medic not exists.", 404);
     }
 
     if (userId == undefined){
-                throw new Error("User id is required.");
+                throw new AppError("User id is required.", 400);
             }
     
     const isAdmin = await this.adminRepository.findById(userId);
     if (!isAdmin) {
-        throw new Error("User is not an admin.");
+        throw new AppError("User is not an admin.", 403);
     }
 
     const passwordMatch = await bcrypt.compare(adminPassword, isAdmin.password);
     if (!passwordMatch){
-        throw new Error("Password invalid.");
+        throw new AppError("Password invalid.", 401);
     }
 
     const deleteRequest: DeleteMedicRequest = { id };
@@ -70,11 +71,11 @@ export class MedicService {
   ): Promise<MedicResponse> {
     const medic = await this.medicRepository.findById(id);
     if (!medic) {
-      throw new Error("Medic not exists.");
+      throw new AppError("Medic not exists.", 404);
     }
 
     if (userId != medic.id){
-            throw new Error("Invalid id.");
+            throw new AppError("Invalid user id.", 400);
         }
 
     let hashedPassword: string | undefined = undefined;
@@ -96,7 +97,7 @@ export class MedicService {
   async list(id: string): Promise<MedicResponse> {
     const medic = await this.medicRepository.findById(id);
     if (!medic) {
-      throw new Error("Medic not exists.");
+      throw new AppError("Medic not exists.", 404);
     }
 
     const list: ListMedicRequest = { id: medic.id };

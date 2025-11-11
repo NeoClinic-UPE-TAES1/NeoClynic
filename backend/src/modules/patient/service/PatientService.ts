@@ -9,6 +9,7 @@ import { ISecretaryRepository } from "../../secretary/domain/repository/ISecreta
 import { ObservationService } from "../../observation/service/ObservationService";
 import { ObservationBody } from "../../observation/dto/ObservationBodyDTO";
 import { ObservationResponse } from "../../observation/dto/ObservationResponseDTO";
+import { AppError } from "../../../core/errors/AppError";
 import bcrypt from "bcrypt";
 
 export class PatientService {
@@ -22,17 +23,12 @@ export class PatientService {
 
   async create(name: string, birthDay: Date, sex: string, cpf: string, ethnicity: string, email: string | undefined, observation: ObservationBody | undefined): Promise<PatientResponse> {
     if (!name || !birthDay || !sex || !cpf || !ethnicity) {
-      throw new Error("Name, birthday, sex, cpf, and ethnicity are required.");
-    }
-
-    const parsedBirthDay = birthDay instanceof Date ? birthDay : new Date(birthDay as any);
-    if (isNaN(parsedBirthDay.getTime())) {
-      throw new Error('Invalid birthDay. Use a valid Date or ISO-8601 string.');
+      throw new AppError("Missing required fields.", 400);
     }
 
     const patientExists = await this.patientRepository.findByCPF(cpf);
     if (patientExists) {
-      throw new Error("Patient already exists.");
+      throw new AppError("Patient already exists.", 409);
     }
 
     const registerData: CreatePatientRequest = {
@@ -68,22 +64,22 @@ export class PatientService {
   async delete(id: string, secretaryPassword: string, userId: string | undefined): Promise<void> {
     const patient = await this.patientRepository.findById(id);
     if (!patient) {
-      throw new Error("Patient not exists.");
+      throw new AppError("Patient not exists.", 404);
     }
 
     if (!userId) {
-      throw new Error("User authentication required.");
+      throw new AppError("User authentication required.", 401);
     }
 
     const secretary = await this.secretaryRepository.findById(userId);
     if (!secretary) {
-      throw new Error("Secretary not found.");
+      throw new AppError("Secretary not found.", 404);
     }
 
     const passwordMatch = await bcrypt.compare(secretaryPassword, secretary.password);
-            if (!passwordMatch){
-                throw new Error("Password invalid.");
-            }
+        if (!passwordMatch){
+            throw new AppError("Password invalid.", 401);
+        }
 
     const deleteRequest: DeletePatientRequest = { id };
     await this.patientRepository.deletePatient(deleteRequest);
@@ -101,11 +97,11 @@ export class PatientService {
   ): Promise<PatientResponse> {
       const patient = await this.patientRepository.findById(id);
       if (!patient) {
-        throw new Error("Patient not exists.");
+        throw new AppError("Patient not exists.", 404);
       }
 
       if(id !== patient.id) {
-        throw new Error("Patient ID invalid.");
+        throw new AppError("Patient ID invalid.", 400);
       }
 
       const observationExists = await this.observationRepository.findByPatientId(id);
@@ -150,18 +146,17 @@ export class PatientService {
         } : undefined
       };
 
-
       return result;
     }
 
   async list(id: string, userId:string | undefined, userRole:string | undefined): Promise<PatientResponse> {
     const patient = await this.patientRepository.findById(id);
     if (!patient) {
-      throw new Error("Patient not exists.");
+      throw new AppError("Patient not exists.", 404);
     }
 
     if (!userId || !userRole) {
-      throw new Error("User authentication required.");
+      throw new AppError("User authentication required.", 401);
     }
 
     if (userRole === 'MEDIC') {
@@ -180,7 +175,7 @@ export class PatientService {
   
   async listAll(userId:string | undefined, userRole:string | undefined, page:number|undefined, limit:number|undefined): Promise<PatientResponse[]> {
     if (!userId || !userRole) {
-      throw new Error("User authentication required.");
+      throw new AppError("User authentication required.", 401);
     }
 
     if (userRole === "MEDIC") {

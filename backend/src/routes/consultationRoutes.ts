@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { ConsultationController } from '../modules/consultation/controller/ConsultationController';
 import { ConsultationRepository } from '../modules/consultation/domain/repository/ConsultationRepository';
 import { ReportRepository } from '../modules/report/domain/repository/ReportRepository';
@@ -20,19 +20,19 @@ const jwtProvider = new JWTProvider();
 
 consultationRoutes.use(authenticateToken(jwtProvider));
 
-consultationRoutes.post('/consultation/register', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response) => {
-    consultationController.registerConsultation(req, res) });
+consultationRoutes.post('/consultation/register', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {
+    consultationController.registerConsultation(req, res, next) });
 
-consultationRoutes.get('/consultation/list/:id', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response) => {
-    consultationController.listConsultation(req, res);  });
+consultationRoutes.get('/consultation/list/:id', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {
+    consultationController.listConsultation(req, res, next);  });
 
-consultationRoutes.get('/consultation/list', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response) => {
-    consultationController.listConsultations(req, res);  });
+consultationRoutes.get('/consultation/list', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {
+    consultationController.listConsultations(req, res, next);  });
 
-consultationRoutes.patch('/consultation/update/:id', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response) => {
-    consultationController.updateConsultation(req, res) });
+consultationRoutes.patch('/consultation/update/:id', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {
+    consultationController.updateConsultation(req, res, next) });
 
-consultationRoutes.delete('/consultation/delete/:id', authorizeRoles('SECRETARY'), (req: Request, res: Response) => {
-    consultationController.deleteConsultation(req, res) });
+consultationRoutes.delete('/consultation/delete/:id', authorizeRoles('SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
+    consultationController.deleteConsultation(req, res, next) });
 
 export default consultationRoutes;

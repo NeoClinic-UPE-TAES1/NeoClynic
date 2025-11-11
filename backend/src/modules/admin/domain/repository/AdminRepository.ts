@@ -2,7 +2,6 @@ import { Admin } from "../entity/Admin";
 import { prisma } from "../../../../infra/database/prismaClient";
 import { IAdminRepository } from "./IAdminRepository";
 import { AdminResponse } from "../../dto/AdminResponseDTO";
-import { DeleteAdminRequest } from "../../dto/DeleteAdminRequestDTO";
 import { UpdateAdminRequest } from "../../dto/UpdateAdminRequestDTO";
 
 export class AdminRepository implements IAdminRepository {

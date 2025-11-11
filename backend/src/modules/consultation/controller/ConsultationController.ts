@@ -4,12 +4,11 @@ import { IPatientRepository } from '../../patient/domain/repository/IPatientRepo
 import { IMedicRepository } from '../../medic/domain/repository/IMedicRepository';
 import { ISecretaryRepository } from '../../secretary/domain/repository/ISecretaryRepository';
 import { ConsultationService } from '../service/ConsultationService';
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { registerConsultationBodySchema, registerConsultationAuthSchema } from '../schema/registerSchema';
 import { deleteConsultationParamsSchema, deleteConsultationAuthSchema, deleteConsultationBodySchema } from '../schema/deleteSchema';
 import { updateConsultationParamsSchema, updateConsultationBodySchema, updateConsultationAuthSchema } from '../schema/updateSchema';
 import { listConsultationParamsSchema, listConsultationAuthSchema, listConsultationQuerySchema } from '../schema/listSchema';
-import { ZodError } from "zod";
 
 export class ConsultationController {
 
@@ -24,98 +23,73 @@ export class ConsultationController {
         
     }
 
-    public async registerConsultation(req: Request, res: Response): Promise<Response> {
-      const { date, hasFollowUp, medicId, patientId, report } = registerConsultationBodySchema.parse(req.body);
-      const userRole = registerConsultationAuthSchema.parse({ userRole: req.user?.role }).userRole;
+    public async registerConsultation(req: Request, res: Response, next: NextFunction): Promise<Response|void> {
+        try{
+            const { date, hasFollowUp, medicId, patientId, report } = registerConsultationBodySchema.parse(req.body);
+            const userRole = registerConsultationAuthSchema.parse({ userRole: req.user?.role }).userRole;
+            const result = await this.consultationService.create(date, hasFollowUp, medicId, patientId, report, userRole);
 
-      try {
-        const result = await this.consultationService.create(date, hasFollowUp, medicId, patientId, report, userRole);
-        return res.status(201).json({ consultation: result });
-      } catch (error) {
-              if (error instanceof ZodError) {
-                  return res.status(400).json({ message: "Validation error", errors: error.issues });
-              }
-
-              console.error("Error registering consultation:", error);
-              return res.status(500).json({ message: "Internal server error" });
-          }
+            return res.status(201).json({ consultation: result });
+        } catch (error) {
+            return next(error);
+        }
     }
 
-  public async deleteConsultation(req: Request, res: Response): Promise<Response> {
-    const { id } = deleteConsultationParamsSchema.parse(req.params);
-    const { secretaryPassword } = deleteConsultationBodySchema.parse(req.body);
-    const { userId } = deleteConsultationAuthSchema.parse({ userId: req.user?.id });
-    
+  public async deleteConsultation(req: Request, res: Response, next: NextFunction): Promise<Response|void> {
     try {
-      await this.consultationService.delete(id, secretaryPassword, userId);
-      return res.status(200).json({ message: "Ok" });
-    } catch (error) {
-              if (error instanceof ZodError) {
-                  return res.status(400).json({ message: "Validation error", errors: error.issues });
-              }
+        const { id } = deleteConsultationParamsSchema.parse(req.params);
+        const { secretaryPassword } = deleteConsultationBodySchema.parse(req.body);
+        const { userId } = deleteConsultationAuthSchema.parse({ userId: req.user?.id });
+        await this.consultationService.delete(id, secretaryPassword, userId);
 
-              console.error("Error deleting consultation:", error);
-              return res.status(500).json({ message: "Internal server error" });
-          }
+        return res.status(200).json({ message: "Ok" });
+      } catch (error) {
+          return next(error);
+      }
   }
 
-  public async updateConsultation(req: Request, res: Response): Promise<Response> {
-    const { id } = updateConsultationParamsSchema.parse(req.params);
-    const { date, hasFollowUp, report } = updateConsultationBodySchema.parse(req.body);
-    const userRole = updateConsultationAuthSchema.parse({ userRole: req.user?.role }).userRole;
+  public async updateConsultation(req: Request, res: Response, next: NextFunction): Promise<Response|void> {
+      try {
+          const { id } = updateConsultationParamsSchema.parse(req.params);
+          const { date, hasFollowUp, report } = updateConsultationBodySchema.parse(req.body);
+          const userRole = updateConsultationAuthSchema.parse({ userRole: req.user?.role }).userRole;
+          const result = await this.consultationService.update(id, date, hasFollowUp, report, userRole);
 
-    try {
-      const result = await this.consultationService.update(id, date, hasFollowUp, report, userRole);
-      return res.status(200).json({ consultation: result });
+        return res.status(200).json({ consultation: result }); 
     } catch (error) {
-              if (error instanceof ZodError) {
-                  return res.status(400).json({ message: "Validation error", errors: error.issues });
-              }
-
-              console.error("Error updating consultation:", error);
-              return res.status(500).json({ message: "Internal server error" });
-          }
+        return next(error);
+    }   
   }
 
-  public async listConsultation(req: Request, res: Response): Promise<Response> {
-    const { id } = listConsultationParamsSchema.parse(req.params);
-    const { userId, userRole } = listConsultationAuthSchema.parse({
-          userId: req.user?.id,
-          userRole: req.user?.role,
-        });
+  public async listConsultation(req: Request, res: Response, next: NextFunction): Promise<Response|void> {
+    try{
+        const { id } = listConsultationParamsSchema.parse(req.params);
+        const { userId, userRole } = listConsultationAuthSchema.parse({
+                userId: req.user?.id,
+                userRole: req.user?.role,
+            });
+        const result = await this.consultationService.list(id, userId, userRole);
 
-    try {
-      const result = await this.consultationService.list(id, userId, userRole);
-      return res.status(200).json({ consultation: result });
-    } catch (error) {
-              if (error instanceof ZodError) {
-                  return res.status(400).json({ message: "Validation error", errors: error.issues });
-              }
-
-              console.error("Error listing consultation:", error);
-              return res.status(500).json({ message: "Internal server error" });
-          }
+        return res.status(200).json({ consultation: result });
+      } catch (error) {
+            return next(error);
+        }
   }
 
-  public async listConsultations(req: Request, res: Response): Promise<Response> {
-    const { userId, userRole } = listConsultationAuthSchema.parse({
-          userId: req.user?.id,
-          userRole: req.user?.role,
-        });
-
-    const { page, limit } = listConsultationQuerySchema.parse(req.query);
-
-    try {
+  public async listConsultations(req: Request, res: Response, next: NextFunction): Promise<Response|void> {
+    try{
+      const { userId, userRole } = listConsultationAuthSchema.parse({
+            userId: req.user?.id,
+            userRole: req.user?.role,
+          });
+      const { page, limit } = listConsultationQuerySchema.parse(req.query);
       const result = await this.consultationService.listAll(userId, userRole, page, limit);
+      
       return res.status(200).json({ consultations: result });
-    } catch (error) {
-      if (error instanceof ZodError) {
-          return res.status(400).json({ message: "Validation error", errors: error.issues });
-      }
-
-      console.error("Error listing consultations:", error);
-      return res.status(500).json({ message: "Internal server error" });
-      }
+      } catch (error) {
+            return next(error);
+        }
+      
   }
   
 }
