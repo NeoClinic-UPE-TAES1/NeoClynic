@@ -1,7 +1,8 @@
 import "express-async-errors";
 import 'dotenv/config';
-import express, { Request, Response } from "express";
+import express from "express";
 import cors from "cors";
+import authRoutes from "./src/routes/authRoutes"
 import secretaryRoutes from "./src/routes/secretaryRoutes"
 import medicRoutes from "./src/routes/medicRoutes"
 import patientRoutes from "./src/routes/patientRoutes"

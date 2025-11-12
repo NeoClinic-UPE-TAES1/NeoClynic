@@ -12,9 +12,6 @@
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "~1.4.4",

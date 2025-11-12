@@ -1,6 +1,5 @@
 import { AdminResponse } from "../../dto/AdminResponseDTO";
 import type { Admin } from "../entity/Admin";
-import { DeleteAdminRequest } from "../../dto/DeleteAdminRequestDTO";
 import { UpdateAdminRequest } from "../../dto/UpdateAdminRequestDTO";
  
 export interface IAdminRepository {
