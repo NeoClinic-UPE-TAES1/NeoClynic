@@ -3,196 +3,186 @@ import { prisma } from "../../../../infra/database/prismaClient";
 import { IPatientRepository } from "./IPatientRepository";
 import { PatientResponse } from "../../dto/PatientResponseDTO";
 import { CreatePatientRequest } from "../../dto/CreatePatientRequestDTO";
+import { DeletePatientRequest } from "../../dto/DeletePatientRequestDTO";
 import { UpdatePatientRequest } from "../../dto/UpdatePatientRequestDTO";
 import { ListPatientRequest } from "../../dto/ListPatientRequestDTO";
 
 export class PatientRepository implements IPatientRepository {
-    async createPatient(createPatient: CreatePatientRequest): Promise<PatientResponse> {
-        const { name, birthDay, sex, cpf, ethnicity, email, observation } = createPatient;
-        const data = await prisma.patient.create({
-            data: {
-                name,
-                birthDay,
-                sex,
-                cpf,
-                ethnicity,
-                email,
-                observation: observation ? {
-                    create: observation
-                } : undefined
-            },
-            include: { observation: true }
-        });
+  async createPatient(createPatient: CreatePatientRequest): Promise<PatientResponse> {
+    const { name, birthDay, sex, cpf, ethnicity, email} = createPatient;
 
-        return {
-            id: data.id,
-            name: data.name,
-            birthDay: data.birthDay,
-            sex: data.sex,
-            cpf: data.cpf,
-            ethnicity: data.ethnicity,
-            email: data.email,
-            observation: data.observation ? {
-                comorbidity: data.observation.comorbidity,
-                allergies: data.observation.allergies,
-                medications: data.observation.medications
-            } : null
-        };
+    const data = await prisma.patient.create({
+      data: {
+        name,
+        birthDay,
+        sex,
+        cpf,
+        ethnicity,
+        email
+    }
+});
+
+    return {
+      id: data.id,
+      birthDay: data.birthDay,
+      sex: data.sex,
+      cpf: data.cpf,
+      ethnicity: data.ethnicity,
+      name: data.name,
+      email: data.email ?? undefined
+    };
+  }
+
+  async listPatient(listPatient: ListPatientRequest): Promise<PatientResponse> {
+    const { id } = listPatient;
+
+    const data = await prisma.patient.findUnique({
+      where: { id },
+      include: { 
+         observation: true,
+         consultation: true},
+    });
+
+    if (!data) {
+      throw new Error(`Patient id not found: ${id}`);
     }
 
-    async listPatient(listPatient: ListPatientRequest): Promise<PatientResponse> {
-        const { id } = listPatient;
+    return {
+      id: data.id,
+      birthDay: data.birthDay,
+      sex: data.sex,
+      cpf: data.cpf,
+      ethnicity: data.ethnicity,
+      name: data.name,
+      email: data.email ?? undefined,
+      observation: data.observation ?? undefined,
+      consultation: data.consultation ?? undefined
+    };
+  }
 
-        const data = await prisma.patient.findUnique({
-            where: { id },
-            include: { observation: true }
-        });
+  async listPatients(page:number|undefined, limit:number|undefined): Promise<PatientResponse[]> {
+    const patients = await prisma.patient.findMany({
+      skip: page && limit ? (page - 1) * limit : undefined,
+      take: limit,
+      include: { 
+         observation: true,
+         consultation: true},
+    });
 
-        if (!data) {
-            throw new Error(`Paciente com id ${id} não encontrado.`);
-        }
+    return patients.map((m) => ({
+      id: m.id,
+      birthDay: m.birthDay,
+      sex: m.sex,
+      cpf: m.cpf,
+      ethnicity: m.ethnicity,
+      name: m.name,
+      email: m.email ?? undefined,
+      observations: m.observation ?? undefined,
+      consultation: m.consultation ?? undefined
+    }));
+  }
 
-        return {
-            id: data.id,
-            name: data.name,
-            birthDay: data.birthDay,
-            sex: data.sex,
-            cpf: data.cpf,
-            ethnicity: data.ethnicity,
-            email: data.email,
-            observation: data.observation ? {
-                comorbidity: data.observation.comorbidity,
-                allergies: data.observation.allergies,
-                medications: data.observation.medications
-            } : null
-        };
+  async updatePatient(updatePatient: UpdatePatientRequest): Promise<PatientResponse> {
+    const { id, name, birthDay, sex, cpf, ethnicity, email } = updatePatient;
+
+    const data = await prisma.patient.update({
+      where: { id },
+      data: {
+      ...(name && { name }),
+      ...(birthDay && { birthDay }),
+      ...(sex && { sex }),
+      ...(cpf && { cpf }),
+      ...(ethnicity && { ethnicity }),
+      ...(email && { email }),
+      
+      }
+    });
+
+    return {
+      id: data.id,
+      name: data.name,
+      birthDay: data.birthDay,
+      sex: data.sex,
+      cpf: data.cpf,
+      ethnicity: data.ethnicity,
+      email: data.email ?? undefined,
+    
+    };
+  }
+
+  async deletePatient(deletePatient: DeletePatientRequest): Promise<void> {
+    const { id } = deletePatient;
+
+    await prisma.patient.delete({ where: { id } });
+  }
+
+  async findByCPF(cpf: string): Promise<Patient | null> {
+    return await prisma.patient.findFirst({ where: { cpf } });
+  }
+
+  async findById(id: string): Promise<Patient | null> {
+    return await prisma.patient.findFirst({ where: { id } });
+  }
+
+  async listPatientByMedic(id:string, medicId: string): Promise<PatientResponse | null> {
+    const patients = await prisma.patient.findFirst({
+      where: {
+        consultation: {
+          some: { medicId },
+        },
+      },
+      include: {
+        consultation: {
+          where: { patientId: id, medicId },
+          select: { id: true, medicId: true, patientId: true, date: true, hasFollowUp: true },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+
+    if (!patients) {
+      return null;
     }
 
-    async listPatients(): Promise<PatientResponse[]> {
-        const patients = await prisma.patient.findMany({
-            include: { observation: true }
-        });
+    return {
+      id: patients.id,
+      birthDay: patients.birthDay,
+      sex: patients.sex,
+      cpf: patients.cpf,
+      ethnicity: patients.ethnicity,
+      name: patients.name,
+      email: patients.email ?? undefined,
+      consultation: patients.consultation ?? undefined,
+    };
+  }
 
-        return patients.map((p) => ({
-            id: p.id,
-            name: p.name,
-            birthDay: p.birthDay,
-            sex: p.sex,
-            cpf: p.cpf,
-            ethnicity: p.ethnicity,
-            email: p.email,
-            observation: p.observation ? {
-                comorbidity: p.observation.comorbidity,
-                allergies: p.observation.allergies,
-                medications: p.observation.medications
-            } : null
-        }));
-    }
+  async listPatientsByMedic(medicId: string, page?: number, limit?: number): Promise<PatientResponse[]> {
+    const patients = await prisma.patient.findMany({
+      where: {
+        consultation: {
+          some: { medicId },
+        },
+      },
+      skip: page && limit ? (page - 1) * limit : undefined,
+      take: limit,
+      include: {
+        consultation: {
+          where: { medicId },
+          select: { id: true, medicId: true, patientId: true, date: true, hasFollowUp: true },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
 
-    async updatePatient(updatePatient: UpdatePatientRequest): Promise<PatientResponse> {
-        const { id, name, birthDay, sex, cpf, ethnicity, email } = updatePatient;
-
-        const data = await prisma.patient.update({
-            where: { id },
-            data: {
-                name,
-                birthDay,
-                sex,
-                cpf,
-                ethnicity,
-                email
-            },
-            include: { observation: true }
-        });
-
-        return {
-            id: data.id,
-            name: data.name,
-            birthDay: data.birthDay,
-            sex: data.sex,
-            cpf: data.cpf,
-            ethnicity: data.ethnicity,
-            email: data.email,
-            observation: data.observation ? {
-                comorbidity: data.observation.comorbidity,
-                allergies: data.observation.allergies,
-                medications: data.observation.medications
-            } : null
-        };
-    }
-
-    async updateObservation(id: string, comorbidity: string, allergies: string, medications: string): Promise<void> {
-        await prisma.observation.upsert({
-            where: { patientId: id },
-            update: {
-                comorbidity,
-                allergies,
-                medications
-            },
-            create: {
-                patientId: id,
-                comorbidity,
-                allergies,
-                medications
-            }
-        });
-    }
-
-    async deletePatient(id: string): Promise<void> {
-        // Deletar em ordem: primeiro as relações, depois o paciente
-        
-        // 1. Deletar observações (se existirem)
-        await prisma.observation.deleteMany({
-            where: { patientId: id }
-        });
-        
-        // 2. Deletar consultas e seus relatórios (se existirem)
-        const consultations = await prisma.consultation.findMany({
-            where: { patientId: id },
-            select: { id: true }
-        });
-        
-        for (const consultation of consultations) {
-            // Deletar relatórios da consulta
-            await prisma.report.deleteMany({
-                where: { consultationId: consultation.id }
-            });
-        }
-        
-        // Deletar as consultas
-        await prisma.consultation.deleteMany({
-            where: { patientId: id }
-        });
-        
-        // 3. Deletar o paciente
-        await prisma.patient.delete({
-            where: { id }
-        });
-    }
-
-    async findByCpf(cpf: string): Promise<PatientResponse | null> {
-        const data = await prisma.patient.findUnique({
-            where: { cpf },
-            include: { observation: true }
-        });
-
-        if (!data) {
-            return null;
-        }
-
-        return {
-            id: data.id,
-            name: data.name,
-            birthDay: data.birthDay,
-            sex: data.sex,
-            cpf: data.cpf,
-            ethnicity: data.ethnicity,
-            email: data.email,
-            observation: data.observation ? {
-                comorbidity: data.observation.comorbidity,
-                allergies: data.observation.allergies,
-                medications: data.observation.medications
-            } : null
-        };
-    }
+    return patients.map((m) => ({
+      id: m.id,
+      birthDay: m.birthDay,
+      sex: m.sex,
+      cpf: m.cpf,
+      ethnicity: m.ethnicity,
+      name: m.name,
+      email: m.email ?? undefined,
+      consultation: m.consultation ?? undefined,
+    }));
+  }
 }

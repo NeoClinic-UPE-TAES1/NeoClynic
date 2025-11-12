@@ -11,11 +11,11 @@ export class SecretaryRepository implements ISecretaryRepository {
     async createSecretary(createSecretary: CreateSecretaryRequest): Promise<SecretaryResponse> {
         const { name, email, hashedPassword} = createSecretary
         const data = await prisma.secretary.create({
-        data: {
-            name,
-            email,
-            password: hashedPassword
-        }
+            data: {
+                name,
+                email,
+                password: hashedPassword
+            }
         });
 
         return {
@@ -26,28 +26,31 @@ export class SecretaryRepository implements ISecretaryRepository {
     }
 
     async listSecretary(listSecretary: ListSecretaryRequest): Promise<SecretaryResponse> {
-    const { id } = listSecretary;
+        const { id } = listSecretary;
 
-    const data = await prisma.secretary.findUnique({
-        where: { id },
-    });
+        const data = await prisma.secretary.findUnique({
+            where: { id },
+        });
 
-    if (!data) {
-        throw new Error(`Secretária com id ${id} não encontrada.`);
+        if (!data) {
+            throw new Error(`Secretary id not found: ${id}`);
+        }
+
+        return {
+            id: data.id,
+            name: data.name,
+            email: data.email,
+        };
     }
 
-    return {
-        id: data.id,
-        name: data.name,
-        email: data.email,
-    };
-    }
 
+    async listSecretaries(page:number | undefined, limit:number | undefined): Promise<SecretaryResponse[]> {
+        const secretaries = await prisma.secretary.findMany({
+            skip: page && limit ? (page - 1) * limit : undefined,
+            take: limit
+        });
 
-    async listSecretaries(): Promise<SecretaryResponse[]> {
-        const secretaries = await prisma.secretary.findMany();
-
-        return secretaries.map((s) => ({
+        return secretaries.map((s: { id: string; name: string; email: string; }) => ({
             id: s.id,
             name: s.name,
             email: s.email,
@@ -82,6 +85,36 @@ export class SecretaryRepository implements ISecretaryRepository {
              }
         });
     }
+
+    async saveResetToken(secretaryId: string, token: string, expiresAt: Date): Promise<void> {
+    await prisma.secretary.update({
+      where: { id: secretaryId },
+      data: {
+        resetToken: token,
+        resetTokenExpiresAt: expiresAt
+      }
+    });
+  }
+
+  async invalidateResetToken(token: string): Promise<void> {
+    await prisma.secretary.update({
+      where: { resetToken: token },
+      data: {
+        resetToken: null,
+        resetTokenExpiresAt: null
+      }
+    });
+  }
+
+  async findByResetToken(token: string): Promise<{ secretaryId: string; expiresAt: Date } | null> {
+    const secretary = await prisma.secretary.findFirst({
+      where: { resetToken: token }
+    });
+
+    if (!secretary) return null;
+  
+    return { secretaryId: secretary.id, expiresAt: secretary.resetTokenExpiresAt! };
+  }
 
     async findByEmail(email: string): Promise<Secretary | null> {
         const data = await prisma.secretary.findFirst({

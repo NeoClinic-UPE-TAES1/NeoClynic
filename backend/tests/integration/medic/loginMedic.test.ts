@@ -5,29 +5,37 @@ import { prisma } from "../../../src/infra/database/prismaClient";
 import { MedicRepository } from "../../../src/modules/medic/domain/repository/MedicRepository";
 import { AuthMedicService } from "../../../src/modules/medic/service/AuthMedicService";
 import { JWTProvider } from "../../../src/infra/providers/auth/JWTProvider";
+import { NodemailerProvider } from "../../../src/infra/providers/email/NodeMailerProvider";
+import { AdminRepository } from "../../../src/modules/admin/domain/repository/AdminRepository";
 
 describe("User integration with real DB", () => {
     let prismaClient: PrismaClient;
     let medicRepository: MedicRepository;
+    let adminRepository: AdminRepository;
     let medicService: MedicService;
     let authMedicService: AuthMedicService;
     let jwtProvider: JWTProvider;
+    let emailProvider: NodemailerProvider;
 
     beforeAll(() => {
         prismaClient = prisma;
         jwtProvider = new JWTProvider();
+        emailProvider = new NodemailerProvider();
         medicRepository = new MedicRepository();
-        medicService = new MedicService(medicRepository);
-        authMedicService = new AuthMedicService(medicRepository, jwtProvider);
+        adminRepository = new AdminRepository();
+        medicService = new MedicService(medicRepository, adminRepository);
+        authMedicService = new AuthMedicService(medicRepository, jwtProvider, emailProvider);
     });
     afterAll(async () => {
         await prismaClient.$disconnect();
     });
     beforeEach(async () => {
-        await prismaClient.Medic.deleteMany();
+        await prismaClient.report.deleteMany();
+        await prismaClient.consultation.deleteMany();
+        await prismaClient.medic.deleteMany();
     });
 
-    test("Create Medic", async () => {
+    test("Login Medic", async () => {
         const name = "John Doe";
         const email = "JohnDoe@gmail.com"
         const password = "password123";

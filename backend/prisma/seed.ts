@@ -1,81 +1,87 @@
-import { PrismaClient } from '../src/infra/database/client';
-import bcrypt from 'bcrypt';
+import { prisma } from "../src/infra/database/prismaClient";
+import { NodemailerProvider } from "../src/infra/providers/email/NodeMailerProvider";
+import bcrypt from "bcrypt";
+import speakeasy from "speakeasy";
+import qrcode from "qrcode";
 
-const prisma = new PrismaClient();
+async function createInitialAdmin() {
+  const password = process.env.INIT_ADMIN_PASSWORD;
+  if (!password) {
+    throw new Error("INIT_ADMIN_PASSWORD not set");
+  }
 
-async function main() {
-  console.log('🌱 Starting seed...');
+  const email = process.env.INIT_ADMIN_EMAIL;
+  if (!email) {
+    throw new Error("INIT_ADMIN_EMAIL not set");
+    }
 
-  // Hash passwords
-  const hashedPassword = await bcrypt.hash('senha123', 10);
-
-  // Create Secretaries
-  const secretary1 = await prisma.secretary.upsert({
-    where: { email: 'secretaria@neoclinic.com' },
-    update: {},
-    create: {
-      name: 'Maria Silva',
-      email: 'secretaria@neoclinic.com',
-      password: hashedPassword,
-    },
+  await prisma.admin.create({
+    data: {
+      name: "Administrator",
+      email,
+      password: await bcrypt.hash(password, 10)
+    }
   });
 
-  const secretary2 = await prisma.secretary.upsert({
-    where: { email: 'ana.costa@neoclinic.com' },
-    update: {},
-    create: {
-      name: 'Ana Costa',
-      email: 'ana.costa@neoclinic.com',
-      password: hashedPassword,
-    },
+  console.log("Initial admin created");
+}
+
+
+async function twoFactorAuthConfig() {
+  const secret = speakeasy.generateSecret({ name: "PainelInterno - Admin" });
+
+  const admin = await prisma.admin.findUnique({
+    where: { email: process.env.INIT_ADMIN_EMAIL || "" }
   });
 
-  // Create Medics
-  const medic1 = await prisma.medic.upsert({
-    where: { email: 'medico@neoclinic.com' },
-    update: {},
-    create: {
-      name: 'Dr. João Santos',
-      email: 'medico@neoclinic.com',
-      password: hashedPassword,
-      specialty: 'Cardiologia',
-    },
+  if (!admin) {
+    throw new Error("Admin not found for 2FA configuration");
+  }
+
+  await prisma.admin.update({
+    where: { email: admin.email },
+    data: {
+      twoFactorSecret: secret.base32
+    }
   });
 
-  const medic2 = await prisma.medic.upsert({
-    where: { email: 'dra.lima@neoclinic.com' },
-    update: {},
-    create: {
-      name: 'Dra. Paula Lima',
-      email: 'dra.lima@neoclinic.com',
-      password: hashedPassword,
-      specialty: 'Pediatria',
-    },
-  });
+  const qrCodeBuffer = await qrcode.toBuffer(secret.otpauth_url!);
 
-  console.log('✅ Seed completed!');
-  console.log('\n📋 Test users created:');
-  console.log('');
-  console.log('👤 Admin:');
-  console.log('   Email: admin@neoclinic.com');
-  console.log('   Password: admin123');
-  console.log('');
-  console.log('👤 Secretaries:');
-  console.log(`   1. ${secretary1.email} - Password: senha123`);
-  console.log(`   2. ${secretary2.email} - Password: senha123`);
-  console.log('');
-  console.log('👨‍⚕️ Medics:');
-  console.log(`   1. ${medic1.email} (${medic1.specialty}) - Password: senha123`);
-  console.log(`   2. ${medic2.email} (${medic2.specialty}) - Password: senha123`);
-  console.log('');
+  const htmlBody = `
+    <h2>Configuração de autenticação em duas etapas</h2>
+    <p>Escaneie o QR code abaixo no Google Authenticator, Authy ou outro app compatível:</p>
+    <img src="cid:qrcode2fa" alt="QR Code 2FA" />
+    <p>Ou configure manualmente com o código: <b>${secret.base32}</b></p>
+  `;
+
+  await new NodemailerProvider().sendEmail(
+    admin.email,
+    "Configuração de 2FA",
+    htmlBody,
+    [
+      {
+        filename: "qrcode.png",
+        content: qrCodeBuffer,
+        cid: "qrcode2fa",
+      },
+    ]
+  );
+}
+
+
+export async function main() {
+  const exists = await prisma.admin.findFirst();
+  if (exists) return;
+  
+  await createInitialAdmin();
+  await twoFactorAuthConfig();
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect();
-  })
+    await prisma.$disconnect();})
   .catch(async (e) => {
-    console.error('❌ Error during seed:', e);
+    console.error(e);
     await prisma.$disconnect();
     process.exit(1);
   });

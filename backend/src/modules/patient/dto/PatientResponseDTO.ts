@@ -1,14 +1,14 @@
-export interface PatientResponse {
-    id: string;
-    name: string;
-    birthDay: Date;
-    sex: string;
-    cpf: string;
-    ethnicity: string;
-    email: string | null;
-    observation: {
-        comorbidity: string;
-        allergies: string;
-        medications: string;
-    } | null;
+import { Consultation } from "../../consultation/domain/entity/Consultation";
+import { Observation } from "../../observation/domain/entity/Observation";
+
+export type PatientResponse = {
+    id: string
+    name: string
+    birthDay: Date
+    sex: string
+    cpf: string
+    ethnicity: string
+    email?: string
+    observation?: Observation
+    consultation?: Consultation[]
 }

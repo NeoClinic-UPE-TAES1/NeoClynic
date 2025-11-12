@@ -16,10 +16,7 @@ export class MedicRepository implements IMedicRepository {
         name,
         email,
         specialty,
-        password: hashedPassword,
-      //   consultations: {
-      //   connect: [{ id: consultationId1 }, { id: consultationId2 }]
-      // }
+        password: hashedPassword
     },
     include: { consultation: true },
   });
@@ -42,7 +39,7 @@ export class MedicRepository implements IMedicRepository {
     });
 
     if (!data) {
-      throw new Error(`Médico com id ${id} não encontrado.`);
+      throw new Error(`Medic not found with id: ${id}`);
     }
 
     return {
@@ -54,8 +51,10 @@ export class MedicRepository implements IMedicRepository {
     };
   }
 
-  async listMedics(): Promise<MedicResponse[]> {
+  async listMedics(page:number|undefined, limit:number|undefined): Promise<MedicResponse[]> {
     const medics = await prisma.medic.findMany({
+      skip: page && limit ? (page - 1) * limit : undefined,
+      take: limit,
       include: { consultation: true },
     });
 
@@ -95,6 +94,36 @@ export class MedicRepository implements IMedicRepository {
     const { id } = deleteMedic;
 
     await prisma.medic.delete({ where: { id } });
+  }
+
+  async saveResetToken(medicId: string, token: string, expiresAt: Date): Promise<void> {
+    await prisma.medic.update({
+      where: { id: medicId },
+      data: {
+        resetToken: token,
+        resetTokenExpiresAt: expiresAt
+      }
+    });
+  }
+
+  async invalidateResetToken(token: string): Promise<void> {
+    await prisma.medic.update({
+      where: { resetToken: token },
+      data: {
+        resetToken: null,
+        resetTokenExpiresAt: null
+      }
+    });
+  }
+
+  async findByResetToken(token: string): Promise<{ medicId: string; expiresAt: Date } | null> {
+    const medic = await prisma.medic.findFirst({
+      where: { resetToken: token }
+    });
+
+    if (!medic) return null;
+  
+    return { medicId: medic.id, expiresAt: medic.resetTokenExpiresAt! };
   }
 
   async findByEmail(email: string): Promise<Medic | null> {

@@ -1,3 +1,3 @@
-export interface ListPatientRequest {
-    id: string;
-}
+export type ListPatientRequest = {
+        id: string;
+};
