@@ -1,7 +1,7 @@
 generator client_postgres {
   provider      = "prisma-client-js"
   engineType    = "binary"
-  binaryTargets = ["debian-openssl-3.0.x"]
+  binaryTargets = ["debian-openssl-3.0.x", "windows"]
   output        = "../src/infra/database/client"
 }
 

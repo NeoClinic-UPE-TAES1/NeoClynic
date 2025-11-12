@@ -26,7 +26,7 @@ const {
   Public,
   getRuntime,
   createParam,
-} = require('./runtime/library.js')
+} = require('./runtime/binary.js')
 
 
 const Prisma = {}
@@ -192,21 +192,24 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Casa\\Documents\\Faculdade, Programacao\\Programação\\NeoClynic\\backend\\src\\infra\\database\\client",
+      "value": "C:\\Users\\kaiod\\Desktop\\Computação\\TAES\\NeoClinic\\backend\\src\\infra\\database\\client",
       "fromEnvVar": null
     },
     "config": {
-      "engineType": "library"
+      "engineType": "binary"
     },
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
-        "native": true
+        "value": "debian-openssl-3.0.x"
+      },
+      {
+        "fromEnvVar": null,
+        "value": "windows"
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\Casa\\Documents\\Faculdade, Programacao\\Programação\\NeoClynic\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\kaiod\\Desktop\\Computação\\TAES\\NeoClinic\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -228,8 +231,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client_postgres {\n  provider = \"prisma-client-js\"\n  output   = \"../src/infra/database/client\"\n}\n\ndatasource postgres {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Admin {\n  id                  String    @id @default(uuid()) @map(\"_id\")\n  name                String\n  email               String    @unique\n  password            String\n  twoFactorSecret     String?\n  resetToken          String?   @unique\n  resetTokenExpiresAt DateTime?\n}\n\nmodel Secretary {\n  id                  String    @id @default(uuid()) @map(\"_id\")\n  name                String\n  email               String    @unique\n  password            String\n  resetToken          String?   @unique\n  resetTokenExpiresAt DateTime?\n}\n\nmodel Medic {\n  id                  String         @id @default(uuid()) @map(\"_id\")\n  name                String\n  email               String         @unique\n  password            String\n  specialty           String\n  consultation        Consultation[]\n  resetToken          String?        @unique\n  resetTokenExpiresAt DateTime?\n}\n\nmodel Patient {\n  id           String         @id @default(uuid()) @map(\"_id\")\n  name         String\n  birthDay     DateTime\n  sex          String\n  cpf          String         @unique\n  ethnicity    String\n  email        String?        @unique\n  observation  Observation?\n  consultation Consultation[]\n}\n\nmodel Observation {\n  id          String  @id @default(uuid()) @map(\"_id\")\n  comorbidity String?\n  allergies   String?\n  medications String?\n  patientId   String  @unique\n  patient     Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)\n}\n\nmodel Consultation {\n  id          String   @id @default(uuid()) @map(\"_id\")\n  date        DateTime\n  hasFollowUp Boolean\n  medicId     String\n  patientId   String\n  report      Report?\n  medic       Medic    @relation(fields: [medicId], references: [id], onDelete: Cascade)\n  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)\n}\n\nmodel Report {\n  id             String       @id @default(uuid()) @map(\"_id\")\n  description    String\n  diagnosis      String\n  prescription   String?\n  consultationId String       @unique\n  consultation   Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)\n}\n",
-  "inlineSchemaHash": "b636ff980eb283f722b821d7fc39564e5d29fcde2fd08b8fce5970fb5f49bdb0",
+  "inlineSchema": "generator client_postgres {\n  provider      = \"prisma-client-js\"\n  engineType    = \"binary\"\n  binaryTargets = [\"debian-openssl-3.0.x\", \"windows\"]\n  output        = \"../src/infra/database/client\"\n}\n\ndatasource postgres {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Admin {\n  id                  String    @id @default(uuid()) @map(\"_id\")\n  name                String\n  email               String    @unique\n  password            String\n  twoFactorSecret     String?\n  resetToken          String?   @unique\n  resetTokenExpiresAt DateTime?\n}\n\nmodel Secretary {\n  id                  String    @id @default(uuid()) @map(\"_id\")\n  name                String\n  email               String    @unique\n  password            String\n  resetToken          String?   @unique\n  resetTokenExpiresAt DateTime?\n}\n\nmodel Medic {\n  id                  String         @id @default(uuid()) @map(\"_id\")\n  name                String\n  email               String         @unique\n  password            String\n  specialty           String\n  consultation        Consultation[]\n  resetToken          String?        @unique\n  resetTokenExpiresAt DateTime?\n}\n\nmodel Patient {\n  id           String         @id @default(uuid()) @map(\"_id\")\n  name         String\n  birthDay     DateTime\n  sex          String\n  cpf          String         @unique\n  ethnicity    String\n  email        String?        @unique\n  observation  Observation?\n  consultation Consultation[]\n}\n\nmodel Observation {\n  id          String  @id @default(uuid()) @map(\"_id\")\n  comorbidity String?\n  allergies   String?\n  medications String?\n  patientId   String  @unique\n  patient     Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)\n}\n\nmodel Consultation {\n  id          String   @id @default(uuid()) @map(\"_id\")\n  date        DateTime\n  hasFollowUp Boolean\n  medicId     String\n  patientId   String\n  report      Report?\n  medic       Medic    @relation(fields: [medicId], references: [id], onDelete: Cascade)\n  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)\n}\n\nmodel Report {\n  id             String       @id @default(uuid()) @map(\"_id\")\n  description    String\n  diagnosis      String\n  prescription   String?\n  consultationId String       @unique\n  consultation   Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)\n}\n",
+  "inlineSchemaHash": "a383aa36c559e876c49230e7ccdacf7bc8b2b5895294b163a3ca77c4eaf3c0ef",
   "copyEngine": true
 }
 
@@ -256,7 +259,7 @@ config.engineWasm = undefined
 config.compilerWasm = undefined
 
 
-const { warnEnvConflicts } = require('./runtime/library.js')
+const { warnEnvConflicts } = require('./runtime/binary.js')
 
 warnEnvConflicts({
     rootEnvPath: config.relativeEnvPaths.rootEnvPath && path.resolve(config.dirname, config.relativeEnvPaths.rootEnvPath),
@@ -268,8 +271,12 @@ exports.PrismaClient = PrismaClient
 Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
-path.join(__dirname, "query_engine-windows.dll.node");
-path.join(process.cwd(), "src/infra/database/client/query_engine-windows.dll.node")
+path.join(__dirname, "query-engine-debian-openssl-3.0.x");
+path.join(process.cwd(), "src/infra/database/client/query-engine-debian-openssl-3.0.x")
+
+// file annotations for bundling tools to include these files
+path.join(__dirname, "query-engine-windows");
+path.join(process.cwd(), "src/infra/database/client/query-engine-windows")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
 path.join(process.cwd(), "src/infra/database/client/schema.prisma")
