@@ -37,6 +37,7 @@ describe("User integration with real DB", () => {
         const secretary = await secretaryService.create(name, email, password);
         await expect(secretaryService.delete(secretary.id, adminPassword, admin.id)).resolves.toBeUndefined();
     });
+    
     test("Delete Secretary with wrong password", async () => {
         const name = "John Doe";
         const email = "JohnDoe@gmail.com"
