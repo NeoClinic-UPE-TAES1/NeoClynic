@@ -15,6 +15,15 @@ jobs:
       LOCAL_POSTGRES_DB: ${{ secrets.LOCAL_POSTGRES_DB }}
       DATABASE_URL: ${{ secrets.LOCAL_DATABASE_URL }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+      VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+      INIT_ADMIN_EMAIL: ${{ secrets.INIT_ADMIN_EMAIL }}
+      INIT_ADMIN_PASSWORD: ${{ secrets.INIT_ADMIN_PASSWORD }}
+      SMTP_CLIENT_ID: ${{ secrets.SMTP_CLIENT_ID }}
+      SMTP_CLIENT_SECRET: ${{ secrets.SMTP_CLIENT_SECRET }}
+      SMTP_REFRESH_TOKEN: ${{ secrets.SMTP_REFRESH_TOKEN }}
+      SMTP_ACCESS_TOKEN: ${{ secrets.SMTP_ACCESS_TOKEN }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
 
     strategy:
       matrix:
