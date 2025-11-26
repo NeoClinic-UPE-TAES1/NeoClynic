@@ -45,7 +45,11 @@ jobs:
 
       - name: Run Prisma migrations
         working-directory: backend
-        run: npx prisma migrate dev --name init --skip-seed
+        run: npx prisma migrate deploy --name init --skip-seed
+
+      - name: Run Prisma seed
+        working-directory: backend
+        run: npx prisma db seed
 
       - name: Build project backend
         working-directory: backend
