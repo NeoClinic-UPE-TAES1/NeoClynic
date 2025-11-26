@@ -110,22 +110,12 @@ const Login = () => {
     setErrors({});
 
     try {
-      // Mock para testar login (substitua pela sua API real depois)
-      if (formData.email === 'admin@teste.com' && formData.password === '123') {
-        login('fake-token-admin', 'admin');
-        navigate('/admin', { replace: true });
-      } else if (formData.email === 'medico@teste.com' && formData.password === '123') {
-        login('fake-token-medic', 'medic');
-        navigate('/medic', { replace: true });
-      } else if (formData.email === 'secretaria@teste.com' && formData.password === '123') {
-        login('fake-token-secretary', 'secretary');
-        navigate('/secretary', { replace: true });
-      } else {
-        setErrors({ general: 'E-mail ou senha inválidos' });
-      }
+      await login(formData.email, formData.password);
+      // O redirecionamento será feito pelo RootRedirect baseado no role
+      navigate('/', { replace: true });
     } catch (err) {
       console.error(err);
-      setErrors({ general: 'Erro interno ao tentar logar' });
+      setErrors({ general: 'E-mail ou senha inválidos' });
     } finally {
       setIsSubmitting(false);
     }

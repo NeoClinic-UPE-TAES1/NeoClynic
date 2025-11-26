@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import useApi from '../../hooks/useApi';
 
 // --- Estilização ---
 const Container = styled.div`
@@ -94,48 +95,69 @@ const ItemActions = styled.div`
     }
 `;
 
-// --- Dados Mock (simulando o banco) ---
-const mockSecretaries = [
-    { id: 'uuid1', name: 'Ana Silva', email: 'ana.silva@neoclinic.com' },
-    { id: 'uuid2', name: 'Beatriz Costa', email: 'beatriz.costa@neoclinic.com' },
-];
-
 // --- Componente ---
 const ManageSecretaries = () => {
-    const [secretaries, setSecretaries] = useState(mockSecretaries);
+    const { apiCall, loading, error } = useApi();
+    const [secretaries, setSecretaries] = useState([]);
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
     const [editingId, setEditingId] = useState(null);
+
+    // Carregar secretárias ao montar
+    useEffect(() => {
+        loadSecretaries();
+    }, []);
+
+    const loadSecretaries = async () => {
+        try {
+            const data = await apiCall('/secretary/list');
+            // Verifica se data é um array, caso contrário, tenta acessar a propriedade que contém as secretárias
+            if (Array.isArray(data)) {
+                setSecretaries(data);
+            } else if (data && Array.isArray(data.secretaries)) {
+                setSecretaries(data.secretaries);
+            } else if (data && Array.isArray(data.data)) {
+                setSecretaries(data.data);
+            } else {
+                console.error('Formato de resposta inesperado:', data);
+                setSecretaries([]);
+            }
+        } catch (err) {
+            console.error('Erro ao carregar secretárias:', err);
+            setSecretaries([]); // Garante que secretaries seja sempre um array
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Simulação de API
-        if (editingId) {
-            // --- Lógica de ATUALIZAÇÃO (UPDATE) ---
-            console.log('Atualizando secretária:', editingId, formData);
-            setSecretaries(secretaries.map(sec => 
-                sec.id === editingId ? { ...sec, name: formData.name, email: formData.email } : sec
-            ));
-            alert('Secretária atualizada com sucesso!');
-        } else {
-            // --- Lógica de CRIAÇÃO (CREATE) ---
-            const newSecretary = { 
-                id: `uuid${Date.now()}`, // ID mock
-                ...formData 
-            };
-            console.log('Criando nova secretária:', newSecretary);
-            setSecretaries([...secretaries, newSecretary]);
-            alert('Secretária cadastrada com sucesso!');
+        try {
+            if (editingId) {
+                // Atualizar
+                const response = await apiCall(`/secretary/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
+                const updatedSecretary = response.secretary || response;
+                setSecretaries(secretaries.map(sec => 
+                    sec.id === editingId ? { ...sec, ...updatedSecretary } : sec
+                ));
+                alert('Secretária atualizada com sucesso!');
+            } else {
+                // Criar
+                const response = await apiCall('/secretary/register', { method: 'POST', body: JSON.stringify(formData) });
+                const newSecretary = response.secretary || response;
+                setSecretaries([...secretaries, newSecretary]);
+                alert('Secretária cadastrada com sucesso!');
+            }
+            
+            // Limpa o formulário e o modo de edição
+            setFormData({ name: '', email: '', password: '' });
+            setEditingId(null);
+        } catch (err) {
+            alert('Erro ao salvar secretária: ' + err.message);
         }
-        
-        // Limpa o formulário e o modo de edição
-        setFormData({ name: '', email: '', password: '' });
-        setEditingId(null);
     };
 
     const handleEdit = (secretary) => {
@@ -144,12 +166,25 @@ const ManageSecretaries = () => {
         setFormData({ name: secretary.name, email: secretary.email, password: '' });
     };
 
-    const handleDelete = (id) => {
-        // --- Lógica de REMOÇÃO (DELETE) ---
+    const handleDelete = async (id) => {
+        const password = window.prompt('Para confirmar a exclusão, digite a senha da secretária:');
+        
+        if (!password) {
+            return; // Usuário cancelou
+        }
+        
         if (window.confirm('Tem certeza que deseja excluir esta secretária?')) {
-            console.log('Excluindo secretária:', id);
-            setSecretaries(secretaries.filter(sec => sec.id !== id));
-            alert('Secretária excluída!');
+            try {
+                await apiCall(`/secretary/delete/${id}`, { 
+                    method: 'DELETE',
+                    body: JSON.stringify({ password })
+                });
+                setSecretaries(secretaries.filter(sec => sec.id !== id));
+                alert('Secretária excluída!');
+            } catch (err) {
+                console.error('Erro ao excluir secretária:', err);
+                alert('Erro ao excluir secretária: ' + err.message);
+            }
         }
     };
 
@@ -182,11 +217,15 @@ const ManageSecretaries = () => {
                     onChange={handleInputChange}
                     required={!editingId} // Senha é obrigatória apenas na criação
                 />
-                <Button type="submit">{editingId ? 'Atualizar' : 'Cadastrar'}</Button>
+                <Button type="submit" disabled={loading}>
+                    {loading ? 'Salvando...' : (editingId ? 'Atualizar' : 'Cadastrar')}
+                </Button>
             </Form>
 
+            {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
+
             <List>
-                {secretaries.map(sec => (
+                {Array.isArray(secretaries) && secretaries.map(sec => (
                     <ListItem key={sec.id}>
                         <ItemInfo>
                             <strong>{sec.name}</strong>
@@ -198,6 +237,11 @@ const ManageSecretaries = () => {
                         </ItemActions>
                     </ListItem>
                 ))}
+                {(!Array.isArray(secretaries) || secretaries.length === 0) && (
+                    <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
+                        Nenhuma secretária cadastrada
+                    </p>
+                )}
             </List>
         </Container>
     );

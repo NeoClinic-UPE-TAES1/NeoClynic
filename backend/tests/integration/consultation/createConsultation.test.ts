@@ -9,6 +9,8 @@ import { ReportRepository } from "../../../src/modules/report/domain/repository/
 import { ObservationRepository } from "../../../src/modules/observation/domain/repository/ObservationRepository";
 import { PatientRepository } from "../../../src/modules/patient/domain/repository/PatientRepository";
 import { MedicRepository } from "../../../src/modules/medic/domain/repository/MedicRepository";
+import { SecretaryRepository } from "../../../src/modules/secretary/domain/repository/SecretaryRepository";
+import { AdminRepository } from "../../../src/modules/admin/domain/repository/AdminRepository";
 
 
 describe("User integration with real DB", () => {
@@ -21,17 +23,21 @@ describe("User integration with real DB", () => {
     let observationRepository: ObservationRepository;
     let patientRepository: PatientRepository;
     let medicRepository: MedicRepository;
+    let adminRepository: AdminRepository;
+    let secretaryRepository: SecretaryRepository;
 
     beforeAll(() => {
         prismaClient = prisma;
         consultationRepository = new ConsultationRepository();
         reportRepository = new ReportRepository();
         observationRepository = new ObservationRepository();
+        adminRepository = new AdminRepository();
         patientRepository = new PatientRepository();
+        secretaryRepository = new SecretaryRepository();
         medicRepository = new MedicRepository();
-        consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository);
-        patientService = new PatientService(patientRepository, observationRepository);
-        medicService = new MedicService(medicRepository);
+        consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository, secretaryRepository);
+        patientService = new PatientService(patientRepository, observationRepository, secretaryRepository);
+        medicService = new MedicService(medicRepository, adminRepository);
     });
     afterAll(async () => {
         await prismaClient.$disconnect();
@@ -56,7 +62,7 @@ describe("User integration with real DB", () => {
         const medic = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report);
+        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report, 'MEDIC');
         expect(consultation).toHaveProperty("id");
         expect(consultation.date).toStrictEqual(date);
         expect(consultation.report).toMatchObject(report);
@@ -69,7 +75,7 @@ describe("User integration with real DB", () => {
         const medic = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, undefined);
+        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, undefined, 'MEDIC');
         expect(consultation).toHaveProperty("id");
         expect(consultation.date).toStrictEqual(date);
         expect(consultation.report).toBe(undefined);

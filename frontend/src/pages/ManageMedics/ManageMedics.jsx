@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import useApi from '../../hooks/useApi';
 
 // --- Estilização (Reutilizando os mesmos estilos de ManageSecretaries para consistência) ---
 const Container = styled.div`
@@ -98,48 +99,69 @@ const ItemActions = styled.div`
     }
 `;
 
-// --- Dados Mock (simulando o banco) ---
-const mockMedics = [
-    { id: 'uuid10', name: 'Dr. Carlos Moreira', email: 'carlos.moreira@neoclinic.com', specialty: 'Cardiologia' },
-    { id: 'uuid11', name: 'Dra. Helena Braga', email: 'helena.braga@neoclinic.com', specialty: 'Pediatria' },
-];
-
 // --- Componente ---
 const ManageMedics = () => {
-    const [medics, setMedics] = useState(mockMedics);
+    const { apiCall, loading, error } = useApi();
+    const [medics, setMedics] = useState([]);
     const [formData, setFormData] = useState({ name: '', email: '', password: '', specialty: '' });
     const [editingId, setEditingId] = useState(null);
+
+    // Carregar médicos ao montar
+    useEffect(() => {
+        loadMedics();
+    }, []);
+
+    const loadMedics = async () => {
+        try {
+            const data = await apiCall('/medic/list');
+            // Verifica se data é um array, caso contrário, tenta acessar a propriedade que contém os médicos
+            if (Array.isArray(data)) {
+                setMedics(data);
+            } else if (data && Array.isArray(data.medics)) {
+                setMedics(data.medics);
+            } else if (data && Array.isArray(data.data)) {
+                setMedics(data.data);
+            } else {
+                console.error('Formato de resposta inesperado:', data);
+                setMedics([]);
+            }
+        } catch (err) {
+            console.error('Erro ao carregar médicos:', err);
+            setMedics([]); // Garante que medics seja sempre um array
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Simulação de API
-        if (editingId) {
-            // --- Lógica de ATUALIZAÇÃO (UPDATE) ---
-            console.log('Atualizando médico:', editingId, formData);
-            setMedics(medics.map(med => 
-                med.id === editingId ? { ...med, name: formData.name, email: formData.email, specialty: formData.specialty } : med
-            ));
-            alert('Médico atualizado com sucesso!');
-        } else {
-            // --- Lógica de CRIAÇÃO (CREATE) ---
-            const newMedic = { 
-                id: `uuid${Date.now()}`, // ID mock
-                ...formData 
-            };
-            console.log('Criando novo médico:', newMedic);
-            setMedics([...medics, newMedic]);
-            alert('Médico cadastrado com sucesso!');
+        try {
+            if (editingId) {
+                // Atualizar
+                const response = await apiCall(`/medic/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
+                const updatedMedic = response.medic || response;
+                setMedics(medics.map(med => 
+                    med.id === editingId ? { ...med, ...updatedMedic } : med
+                ));
+                alert('Médico atualizado com sucesso!');
+            } else {
+                // Criar
+                const response = await apiCall('/medic/register', { method: 'POST', body: JSON.stringify(formData) });
+                const newMedic = response.medic || response;
+                setMedics([...medics, newMedic]);
+                alert('Médico cadastrado com sucesso!');
+            }
+            
+            // Limpa o formulário e o modo de edição
+            setFormData({ name: '', email: '', password: '', specialty: '' });
+            setEditingId(null);
+        } catch (err) {
+            alert('Erro ao salvar médico: ' + err.message);
         }
-        
-        // Limpa o formulário e o modo de edição
-        setFormData({ name: '', email: '', password: '', specialty: '' });
-        setEditingId(null);
     };
 
     const handleEdit = (medic) => {
@@ -148,12 +170,25 @@ const ManageMedics = () => {
         setFormData({ name: medic.name, email: medic.email, password: '', specialty: medic.specialty });
     };
 
-    const handleDelete = (id) => {
-        // --- Lógica de REMOÇÃO (DELETE) ---
+    const handleDelete = async (id) => {
+        const password = window.prompt('Para confirmar a exclusão, digite a senha do médico:');
+        
+        if (!password) {
+            return; // Usuário cancelou
+        }
+        
         if (window.confirm('Tem certeza que deseja excluir este médico?')) {
-            console.log('Excluindo médico:', id);
-            setMedics(medics.filter(med => med.id !== id));
-            alert('Médico excluído!');
+            try {
+                await apiCall(`/medic/delete/${id}`, { 
+                    method: 'DELETE',
+                    body: JSON.stringify({ password })
+                });
+                setMedics(medics.filter(med => med.id !== id));
+                alert('Médico excluído!');
+            } catch (err) {
+                console.error('Erro ao excluir médico:', err);
+                alert('Erro ao excluir médico: ' + err.message);
+            }
         }
     };
 
@@ -194,11 +229,15 @@ const ManageMedics = () => {
                     onChange={handleInputChange}
                     required={!editingId} // Senha é obrigatória apenas na criação
                 />
-                <Button type="submit">{editingId ? 'Atualizar' : 'Cadastrar'}</Button>
+                <Button type="submit" disabled={loading}>
+                    {loading ? 'Salvando...' : (editingId ? 'Atualizar' : 'Cadastrar')}
+                </Button>
             </Form>
 
+            {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
+
             <List>
-                {medics.map(med => (
+                {Array.isArray(medics) && medics.map(med => (
                     <ListItem key={med.id}>
                         <ItemInfo>
                             <strong>{med.name}</strong>
@@ -211,6 +250,11 @@ const ManageMedics = () => {
                         </ItemActions>
                     </ListItem>
                 ))}
+                {(!Array.isArray(medics) || medics.length === 0) && (
+                    <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
+                        Nenhum médico cadastrado
+                    </p>
+                )}
             </List>
         </Container>
     );

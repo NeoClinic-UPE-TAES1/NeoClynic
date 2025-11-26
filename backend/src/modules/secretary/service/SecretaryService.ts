@@ -1,23 +1,28 @@
 import { ISecretaryRepository } from "../domain/repository/ISecretaryRepository";
+import { IAdminRepository } from "../../admin/domain/repository/IAdminRepository";
 import { CreateSecretaryRequest } from "../dto/CreateSecretaryRequestDTO";
 import { DeleteSecretaryRequest } from "../dto/DeleteSecretaryRequestDTO";
 import { ListSecretaryRequest } from "../dto/ListSecretaryRequestDTO";
 import { SecretaryResponse } from "../dto/SecretaryResponseDTO";
 import { UpdateSecretaryRequest } from "../dto/UpdateSecretaryRequestDTO";
+import { AppError } from "../../../core/errors/AppError";
 import bcrypt from "bcrypt";
 
 export class SecretaryService {
-    constructor(private secretaryRepository: ISecretaryRepository) {}
+    constructor(private secretaryRepository: ISecretaryRepository,
+                private adminRepository: IAdminRepository
+    ) {}
 
     async create(name: string, email: string, password: string): Promise<SecretaryResponse> {
+        
+        if (!name || !email || !password){
+            throw new AppError("Missing required field", 400);
+        }
+        
         const secretary =  await this.secretaryRepository.findByEmail(email)
 
-        if (!name || !email || !password){
-            throw new Error("Name, email, and password are required.");
-        }
-
         if (secretary != null){
-            throw new Error("Secretary already exists.");
+            throw new AppError("Secretary already exists.", 409);
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -31,20 +36,24 @@ export class SecretaryService {
 
     }
 
-    async delete(id:string, password:string, userId:string | undefined): Promise<void>{
-        const secretary =  await this.secretaryRepository.findById(id)
-        
+    async delete(id:string, adminPassword:string, userId:string | undefined): Promise<void>{
+        const secretary =  await this.secretaryRepository.findById(id);
         if (secretary == null){
-            throw new Error("Secretary not exists.");
+            throw new AppError("Secretary not exists.", 404);
         }
 
-        if (userId != secretary.id){
-            throw new Error("Invalid id.");
+        if (userId == undefined){
+            throw new AppError("User id is required.", 400);
         }
 
-        const isPasswordValid = await bcrypt.compare(password, secretary.password);
-        if (!isPasswordValid){
-            throw new Error("Password invalid.");
+        const isAdmin = await this.adminRepository.findById(userId);
+        if (!isAdmin) {
+            throw new AppError("User is not an admin.", 403);
+        }
+
+        const passwordMatch = await bcrypt.compare(adminPassword, isAdmin.password);
+        if (!passwordMatch){
+            throw new AppError("Password invalid.", 401);
         }
 
         const deleteRequest:DeleteSecretaryRequest = {
@@ -64,11 +73,11 @@ export class SecretaryService {
     ): Promise<SecretaryResponse> {
         const secretary = await this.secretaryRepository.findById(id);
         if (!secretary) {
-            throw new Error("Secretary not exists.");
+            throw new AppError("Secretary not exists.", 404);
         }
 
         if (userId != secretary.id){
-            throw new Error("Invalid id.");
+            throw new AppError("Invalid id.", 400);
         }
 
         let hashedPassword: string | undefined = undefined;
@@ -89,7 +98,7 @@ export class SecretaryService {
     async list(id: string): Promise<SecretaryResponse> {
         const secretary = await this.secretaryRepository.findById(id);
         if (secretary == null) {
-            throw new Error("Secretary not exists.");
+            throw new AppError("Secretary not exists.", 404);
         }
 
         const list: ListSecretaryRequest = { id: secretary.id };
@@ -97,8 +106,8 @@ export class SecretaryService {
         return await this.secretaryRepository.listSecretary(list);
         }
 
-    async listAll(): Promise<SecretaryResponse[]> {
-        return await this.secretaryRepository.listSecretaries();
+    async listAll(page:number | undefined, limit:number | undefined): Promise<SecretaryResponse[]> {
+        return await this.secretaryRepository.listSecretaries(page, limit);
     }
 
 

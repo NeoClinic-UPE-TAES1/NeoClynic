@@ -11,17 +11,42 @@ export const AuthProvider = ({ children }) => {
         // Verificar se há token no localStorage
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role');
+        const userData = localStorage.getItem('user');
+        
         if (token && role) {
-            setUser({ role });
+            const parsedUser = userData ? JSON.parse(userData) : { role };
+            setUser(parsedUser);
             setIsAuthenticated(true);
         }
         setLoading(false);
     }, []);
 
-    const login = (token, role) => {
-        localStorage.setItem('token', token);
-        localStorage.setItem('role', role);
-        setUser({ role });
+    const login = async (email, password) => {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const response = await fetch(`${baseUrl}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Credenciais inválidas');
+        }
+
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+        
+        // Salvar dados completos do usuário
+        const userData = {
+            role: data.role,
+            ...data.user
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        setUser(userData);
         setIsAuthenticated(true);
         setLoading(false);
     };
@@ -29,13 +54,20 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
+        localStorage.removeItem('user');
         setUser(null);
         setIsAuthenticated(false);
         setLoading(false);
     };
 
+    const updateUser = (updatedData) => {
+        const updatedUser = { ...user, ...updatedData };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+    };
+
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

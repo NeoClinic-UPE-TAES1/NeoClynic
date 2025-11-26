@@ -10,7 +10,8 @@ export interface IConsultationRepository {
     deleteConsultation(deleteConsultationRequest:DeleteConsultationRequest):Promise<void>;
     updateConsultation(updateConsultationRequest:UpdateConsultationRequest):Promise<ConsultationResponse>;
     listConsultation(listConsultationRequest:ListConsultationRequest):Promise<ConsultationResponse>;
-    listConsultations():Promise<ConsultationResponse[]>;
+    listConsultations(page: number | undefined, limit:number | undefined):Promise<ConsultationResponse[]>;
 
+    findByMedic(medicId: string, page: number | undefined, limit:number | undefined): Promise<ConsultationResponse[]>;
     findById(id: string): Promise<Consultation | null>;
 }
