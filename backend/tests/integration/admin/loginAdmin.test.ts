@@ -5,7 +5,6 @@ import { AdminRepository } from "../../../src/modules/admin/domain/repository/Ad
 import { AuthAdminService } from "../../../src/modules/admin/service/AuthAdminService";
 import { JWTProvider } from "../../../src/infra/providers/auth/JWTProvider";
 import { NodemailerProvider } from "../../../src/infra/providers/email/NodeMailerProvider";
-import { main } from "../../../prisma/seed";
 import speakeasy from "speakeasy";
 
 describe("User integration with real DB", () => {

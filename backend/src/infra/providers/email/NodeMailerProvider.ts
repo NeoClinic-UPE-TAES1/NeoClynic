@@ -36,6 +36,10 @@ export class NodemailerProvider implements IEmailProvider {
   htmlBody: string,
   attachments?: { filename: string; path?: string; content?: Buffer; cid?: string }[]
 ): Promise<void> {
+  if (process.env.DISABLE_EMAIL === "true") {
+    return;
+  }
+
   await this.transporter.sendMail({
     from: process.env.SMTP_USER,
     to,

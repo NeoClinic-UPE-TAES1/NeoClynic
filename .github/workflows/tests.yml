@@ -24,6 +24,7 @@ jobs:
       SMTP_REFRESH_TOKEN: ${{ secrets.SMTP_REFRESH_TOKEN }}
       SMTP_ACCESS_TOKEN: ${{ secrets.SMTP_ACCESS_TOKEN }}
       SMTP_USER: ${{ secrets.SMTP_USER }}
+      DISABLE_EMAIL: 'true'
 
     strategy:
       matrix:
