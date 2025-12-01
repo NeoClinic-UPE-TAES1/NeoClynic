@@ -25,7 +25,7 @@ export function authenticateToken(authProvider: IAuthProvider) {
             return;
         }
 
-        req.user = { id: payload.id };
+        req.user = { id: payload.id, role: payload.role };
         next();
     };
 }

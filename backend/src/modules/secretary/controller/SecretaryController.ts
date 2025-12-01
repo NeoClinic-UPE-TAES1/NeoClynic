@@ -46,7 +46,8 @@ export class SecretaryController {
             const { name, email, password } = updateSecretaryBodySchema.parse(req.body);
             const { id } = updateSecretaryParamsSchema.parse(req.params);
             const { id: userId } = authenticatedUserSchema.parse({ id: req.user?.id });
-            const result = await this.secretaryService.update(id, name, email, password, userId);
+            const userRole = req.user?.role || '';
+            const result = await this.secretaryService.update(id, name, email, password, userId, userRole);
             
             return res.status(200).json({ secretary: result });
         } catch (error) {

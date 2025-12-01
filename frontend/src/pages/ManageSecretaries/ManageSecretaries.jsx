@@ -137,8 +137,11 @@ const ManageSecretaries = () => {
         
         try {
             if (editingId) {
-                // Atualizar
-                const response = await apiCall(`/secretary/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
+                // Atualizar - remove campos vazios para não falhar validação
+                const updateData = Object.fromEntries(
+                    Object.entries(formData).filter(([_, value]) => value !== '')
+                );
+                const response = await apiCall(`/secretary/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(updateData) });
                 const updatedSecretary = response.secretary || response;
                 setSecretaries(secretaries.map(sec => 
                     sec.id === editingId ? { ...sec, ...updatedSecretary } : sec
@@ -167,9 +170,9 @@ const ManageSecretaries = () => {
     };
 
     const handleDelete = async (id) => {
-        const password = window.prompt('Para confirmar a exclusão, digite a senha da secretária:');
+        const adminPassword = window.prompt('Para confirmar a exclusão, digite sua senha de admin:');
         
-        if (!password) {
+        if (!adminPassword) {
             return; // Usuário cancelou
         }
         
@@ -177,7 +180,7 @@ const ManageSecretaries = () => {
             try {
                 await apiCall(`/secretary/delete/${id}`, { 
                     method: 'DELETE',
-                    body: JSON.stringify({ password })
+                    body: JSON.stringify({ adminPassword })
                 });
                 setSecretaries(secretaries.filter(sec => sec.id !== id));
                 alert('Secretária excluída!');

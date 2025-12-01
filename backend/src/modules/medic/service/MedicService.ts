@@ -67,16 +67,18 @@ export class MedicService {
     email: string | undefined,
     password: string | undefined,
     specialty: string | undefined,
-    userId:string | undefined
+    userId: string | undefined,
+    userRole: string | undefined
   ): Promise<MedicResponse> {
     const medic = await this.medicRepository.findById(id);
     if (!medic) {
       throw new AppError("Medic not exists.", 404);
     }
 
-    if (userId != medic.id){
-            throw new AppError("Invalid user id.", 400);
-        }
+    // ADMIN pode editar qualquer médico, MEDIC só pode editar a si mesmo
+    if (userRole !== 'ADMIN' && userId !== medic.id) {
+      throw new AppError("Invalid user id.", 400);
+    }
 
     let hashedPassword: string | undefined = undefined;
     if (password) {

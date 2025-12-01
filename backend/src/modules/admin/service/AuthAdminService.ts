@@ -15,7 +15,7 @@ export class AuthAdminService{
         private emailProvider: IEmailProvider
     ){}
 
-    async authenticate(email: string, password: string, twoFactorCode: string): Promise<LoginAdminResponse | null> {
+    async authenticate(email: string, password: string, twoFactorCode?: string): Promise<LoginAdminResponse | null> {
         const admin = await this.adminRepository.findByEmail(email);
         if (!admin) {
             throw new AppError("Invalid credentials", 401);
@@ -26,7 +26,7 @@ export class AuthAdminService{
             throw new AppError("Invalid credentials", 401);
         }
 
-        if (!twoFactorCode) {
+        if (!twoFactorCode || twoFactorCode.trim() === '') {
         throw new AppError("Two-factor authentication code required.", 401);
         }
 

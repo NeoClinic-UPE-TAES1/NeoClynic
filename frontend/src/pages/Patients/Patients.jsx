@@ -355,9 +355,18 @@ const Patients = () => {
 
     // Ação da Secretária: Excluir paciente
     const handleDelete = async (id) => {
+        const secretaryPassword = window.prompt('Para confirmar a exclusão, digite sua senha de secretária:');
+        
+        if (!secretaryPassword) {
+            return; // Usuário cancelou
+        }
+        
         if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
             try {
-                await apiCall(`/patient/delete/${id}`, { method: 'DELETE' });
+                await apiCall(`/patient/delete/${id}`, { 
+                    method: 'DELETE',
+                    body: JSON.stringify({ secretaryPassword })
+                });
                 setPatients(patients.filter(p => p.id !== id));
                 alert('Paciente excluído.');
             } catch (err) {

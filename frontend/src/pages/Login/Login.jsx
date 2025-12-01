@@ -53,6 +53,18 @@ const Input = styled.input`
   &:focus { outline: none; border-color: #3dd1c6; box-shadow: 0 6px 20px rgba(61,209,198,0.08); }
 `;
 
+const TwoFactorInput = styled.input`
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #e6e6e6;
+  font-size: 1.5rem;
+  text-align: center;
+  letter-spacing: 0.5rem;
+  font-weight: 600;
+  &:focus { outline: none; border-color: #3dd1c6; box-shadow: 0 6px 20px rgba(61,209,198,0.15); }
+`;
+
 const LoginButton = styled.button`
   width: 90%;
   padding: 12px;
@@ -64,6 +76,19 @@ const LoginButton = styled.button`
   cursor: pointer;
   margin-top: 8px;  
   &:disabled { opacity: 0.7; cursor: not-allowed; }
+`;
+
+const BackButton = styled.button`
+  width: 90%;
+  padding: 12px;
+  background: transparent;
+  color: #7bd5caff;
+  border-radius: 12px;
+  border: 2px solid #7bd5caff;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 12px;
+  &:hover { background: rgba(123, 213, 202, 0.1); }
 `;
 
 const Forgot = styled.a`
@@ -81,8 +106,21 @@ const ErrorMessage = styled.div`
   border: 1px solid #f5c2c2;
 `;
 
+const InfoMessage = styled.div`
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #90caf9;
+  text-align: center;
+  font-size: 0.9rem;
+`;
+
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -103,22 +141,80 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const checkIfAdminEmail = (email) => {
+    // Verifica se é um email de admin
+    const adminEmails = ['neoclynic@gmail.com'];
+    return email.toLowerCase().includes('admin') || adminEmails.includes(email.toLowerCase());
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
-    setIsSubmitting(true);
-    setErrors({});
+    
+    if (showTwoFactor) {
+      // Submissão com código 2FA
+      if (!twoFactorCode || twoFactorCode.length !== 6) {
+        setErrors({ twoFactor: 'Código deve ter 6 dígitos' });
+        return;
+      }
+      
+      setIsSubmitting(true);
+      setErrors({});
 
-    try {
-      await login(formData.email, formData.password);
-      // O redirecionamento será feito pelo RootRedirect baseado no role
-      navigate('/', { replace: true });
-    } catch (err) {
-      console.error(err);
-      setErrors({ general: 'E-mail ou senha inválidos' });
-    } finally {
-      setIsSubmitting(false);
+      try {
+        await login(formData.email, formData.password, twoFactorCode);
+        navigate('/', { replace: true });
+      } catch (err) {
+        console.error(err);
+        const errorMessage = err.message || 'Código de autenticação inválido';
+        setErrors({ general: errorMessage });
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      // Primeira etapa - email e senha
+      if (!validateForm()) return;
+      
+      setIsSubmitting(true);
+      setErrors({});
+
+      try {
+        // Se for admin, tentar login sem 2FA para validar credenciais
+        // O backend vai retornar erro pedindo o 2FA
+        if (checkIfAdminEmail(formData.email)) {
+          try {
+            await login(formData.email, formData.password);
+            // Se chegou aqui sem erro, redireciona
+            navigate('/', { replace: true });
+          } catch (err) {
+            // Se o erro for sobre 2FA, mostra a tela de 2FA
+            const errorMessage = err.message || '';
+            if (errorMessage.includes('Two-factor') || errorMessage.includes('2FA') || errorMessage.includes('authentication code required')) {
+              setShowTwoFactor(true);
+              setIsSubmitting(false);
+              return;
+            }
+            // Se for outro erro, mostra a mensagem
+            throw err;
+          }
+        } else {
+          // Se não for admin, fazer login normal
+          await login(formData.email, formData.password);
+          navigate('/', { replace: true });
+        }
+      } catch (err) {
+        console.error(err);
+        const errorMessage = err.message || 'E-mail ou senha inválidos';
+        setErrors({ general: errorMessage });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
+  };
+
+  const handleBackFrom2FA = () => {
+    setShowTwoFactor(false);
+    setTwoFactorCode('');
+    setErrors({});
   };
 
   return (
@@ -130,47 +226,87 @@ const Login = () => {
 
         {errors.general && <ErrorMessage>{errors.general}</ErrorMessage>}
 
-        <FormGroup>
-          <Label htmlFor="email">E-mail</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            autoComplete="username"
-          />
-          {errors.email && <div style={{ color: '#b00020', marginTop: 6 }}>{errors.email}</div>}
-        </FormGroup>
+        {!showTwoFactor ? (
+          <>
+            <FormGroup>
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                autoComplete="username"
+              />
+              {errors.email && <div style={{ color: '#b00020', marginTop: 6 }}>{errors.email}</div>}
+            </FormGroup>
 
-        <FormGroup>
-          <Label htmlFor="password">Senha</Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            autoComplete="current-password"
-          />
-          {errors.password && <div style={{ color: '#b00020', marginTop: 6 }}>{errors.password}</div>}
-        </FormGroup>
+            <FormGroup>
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                autoComplete="current-password"
+              />
+              {errors.password && <div style={{ color: '#b00020', marginTop: 6 }}>{errors.password}</div>}
+            </FormGroup>
 
-        <LoginButton type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Entrando...' : 'Entrar'}
-        </LoginButton>
+            <LoginButton type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Entrando...' : 'Entrar'}
+            </LoginButton>
 
-        <Forgot
-          as="button"
-          onClick={(e) => {
-            e.preventDefault();
-            setFormData({ email: '', password: '' });
-            navigate('/forgot-password');
-          }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-        >
-          Esqueci minha senha
-        </Forgot>
+            <Forgot
+              as="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setFormData({ email: '', password: '' });
+                navigate('/forgot-password');
+              }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              Esqueci minha senha
+            </Forgot>
+          </>
+        ) : (
+          <>
+            <InfoMessage>
+              <strong>Autenticação de Dois Fatores</strong>
+              <br />
+              Digite o código de 6 dígitos do seu aplicativo autenticador
+            </InfoMessage>
+
+            <FormGroup>
+              <Label htmlFor="twoFactorCode">Código de Verificação</Label>
+              <TwoFactorInput
+                id="twoFactorCode"
+                name="twoFactorCode"
+                type="text"
+                maxLength="6"
+                placeholder="000000"
+                value={twoFactorCode}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '');
+                  setTwoFactorCode(value);
+                  if (errors.twoFactor) setErrors({});
+                }}
+                autoComplete="one-time-code"
+                autoFocus
+              />
+              {errors.twoFactor && <div style={{ color: '#b00020', marginTop: 6 }}>{errors.twoFactor}</div>}
+            </FormGroup>
+
+            <LoginButton type="submit" disabled={isSubmitting || twoFactorCode.length !== 6}>
+              {isSubmitting ? 'Verificando...' : 'Verificar Código'}
+            </LoginButton>
+
+            <BackButton type="button" onClick={handleBackFrom2FA}>
+              Voltar
+            </BackButton>
+          </>
+        )}
       </LoginForm>
     </LoginContainer>
   );

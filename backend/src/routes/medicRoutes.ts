@@ -15,7 +15,7 @@ const medicRepository = new MedicRepository();
 const adminRepository = new AdminRepository();
 const medicController = new MedicController(medicRepository, adminRepository);
 
-medicRoutes.post('/medic/register', authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
+medicRoutes.post('/medic/register', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
     medicController.registerMedic(req, res, next) });
 
 medicRoutes.get('/medic/list/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response, next: NextFunction) => {

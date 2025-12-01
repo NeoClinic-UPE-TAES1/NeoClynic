@@ -141,8 +141,12 @@ const ManageMedics = () => {
         
         try {
             if (editingId) {
-                // Atualizar
-                const response = await apiCall(`/medic/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(formData) });
+                // Atualizar - remove campos vazios para não falhar validação
+                const updateData = Object.fromEntries(
+                    Object.entries(formData).filter(([_, value]) => value !== '')
+                );
+                console.log('Sending update data:', updateData);
+                const response = await apiCall(`/medic/update/${editingId}`, { method: 'PATCH', body: JSON.stringify(updateData) });
                 const updatedMedic = response.medic || response;
                 setMedics(medics.map(med => 
                     med.id === editingId ? { ...med, ...updatedMedic } : med
@@ -171,9 +175,9 @@ const ManageMedics = () => {
     };
 
     const handleDelete = async (id) => {
-        const password = window.prompt('Para confirmar a exclusão, digite a senha do médico:');
+        const adminPassword = window.prompt('Para confirmar a exclusão, digite sua senha de admin:');
         
-        if (!password) {
+        if (!adminPassword) {
             return; // Usuário cancelou
         }
         
@@ -181,7 +185,7 @@ const ManageMedics = () => {
             try {
                 await apiCall(`/medic/delete/${id}`, { 
                     method: 'DELETE',
-                    body: JSON.stringify({ password })
+                    body: JSON.stringify({ adminPassword })
                 });
                 setMedics(medics.filter(med => med.id !== id));
                 alert('Médico excluído!');

@@ -15,12 +15,15 @@ export class AuthAdminController {
 
     async login(req:Request, res:Response, next: NextFunction) : Promise<Response | void> {
         try{
+            console.log('Login request body:', JSON.stringify(req.body, null, 2));
             const { email, password, twoFactorCode } = loginAdminBodySchema.parse(req.body);
+            console.log('Parsed successfully:', { email, passwordLength: password?.length, hasTwoFactorCode: !!twoFactorCode });
             const result = await this.authAdminService.authenticate(email, password, twoFactorCode);
             
             return res.status(200).json({ result });
 
         } catch (error) {
+            console.log('Login error:', error);
             return next(error);
         }
     }   
