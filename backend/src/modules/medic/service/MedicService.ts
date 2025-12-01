@@ -68,7 +68,8 @@ export class MedicService {
     password: string | undefined,
     specialty: string | undefined,
     userId: string | undefined,
-    userRole: string | undefined
+    userRole: string | undefined,
+    currentPassword: string | undefined
   ): Promise<MedicResponse> {
     const medic = await this.medicRepository.findById(id);
     if (!medic) {
@@ -82,6 +83,20 @@ export class MedicService {
 
     let hashedPassword: string | undefined = undefined;
     if (password) {
+      // Se o usuário está alterando sua própria senha, exigir senha atual
+      // Se é ADMIN alterando senha de outro usuário, não exigir
+      const isChangingOwnPassword = userId === medic.id;
+      
+      if (isChangingOwnPassword) {
+        if (!currentPassword) {
+          throw new AppError("Current password is required to change password.", 400);
+        }
+        const passwordMatch = await bcrypt.compare(currentPassword, medic.password);
+        if (!passwordMatch) {
+          throw new AppError("Current password is incorrect.", 401);
+        }
+      }
+      
       hashedPassword = await bcrypt.hash(password, 10);
     }
 

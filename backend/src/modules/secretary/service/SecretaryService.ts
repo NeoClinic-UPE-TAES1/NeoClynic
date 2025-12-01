@@ -70,7 +70,8 @@ export class SecretaryService {
         email: string | undefined,
         password: string | undefined,
         userId: string | undefined,
-        userRole: string | undefined
+        userRole: string | undefined,
+        currentPassword: string | undefined
     ): Promise<SecretaryResponse> {
         const secretary = await this.secretaryRepository.findById(id);
         if (!secretary) {
@@ -84,6 +85,20 @@ export class SecretaryService {
 
         let hashedPassword: string | undefined = undefined;
         if (password) {
+            // Se o usuário está alterando sua própria senha, exigir senha atual
+            // Se é ADMIN alterando senha de outro usuário, não exigir
+            const isChangingOwnPassword = userId === secretary.id;
+            
+            if (isChangingOwnPassword) {
+                if (!currentPassword) {
+                    throw new AppError("Current password is required to change password.", 400);
+                }
+                const passwordMatch = await bcrypt.compare(currentPassword, secretary.password);
+                if (!passwordMatch) {
+                    throw new AppError("Current password is incorrect.", 401);
+                }
+            }
+            
             hashedPassword = await bcrypt.hash(password, 10);
         }
 

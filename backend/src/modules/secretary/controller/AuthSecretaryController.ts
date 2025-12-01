@@ -40,11 +40,14 @@ export class AuthSecretaryController {
 
     async reset(req: Request, res: Response, next: NextFunction): Promise<Response|void> {
         try {
+            console.log('Reset password request body:', req.body);
             const { token, newPassword } = resetSecretaryPasswordBodySchema.parse(req.body);
+            console.log('Parsed successfully - token length:', token?.length, 'password length:', newPassword?.length);
             await this.authSecretaryService.resetPassword(token, newPassword);
             
             return res.status(200).json({ message: "Password reset successfully." });
         } catch (error) {
+            console.error('Reset password error:', error);
             return next(error);
         }
     }

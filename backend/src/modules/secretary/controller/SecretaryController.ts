@@ -43,11 +43,11 @@ export class SecretaryController {
 
     public async updateSecretary(req: Request, res: Response, next: NextFunction): Promise<Response|void> {
         try{
-            const { name, email, password } = updateSecretaryBodySchema.parse(req.body);
+            const { name, email, password, currentPassword } = updateSecretaryBodySchema.parse(req.body);
             const { id } = updateSecretaryParamsSchema.parse(req.params);
             const { id: userId } = authenticatedUserSchema.parse({ id: req.user?.id });
             const userRole = req.user?.role || '';
-            const result = await this.secretaryService.update(id, name, email, password, userId, userRole);
+            const result = await this.secretaryService.update(id, name, email, password, userId, userRole, currentPassword);
             
             return res.status(200).json({ secretary: result });
         } catch (error) {
