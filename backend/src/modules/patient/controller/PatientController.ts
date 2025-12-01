@@ -17,11 +17,14 @@ export class PatientController {
 
   public async registerPatient(req: Request, res: Response, next:NextFunction): Promise<Response|void> {
     try{
+      console.log('Register patient request body:', JSON.stringify(req.body, null, 2));
       const { name, birthDay, sex, cpf, ethnicity, email, observation } = registerPatientBodySchema.parse(req.body);
+      console.log('Patient data parsed successfully');
       const result = await this.patientService.create(name, birthDay, sex, cpf, ethnicity, email, observation);
 
       return res.status(201).json({ patient: result });
       } catch (error) {
+            console.log('Register patient error:', error);
             return next(error);
         }
   }

@@ -272,10 +272,35 @@ const Patients = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setCurrentPatient(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        
+        // Aplicar máscara de CPF
+        if (name === 'cpf') {
+            // Remove tudo que não é dígito
+            const numbersOnly = value.replace(/\D/g, '');
+            // Limita a 11 dígitos
+            const limited = numbersOnly.substring(0, 11);
+            // Aplica a máscara: 000.000.000-00
+            let formatted = limited;
+            if (limited.length > 3) {
+                formatted = limited.substring(0, 3) + '.' + limited.substring(3);
+            }
+            if (limited.length > 6) {
+                formatted = formatted.substring(0, 7) + '.' + limited.substring(6);
+            }
+            if (limited.length > 9) {
+                formatted = formatted.substring(0, 11) + '-' + limited.substring(9);
+            }
+            
+            setCurrentPatient(prev => ({
+                ...prev,
+                [name]: formatted
+            }));
+        } else {
+            setCurrentPatient(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     };
     
     const handleObservationChange = (e) => {
@@ -294,11 +319,19 @@ const Patients = () => {
         e.preventDefault();
         try {
             // Preparar dados do paciente
+            // Converter sexo para o formato do backend (M/F)
+            let sexValue = 'M';
+            if (currentPatient.sex === 'Feminino') {
+                sexValue = 'F';
+            } else if (currentPatient.sex === 'Masculino') {
+                sexValue = 'M';
+            }
+            
             const patientData = {
                 name: currentPatient.name,
                 birthDay: currentPatient.birthDay,
-                sex: currentPatient.sex,
-                cpf: currentPatient.cpf,
+                sex: sexValue,
+                cpf: currentPatient.cpf.replace(/\D/g, ''),  // Remove máscara antes de enviar
                 ethnicity: currentPatient.ethnicity,
                 email: currentPatient.email.trim() || null  // null se vazio
             };
@@ -314,7 +347,7 @@ const Patients = () => {
                 alert('Paciente atualizado com sucesso!');
             } else {
                 // Criar novo paciente
-                const response = await apiCall('/patient/create', { 
+                const response = await apiCall('/patient/register', { 
                     method: 'POST', 
                     body: JSON.stringify(patientData)
                 });

@@ -21,18 +21,16 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    const login = async (email, password, twoFactorCode = null) => {
+    const login = async (email, password, twoFactorCode = null, userType = 'admin') => {
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
         
-        // Determinar qual endpoint usar baseado no email
-        let endpoint = '/auth/login';
-        if (email.toLowerCase().includes('admin') || email.toLowerCase() === 'neoclynic@gmail.com') {
-            endpoint = '/admin/login';
-        } else if (email.toLowerCase().includes('secretary')) {
-            endpoint = '/secretary/login';
-        } else if (email.toLowerCase().includes('medic') || email.toLowerCase().includes('doctor')) {
-            endpoint = '/medic/login';
-        }
+        // Determinar qual endpoint usar baseado no userType
+        const endpointMap = {
+            'admin': '/admin/login',
+            'secretary': '/secretary/login',
+            'medic': '/medic/login'
+        };
+        const endpoint = endpointMap[userType] || '/admin/login';
         
         const body = { email, password };
         if (twoFactorCode) {

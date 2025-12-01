@@ -117,8 +117,18 @@ const InfoMessage = styled.div`
   font-size: 0.9rem;
 `;
 
+const Select = styled.select`
+  width: 100%;
+  padding: 12px 0px;
+  border-radius: 18px;
+  border: 1px solid #e6e6e6;
+  font-size: 0.95rem;
+  background: white;
+  &:focus { outline: none; border-color: #3dd1c6; box-shadow: 0 6px 20px rgba(61,209,198,0.08); }
+`;
+
 const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: '', password: '', userType: 'admin' });
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [errors, setErrors] = useState({});
@@ -161,7 +171,7 @@ const Login = () => {
       setErrors({});
 
       try {
-        await login(formData.email, formData.password, twoFactorCode);
+        await login(formData.email, formData.password, twoFactorCode, formData.userType);
         navigate('/', { replace: true });
       } catch (err) {
         console.error(err);
@@ -180,9 +190,9 @@ const Login = () => {
       try {
         // Se for admin, tentar login sem 2FA para validar credenciais
         // O backend vai retornar erro pedindo o 2FA
-        if (checkIfAdminEmail(formData.email)) {
+        if (formData.userType === 'admin') {
           try {
-            await login(formData.email, formData.password);
+            await login(formData.email, formData.password, undefined, formData.userType);
             // Se chegou aqui sem erro, redireciona
             navigate('/', { replace: true });
           } catch (err) {
@@ -198,7 +208,7 @@ const Login = () => {
           }
         } else {
           // Se não for admin, fazer login normal
-          await login(formData.email, formData.password);
+          await login(formData.email, formData.password, undefined, formData.userType);
           navigate('/', { replace: true });
         }
       } catch (err) {
@@ -228,6 +238,20 @@ const Login = () => {
 
         {!showTwoFactor ? (
           <>
+            <FormGroup>
+              <Label htmlFor="userType">Tipo de Usuário</Label>
+              <Select
+                id="userType"
+                name="userType"
+                value={formData.userType}
+                onChange={handleChange}
+              >
+                <option value="admin">Administrador</option>
+                <option value="secretary">Secretária</option>
+                <option value="medic">Médico</option>
+              </Select>
+            </FormGroup>
+
             <FormGroup>
               <Label htmlFor="email">E-mail</Label>
               <Input
