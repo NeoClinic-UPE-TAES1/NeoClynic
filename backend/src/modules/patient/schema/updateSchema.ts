@@ -13,7 +13,9 @@ export const updatePatientBodySchema = z.object({
         .min(11, { message: "CPF must have 11 digits" })
         .max(11, { message: "CPF must have 11 digits" })
         .regex(/^\d+$/, { message: "CPF must contain only numbers" })
-        .refine((cpf) => validateCPF(cpf), { message: "Invalid CPF" }).optional(),
+        .refine((cpf) => validateCPF(cpf), { message: "Invalid CPF" })
+        .optional()
+        .or(z.literal('')).transform(val => val === '' ? undefined : val),
     ethnicity: z.string().min(2, "Ethnicity is too short").optional(),
     email: z.string().email("Invalid email").optional(),
     observation: observationSchema.optional()

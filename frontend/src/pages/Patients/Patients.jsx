@@ -250,6 +250,23 @@ const Patients = () => {
             setPatients([]);
         }
     };
+
+    // Função para formatar CPF com máscara
+    const formatCPF = (cpf) => {
+        if (!cpf) return '';
+        const cleaned = cpf.replace(/\D/g, '');
+        if (cleaned.length <= 11) {
+            return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+        return cleaned;
+    };
+
+    // Handler para aplicar máscara enquanto o usuário digita
+    const handleCPFChange = (e) => {
+        const value = e.target.value;
+        const cleaned = value.replace(/\D/g, ''); // Remove tudo que não é número
+        setCurrentPatient({ ...currentPatient, cpf: cleaned });
+    };
     
     // 3. Lógica de Filtro
     const filteredPatients = useMemo(() => 
@@ -338,9 +355,13 @@ const Patients = () => {
             
             if (currentPatient.id) {
                 // Atualizar paciente existente
+                // Filtrar campos vazios para não enviar ao backend
+                const filteredData = Object.fromEntries(
+                    Object.entries(patientData).filter(([_, value]) => value !== null && value !== '')
+                );
                 const response = await apiCall(`/patient/update/${currentPatient.id}`, { 
                     method: 'PATCH', 
-                    body: JSON.stringify(patientData)
+                    body: JSON.stringify(filteredData)
                 });
                 const updatedPatient = response.patient || response;
                 setPatients(patients.map(p => p.id === currentPatient.id ? updatedPatient : p));
@@ -491,9 +512,11 @@ const Patients = () => {
                                 <Input 
                                     id="cpf" 
                                     name="cpf" 
-                                    value={currentPatient.cpf || ''} 
-                                    onChange={handleInputChange} 
+                                    value={formatCPF(currentPatient.cpf || '')} 
+                                    onChange={handleCPFChange} 
                                     required 
+                                    maxLength="14"
+                                    placeholder="000.000.000-00"
                                 />
                                 
                                 <Label htmlFor="birthDay">Data de Nascimento</Label>
