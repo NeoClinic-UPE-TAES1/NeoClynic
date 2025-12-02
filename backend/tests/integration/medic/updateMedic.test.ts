@@ -31,9 +31,10 @@ describe("User integration with real DB", () => {
         const email = "JohnDoe@gmail.com"
         const password = "password123";
         const specialty = "Cardiology";
+        const role = "MEDIC";
         const medic = await medicService.create(name, email, password, specialty);
         const newName = "Jane Doe";
-        const updatedMedic = await medicService.update(medic.id, newName, undefined, undefined, undefined, medic.id);
+        const updatedMedic = await medicService.update(medic.id, newName, undefined, undefined, undefined, medic.id, role, undefined);
         expect(updatedMedic.name).toBe(newName);
         expect(updatedMedic.email).toBe(email);
     }

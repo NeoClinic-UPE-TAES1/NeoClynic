@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 import { AdminService } from "../../../src/modules/admin/service/AdminService";
 import { AdminRepository } from "../../../src/modules/admin/domain/repository/AdminRepository";
 import { prisma } from "../../../src/infra/database/prismaClient";
-import { main } from "../../../prisma/seed";
 
 describe("User integration with real DB", () => {
     let prismaClient: PrismaClient;
@@ -29,11 +28,11 @@ describe("User integration with real DB", () => {
         const oldName = admin.name;
         const newName = "Jane Doe";
 
-        const updatedAdmin = await adminService.update(admin.id, newName, undefined, undefined, admin.id);
+        const updatedAdmin = await adminService.update(admin.id, newName, undefined, undefined, admin.id, undefined);
         expect(updatedAdmin.name).toBe(newName);
         expect(updatedAdmin.email).toBe(admin.email);
 
-        await adminService.update(admin.id, oldName, undefined, undefined, admin.id);
+        await adminService.update(admin.id, oldName, undefined, undefined, admin.id, undefined);
     }
     );
     
