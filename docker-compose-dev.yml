@@ -10,6 +10,12 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      # Use the env vars actually available inside the container (POSTGRES_USER/POSTGRES_DB)
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build:
@@ -18,6 +24,17 @@ services:
       - "8050:3000"
     environment:
       DATABASE_URL: ${LOCAL_DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      INIT_ADMIN_EMAIL: ${INIT_ADMIN_EMAIL}
+      INIT_ADMIN_PASSWORD: ${INIT_ADMIN_PASSWORD}
+      SMTP_CLIENT_ID: ${SMTP_CLIENT_ID}
+      SMTP_CLIENT_SECRET: ${SMTP_CLIENT_SECRET}
+      SMTP_REFRESH_TOKEN: ${SMTP_REFRESH_TOKEN}
+      SMTP_ACCESS_TOKEN: ${SMTP_ACCESS_TOKEN}
+      SMTP_USER: ${SMTP_USER}
+      PRISMA_CLI_BINARY_TARGETS: "debian-openssl-3.0.x"
+      PRISMA_CLIENT_ENGINE_TYPE: "binary"
     depends_on:
       - db
 
@@ -32,6 +49,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     depends_on:
       - backend
 

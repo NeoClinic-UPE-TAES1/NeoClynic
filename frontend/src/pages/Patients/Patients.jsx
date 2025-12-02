@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
+import useApi from '../../hooks/useApi';
 
 // --- Estilização ---
 const Container = styled.div`
@@ -200,36 +201,7 @@ const SaveButton = styled(Button)`
 `;
 
 // --- Mock Data (baseado no schema.prisma) ---
-const initialPatients = [
-    { 
-        id: 'p1', 
-        name: 'Carlos Batista', 
-        birthDay: '1985-04-12T00:00:00.000Z', 
-        sex: 'Masculino', 
-        cpf: '111.222.333-44', 
-        ethnicity: 'Branco', 
-        email: 'carlos.batista@email.com',
-        observation: {
-            comorbidity: 'Hipertensão',
-            allergies: 'Poeira',
-            medications: 'Losartana 50mg (contínuo)'
-        }
-    },
-    { 
-        id: 'p2', 
-        name: 'Mariana Oliveira', 
-        birthDay: '1992-09-30T00:00:00.000Z', 
-        sex: 'Feminino', 
-        cpf: '555.666.777-88', 
-        ethnicity: 'Pardo', 
-        email: 'mari.oli@email.com',
-        observation: {
-            comorbidity: 'Asma',
-            allergies: 'Penicilina, Camarão',
-            medications: 'Aerolin (quando necessário)'
-        }
-    }
-];
+const initialPatients = [];
 
 const emptyPatient = {
     id: null,
@@ -239,11 +211,7 @@ const emptyPatient = {
     cpf: '',
     ethnicity: 'Pardo',
     email: '',
-    observation: {
-        comorbidity: '',
-        allergies: '',
-        medications: ''
-    }
+    observation: null
 };
 
 // --- Componente ---
@@ -252,11 +220,53 @@ const Patients = () => {
     const location = useLocation();
     const isSecretary = location.pathname.startsWith('/secretary');
 
+    const { apiCall, loading, error } = useApi();
+
     // 2. Estados
-    const [patients, setPatients] = useState(initialPatients);
+    const [patients, setPatients] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [currentPatient, setCurrentPatient] = useState(emptyPatient);
+    
+    // Carregar pacientes ao montar
+    useEffect(() => {
+        loadPatients();
+    }, []);
+
+    const loadPatients = async () => {
+        try {
+            const data = await apiCall('/patient/list');
+            // Verificar o formato da resposta
+            if (Array.isArray(data)) {
+                setPatients(data);
+            } else if (data && Array.isArray(data.patients)) {
+                setPatients(data.patients);
+            } else {
+                console.error('Formato de resposta inesperado:', data);
+                setPatients([]);
+            }
+        } catch (err) {
+            console.error('Erro ao carregar pacientes:', err);
+            setPatients([]);
+        }
+    };
+
+    // Função para formatar CPF com máscara
+    const formatCPF = (cpf) => {
+        if (!cpf) return '';
+        const cleaned = cpf.replace(/\D/g, '');
+        if (cleaned.length <= 11) {
+            return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+        return cleaned;
+    };
+
+    // Handler para aplicar máscara enquanto o usuário digita
+    const handleCPFChange = (e) => {
+        const value = e.target.value;
+        const cleaned = value.replace(/\D/g, ''); // Remove tudo que não é número
+        setCurrentPatient({ ...currentPatient, cpf: cleaned });
+    };
     
     // 3. Lógica de Filtro
     const filteredPatients = useMemo(() => 
@@ -266,9 +276,25 @@ const Patients = () => {
         ), 
     [patients, searchTerm]);
 
+    // Função para mapear sexo do backend para o frontend
+    const mapSexFromBackend = (sex) => {
+        if (sex === 'M') return 'Masculino';
+        if (sex === 'F') return 'Feminino';
+        return sex; // Retorna como está se for 'Outro' ou outro valor
+    };
+
     // 4. Handlers de Ações
     const handleOpenModal = (patient) => {
-        setCurrentPatient(patient || emptyPatient);
+        if (patient) {
+            // Converter sexo do backend (M/F) para o frontend (Masculino/Feminino)
+            const mappedPatient = {
+                ...patient,
+                sex: mapSexFromBackend(patient.sex)
+            };
+            setCurrentPatient(mappedPatient);
+        } else {
+            setCurrentPatient(emptyPatient);
+        }
         setShowModal(true);
     };
 
@@ -279,10 +305,35 @@ const Patients = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setCurrentPatient(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        
+        // Aplicar máscara de CPF
+        if (name === 'cpf') {
+            // Remove tudo que não é dígito
+            const numbersOnly = value.replace(/\D/g, '');
+            // Limita a 11 dígitos
+            const limited = numbersOnly.substring(0, 11);
+            // Aplica a máscara: 000.000.000-00
+            let formatted = limited;
+            if (limited.length > 3) {
+                formatted = limited.substring(0, 3) + '.' + limited.substring(3);
+            }
+            if (limited.length > 6) {
+                formatted = formatted.substring(0, 7) + '.' + limited.substring(6);
+            }
+            if (limited.length > 9) {
+                formatted = formatted.substring(0, 11) + '-' + limited.substring(9);
+            }
+            
+            setCurrentPatient(prev => ({
+                ...prev,
+                [name]: formatted
+            }));
+        } else {
+            setCurrentPatient(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     };
     
     const handleObservationChange = (e) => {
@@ -297,38 +348,103 @@ const Patients = () => {
     };
 
     // Ação da Secretária: Salvar cadastro do paciente
-    const handleSavePatient = (e) => {
+    const handleSavePatient = async (e) => {
         e.preventDefault();
-        // Simulação de API
-        if (currentPatient.id) {
-            // --- Lógica de ATUALIZAÇÃO (UPDATE) ---
-            setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
-            alert('Paciente atualizado com sucesso!');
-        } else {
-            // --- Lógica de CRIAÇÃO (CREATE) ---
-            const newPatient = { ...currentPatient, id: `p${Date.now()}` };
-            setPatients([...patients, newPatient]);
-            alert('Paciente cadastrado com sucesso!');
+        try {
+            // Preparar dados do paciente
+            // Converter sexo para o formato do backend (M/F)
+            let sexValue = 'M';
+            if (currentPatient.sex === 'Feminino') {
+                sexValue = 'F';
+            } else if (currentPatient.sex === 'Masculino') {
+                sexValue = 'M';
+            }
+            
+            const patientData = {
+                name: currentPatient.name,
+                birthDay: currentPatient.birthDay,
+                sex: sexValue,
+                cpf: currentPatient.cpf.replace(/\D/g, ''),  // Remove máscara antes de enviar
+                ethnicity: currentPatient.ethnicity,
+                email: currentPatient.email.trim() || null  // null se vazio
+            };
+            
+            if (currentPatient.id) {
+                // Atualizar paciente existente
+                // Filtrar campos vazios para não enviar ao backend
+                const filteredData = Object.fromEntries(
+                    Object.entries(patientData).filter(([_, value]) => value !== null && value !== '')
+                );
+                const response = await apiCall(`/patient/update/${currentPatient.id}`, { 
+                    method: 'PATCH', 
+                    body: JSON.stringify(filteredData)
+                });
+                const updatedPatient = response.patient || response;
+                setPatients(patients.map(p => p.id === currentPatient.id ? updatedPatient : p));
+                alert('Paciente atualizado com sucesso!');
+            } else {
+                // Criar novo paciente
+                const response = await apiCall('/patient/register', { 
+                    method: 'POST', 
+                    body: JSON.stringify(patientData)
+                });
+                const newPatient = response.patient || response;
+                setPatients([...patients, newPatient]);
+                alert('Paciente cadastrado com sucesso!');
+            }
+            handleCloseModal();
+        } catch (err) {
+            console.error('Erro ao salvar paciente:', err);
+            alert('Erro ao salvar paciente: ' + err.message);
         }
-        handleCloseModal();
     };
     
     // Ação do Médico: Salvar observações clínicas
-    const handleSaveObservation = (e) => {
+    const handleSaveObservation = async (e) => {
         e.preventDefault();
-        // Simulação de API
-        console.log('Salvando observações para:', currentPatient.id, currentPatient.observation);
-        setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
-        alert('Observações clínicas atualizadas!');
-        handleCloseModal();
+        try {
+            await apiCall(`/patient/update/${currentPatient.id}`, { 
+                method: 'PATCH', 
+                body: JSON.stringify({
+                    observation: {
+                        comorbidity: currentPatient.observation?.comorbidity || '',
+                        allergies: currentPatient.observation?.allergies || '',
+                        medications: currentPatient.observation?.medications || ''
+                    }
+                })
+            });
+            
+            // Recarregar a lista de pacientes para obter dados atualizados
+            await loadPatients();
+            
+            alert('Observações clínicas atualizadas!');
+            handleCloseModal();
+        } catch (err) {
+            console.error('Erro ao salvar observações:', err);
+            alert('Erro ao salvar observações: ' + err.message);
+        }
     };
 
     // Ação da Secretária: Excluir paciente
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
+        const secretaryPassword = window.prompt('Para confirmar a exclusão, digite sua senha de secretária:');
+        
+        if (!secretaryPassword) {
+            return; // Usuário cancelou
+        }
+        
         if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
-            // Simulação de API
-            setPatients(patients.filter(p => p.id !== id));
-            alert('Paciente excluído.');
+            try {
+                await apiCall(`/patient/delete/${id}`, { 
+                    method: 'DELETE',
+                    body: JSON.stringify({ secretaryPassword })
+                });
+                setPatients(patients.filter(p => p.id !== id));
+                alert('Paciente excluído.');
+            } catch (err) {
+                console.error('Erro ao excluir paciente:', err);
+                alert('Erro ao excluir paciente: ' + err.message);
+            }
         }
     };
 
@@ -353,32 +469,38 @@ const Patients = () => {
             </Header>
             
             <List>
-                {filteredPatients.map(patient => (
-                    <ListItem key={patient.id}>
-                        <ItemInfo>
-                            <strong>{patient.name}</strong>
-                            <span>CPF: {patient.cpf}</span>
-                        </ItemInfo>
-                        <ItemActions>
-                            {isSecretary ? (
-                                // Ações da Secretária: [RF05] Editar, [RF05] Deletar
-                                <>
-                                    <button className="edit" onClick={() => handleOpenModal(patient)}>
-                                        Editar
+                {filteredPatients.length > 0 ? (
+                    filteredPatients.map(patient => (
+                        <ListItem key={patient.id}>
+                            <ItemInfo>
+                                <strong>{patient.name}</strong>
+                                <span>CPF: {patient.cpf}</span>
+                            </ItemInfo>
+                            <ItemActions>
+                                {isSecretary ? (
+                                    // Ações da Secretária: [RF05] Editar, [RF05] Deletar
+                                    <>
+                                        <button className="edit" onClick={() => handleOpenModal(patient)}>
+                                            Editar
+                                        </button>
+                                        <button className="delete" onClick={() => handleDelete(patient.id)}>
+                                            Excluir
+                                        </button>
+                                    </>
+                                ) : (
+                                    // Ação do Médico: [RF-Implícito] Ver prontuário
+                                    <button className="view" onClick={() => handleOpenModal(patient)}>
+                                        Ver Prontuário
                                     </button>
-                                    <button className="delete" onClick={() => handleDelete(patient.id)}>
-                                        Excluir
-                                    </button>
-                                </>
-                            ) : (
-                                // Ação do Médico: [RF-Implícito] Ver prontuário
-                                <button className="view" onClick={() => handleOpenModal(patient)}>
-                                    Ver Prontuário
-                                </button>
-                            )}
-                        </ItemActions>
-                    </ListItem>
-                ))}
+                                )}
+                            </ItemActions>
+                        </ListItem>
+                    ))
+                ) : (
+                    <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
+                        {searchTerm ? 'Nenhum paciente encontrado' : 'Nenhum paciente cadastrado'}
+                    </p>
+                )}
             </List>
             
             {/* Modal de Cadastro/Edição (Secretária) ou Visualização (Médico) */}
@@ -396,26 +518,52 @@ const Patients = () => {
                         {isSecretary && (
                             <Form onSubmit={handleSavePatient}>
                                 <Label htmlFor="name">Nome Completo</Label>
-                                <Input id="name" name="name" value={currentPatient.name} onChange={handleInputChange} required />
+                                <Input 
+                                    id="name" 
+                                    name="name" 
+                                    value={currentPatient.name || ''} 
+                                    onChange={handleInputChange} 
+                                    required 
+                                />
                                 
                                 <Label htmlFor="cpf">CPF</Label>
-                                <Input id="cpf" name="cpf" value={currentPatient.cpf} onChange={handleInputChange} required />
+                                <Input 
+                                    id="cpf" 
+                                    name="cpf" 
+                                    value={formatCPF(currentPatient.cpf || '')} 
+                                    onChange={handleCPFChange} 
+                                    required 
+                                    maxLength="14"
+                                    placeholder="000.000.000-00"
+                                />
                                 
                                 <Label htmlFor="birthDay">Data de Nascimento</Label>
-                                <Input id="birthDay" name="birthDay" type="date" value={currentPatient.birthDay.split('T')[0]} onChange={handleInputChange} required />
+                                <Input 
+                                    id="birthDay" 
+                                    name="birthDay" 
+                                    type="date" 
+                                    value={currentPatient.birthDay ? currentPatient.birthDay.split('T')[0] : ''} 
+                                    onChange={handleInputChange} 
+                                    required 
+                                />
                                 
                                 <Label htmlFor="email">Email</Label>
-                                <Input id="email" name="email" type="email" value={currentPatient.email} onChange={handleInputChange} />
+                                <Input 
+                                    id="email" 
+                                    name="email" 
+                                    type="email" 
+                                    value={currentPatient.email || ''} 
+                                    onChange={handleInputChange} 
+                                />
                                 
                                 <Label htmlFor="sex">Sexo</Label>
-                                <Select id="sex" name="sex" value={currentPatient.sex} onChange={handleInputChange}>
+                                <Select id="sex" name="sex" value={currentPatient.sex || 'Masculino'} onChange={handleInputChange}>
                                     <option>Masculino</option>
                                     <option>Feminino</option>
-                                    <option>Outro</option>
                                 </Select>
                                 
                                 <Label htmlFor="ethnicity">Etnia</Label>
-                                <Select id="ethnicity" name="ethnicity" value={currentPatient.ethnicity} onChange={handleInputChange}>
+                                <Select id="ethnicity" name="ethnicity" value={currentPatient.ethnicity || 'Pardo'} onChange={handleInputChange}>
                                     <option>Branco</option>
                                     <option>Pardo</option>
                                     <option>Preto</option>
@@ -436,18 +584,33 @@ const Patients = () => {
                                     <ReadOnlyField><strong>Paciente:</strong> {currentPatient.name}</ReadOnlyField>
                                     <ReadOnlyField><strong>CPF:</strong> {currentPatient.cpf}</ReadOnlyField>
                                     <ReadOnlyField><strong>Nascimento:</strong> {new Date(currentPatient.birthDay).toLocaleDateString()}</ReadOnlyField>
-                                    <ReadOnlyField><strong>Sexo:</strong> {currentPatient.sex}</ReadOnlyField>
+                                    <ReadOnlyField><strong>Sexo:</strong> {mapSexFromBackend(currentPatient.sex)}</ReadOnlyField>
                                 </ReadOnlyGroup>
                                 
                                 {/* Médico gerencia o histórico clínico (Observações) */}
                                 <Label htmlFor="comorbidity">Comorbidades</Label>
-                                <TextArea id="comorbidity" name="comorbidity" value={currentPatient.observation.comorbidity} onChange={handleObservationChange} />
+                                <TextArea 
+                                    id="comorbidity" 
+                                    name="comorbidity" 
+                                    value={currentPatient.observation?.comorbidity || ''} 
+                                    onChange={handleObservationChange} 
+                                />
                                 
                                 <Label htmlFor="allergies">Alergias</Label>
-                                <TextArea id="allergies" name="allergies" value={currentPatient.observation.allergies} onChange={handleObservationChange} />
+                                <TextArea 
+                                    id="allergies" 
+                                    name="allergies" 
+                                    value={currentPatient.observation?.allergies || ''} 
+                                    onChange={handleObservationChange} 
+                                />
                                 
                                 <Label htmlFor="medications">Medicamentos em Uso</Label>
-                                <TextArea id="medications" name="medications" value={currentPatient.observation.medications} onChange={handleObservationChange} />
+                                <TextArea 
+                                    id="medications" 
+                                    name="medications" 
+                                    value={currentPatient.observation?.medications || ''} 
+                                    onChange={handleObservationChange} 
+                                />
                                 
                                 <SaveButton type="submit">Salvar Observações</SaveButton>
                             </Form>

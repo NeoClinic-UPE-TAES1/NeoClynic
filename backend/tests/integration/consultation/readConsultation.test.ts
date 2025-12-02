@@ -9,6 +9,8 @@ import { ReportRepository } from "../../../src/modules/report/domain/repository/
 import { ObservationRepository } from "../../../src/modules/observation/domain/repository/ObservationRepository";
 import { PatientRepository } from "../../../src/modules/patient/domain/repository/PatientRepository";
 import { MedicRepository } from "../../../src/modules/medic/domain/repository/MedicRepository";
+import { SecretaryRepository } from "../../../src/modules/secretary/domain/repository/SecretaryRepository";
+import { AdminRepository } from "../../../src/modules/admin/domain/repository/AdminRepository";
 
 
 describe("User integration with real DB", () => {
@@ -21,17 +23,21 @@ describe("User integration with real DB", () => {
     let observationRepository: ObservationRepository;
     let patientRepository: PatientRepository;
     let medicRepository: MedicRepository;
+    let adminRepository: AdminRepository;
+    let secretaryRepository: SecretaryRepository;
 
     beforeAll(() => {
         prismaClient = prisma;
         consultationRepository = new ConsultationRepository();
         reportRepository = new ReportRepository();
         observationRepository = new ObservationRepository();
+        adminRepository = new AdminRepository();
         patientRepository = new PatientRepository();
+        secretaryRepository = new SecretaryRepository();
         medicRepository = new MedicRepository();
-        consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository);
-        patientService = new PatientService(patientRepository, observationRepository);
-        medicService = new MedicService(medicRepository);
+        consultationService = new ConsultationService(consultationRepository, reportRepository, patientRepository, medicRepository, secretaryRepository);
+        patientService = new PatientService(patientRepository, observationRepository, secretaryRepository);
+        medicService = new MedicService(medicRepository, adminRepository);
     });
     afterAll(async () => {
         await prismaClient.$disconnect();
@@ -56,7 +62,7 @@ describe("User integration with real DB", () => {
         const medic1 = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient1 = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        await consultationService.create(date1, hasFollowUp1, medic1.id, patient1.id, report1);
+        await consultationService.create(date1, hasFollowUp1, medic1.id, patient1.id, report1, 'MEDIC');
 
         const date2 = new Date("2031-10-22T17:45:30.123Z");
         const hasFollowUp2 = false;
@@ -64,9 +70,9 @@ describe("User integration with real DB", () => {
         const medic2 = await medicService.create("Bella Doe", "BellaDoe@gmail.com", "123", "Cardiology");
         const patient2 = await patientService.create("Duda Doe", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567899", "white", "DudaDoe@gmail.com", undefined);
 
-        await consultationService.create(date2, hasFollowUp2, medic2.id, patient2.id, undefined);
+        await consultationService.create(date2, hasFollowUp2, medic2.id, patient2.id, undefined, 'MEDIC');
 
-        const consultations = await consultationService.listAll();
+        const consultations = await consultationService.listAll('ID', 'SECRETARY', undefined, undefined);
         expect(consultations.length).toBe(2);
         const followUps = consultations.map(s => s.hasFollowUp);
         expect(followUps).toContain(true);
@@ -85,12 +91,12 @@ describe("User integration with real DB", () => {
         const medic = await medicService.create("Jane Doe", "janeDoe@gmail.com", "123", "Cardiology");
         const patient = await patientService.create("Jane Doee", new Date("2032-10-21T17:45:30.123Z"), "F", "1234567890", "white", "janeDoee@gmail.com", undefined);
 
-        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report);
+        const consultation = await consultationService.create(date, hasFollowUp, medic.id, patient.id, report, 'MEDIC');
         
-        const foundConsultation = await consultationService.list(consultation.id);
+        const foundConsultation = await consultationService.list(consultation.id, 'ID', 'SECRETARY');
         expect(foundConsultation.report).toMatchObject(report);
 
-        await expect(consultationService.list("non-existing-id")).rejects.toThrow("Consultation not exists.");
+        await expect(consultationService.list("non-existing-id", 'ID', 'SECRETARY')).rejects.toThrow("Consultation not exists.");
     }
     );
 });

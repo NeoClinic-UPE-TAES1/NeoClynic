@@ -120,11 +120,23 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.AdminScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  password: 'password',
+  twoFactorSecret: 'twoFactorSecret',
+  resetToken: 'resetToken',
+  resetTokenExpiresAt: 'resetTokenExpiresAt'
+};
+
 exports.Prisma.SecretaryScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
-  password: 'password'
+  password: 'password',
+  resetToken: 'resetToken',
+  resetTokenExpiresAt: 'resetTokenExpiresAt'
 };
 
 exports.Prisma.MedicScalarFieldEnum = {
@@ -132,7 +144,9 @@ exports.Prisma.MedicScalarFieldEnum = {
   name: 'name',
   email: 'email',
   password: 'password',
-  specialty: 'specialty'
+  specialty: 'specialty',
+  resetToken: 'resetToken',
+  resetTokenExpiresAt: 'resetTokenExpiresAt'
 };
 
 exports.Prisma.PatientScalarFieldEnum = {
@@ -186,6 +200,7 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
+  Admin: 'Admin',
   Secretary: 'Secretary',
   Medic: 'Medic',
   Patient: 'Patient',

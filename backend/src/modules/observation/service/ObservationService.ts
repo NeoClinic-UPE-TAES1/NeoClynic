@@ -4,6 +4,7 @@ import { DeleteObservationRequest } from "../dto/DeleteObservationRequestDTO";
 import { ListObservationRequest } from "../dto/ListObservationRequestDTO";
 import { ObservationResponse } from "../dto/ObservationResponseDTO";
 import { UpdateObservationRequest } from "../dto/UpdateObservationRequestDTO";
+import { AppError } from "../../../core/errors/AppError";
 
 export class ObservationService {
   constructor(
@@ -25,7 +26,7 @@ export class ObservationService {
   async update(id:string, comorbidity: string | undefined, allergies: string | undefined, medications: string | undefined): Promise<ObservationResponse> {
     const observation = await this.observationRepository.findById(id);
     if (!observation) {
-      throw new Error("Observation not exists.");
+      throw new AppError("Observation not exists.", 404);
     }
 
     const updateRequest: UpdateObservationRequest = {
@@ -41,7 +42,7 @@ export class ObservationService {
   async list(id: string): Promise<ObservationResponse> {
     const observation = await this.observationRepository.findById(id);
     if (!observation) {
-      throw new Error("Observation not exists.");
+      throw new AppError("Observation not exists.", 404);
     }
 
     const list: ListObservationRequest = { id: observation.id };
@@ -51,7 +52,7 @@ export class ObservationService {
   async delete(id: string): Promise<void> {
     const observation = await this.observationRepository.findById(id);
     if (!observation) {
-      throw new Error("Observation not exists.");
+      throw new AppError("Observation not exists.", 404);
     }
 
     const deleteRequest: DeleteObservationRequest = { id };

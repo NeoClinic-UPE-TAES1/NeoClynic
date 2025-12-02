@@ -1,6 +1,7 @@
 import { IConsultationRepository } from '../domain/repository/IConsultationRepository';
 import { IPatientRepository } from '../../patient/domain/repository/IPatientRepository';
 import { IMedicRepository } from '../../medic/domain/repository/IMedicRepository';
+import { ISecretaryRepository } from '../../secretary/domain/repository/ISecretaryRepository';
 import { IReportRepository } from '../../report/domain/repository/IReportRepository';
 import { ConsultationResponse } from '../dto/ConsultationResponseDTO';
 import { CreateConsultationRequest } from '../dto/CreateConsultationRequestDTO';
@@ -10,6 +11,8 @@ import { UpdateConsultationRequest } from '../dto/UpdateConsultationRequestDTO';
 import { CreateReportBody } from '../../report/dto/CreateReportBodyDTO';
 import { UpdateReportBody } from '../../report/dto/UpdateReportBodyDTO';
 import { ReportService } from '../../report/service/ReportService';
+import { AppError } from '../../../core/errors/AppError';
+import bcrypt from 'bcrypt';
 
 export class ConsultationService {
     constructor(
@@ -17,24 +20,25 @@ export class ConsultationService {
         private reportRepository: IReportRepository,
         private patientRepository: IPatientRepository,
         private medicRepository: IMedicRepository,
+        private secretaryRepository: ISecretaryRepository,
         private reportService =  new ReportService(reportRepository)
     ) { }
 
-    public async create(date: Date, hasFollowUp: boolean, medicId: string, patientId: string, report: CreateReportBody | undefined) : Promise<ConsultationResponse> {
+    public async create(date: Date, hasFollowUp: boolean, medicId: string, patientId: string, report: CreateReportBody | undefined, userRole: string | undefined) : Promise<ConsultationResponse> {
 
         if (!date || hasFollowUp===undefined || !medicId || !patientId) {
-            throw new Error("Missing required fields");
+            throw new AppError("Missing required fields", 400);
         }
 
         const patient = await this.patientRepository.findById(patientId);
 
         if(!patient){
-            throw new Error("Patient not exists.");
+            throw new AppError("Patient not exists.", 404);
         }
 
         const medic = await this.medicRepository.findById(medicId);
         if(!medic){
-            throw new Error("Medic not exists.");
+            throw new AppError("Medic not exists.", 404);
         }
 
         const createConsultation:CreateConsultationRequest = {
@@ -46,7 +50,7 @@ export class ConsultationService {
 
         const consultation = await this.consultationRepository.createConsultation(createConsultation);
 
-        if (report) {
+        if (report && userRole != 'SECRETARY') {
             const createdReport = await this.reportService.create(
                 report.description,
                 report.diagnosis,
@@ -67,26 +71,33 @@ export class ConsultationService {
     }
     
 
-    public async delete(id: string) : Promise<void> {
+    public async delete(id: string, secretaryPassword: string, userId: string) : Promise<void> {
+        const secretary = await this.secretaryRepository.findById(userId);
+        if (!secretary) {
+            throw new AppError("Secretary not found.", 404);
+        }
+
+        const passwordMatch = await bcrypt.compare(secretaryPassword, secretary.password);
+            if (!passwordMatch){
+                throw new AppError("Password invalid.", 401);
+            }
+
         const consultation = await this.consultationRepository.findById(id);
         if (!consultation) {
-            throw new Error("Consultation not exists.");
+            throw new AppError("Consultation not exists.", 404);
         }
         
         const deleteConsultation: DeleteConsultationRequest = { id: consultation.id };
 
-        const report = await this.reportRepository.findByConsultationId(consultation.id);
-        if (report){
-            await this.reportService.delete(report.id);
-        }
-
         return await this.consultationRepository.deleteConsultation(deleteConsultation);
     }
 
-    public async update(id:string, date: Date | undefined, hasFollowUp: boolean | undefined, report: UpdateReportBody | undefined) : Promise<ConsultationResponse>{
+    public async update(id:string, date: Date | undefined, hasFollowUp: boolean | undefined, report: UpdateReportBody | undefined,
+        userRole:string | undefined
+    ) : Promise<ConsultationResponse>{
         const consultation = await this.consultationRepository.findById(id);
         if (!consultation) {
-            throw new Error("Consultation not exists.");
+            throw new AppError("Consultation not exists.", 404);
         }
 
         const updateRequest: UpdateConsultationRequest = { 
@@ -97,10 +108,11 @@ export class ConsultationService {
 
         const updatedConsultation = await this.consultationRepository.updateConsultation(updateRequest);
 
-        if (report) {
+        if (report && userRole != 'SECRETARY') {
             const existingReport = await this.reportRepository.findByConsultationId(consultation.id);
 
             if (existingReport) {
+                // Atualizar relatório existente
                 const newReport = await this.reportService.update(
                     existingReport.id,
                     report.description ?? undefined,
@@ -115,23 +127,50 @@ export class ConsultationService {
                     prescription: newReport.prescription ?? '',
                     consultationId: updatedConsultation.id
                 };
+            } else {
+                // Criar novo relatório se não existir
+                const createdReport = await this.reportService.create(
+                    report.description ?? '',
+                    report.diagnosis ?? '',
+                    report.prescription ?? '',
+                    consultation.id
+                );
+
+                updatedConsultation.report = {
+                    id: createdReport.id,
+                    description: createdReport.description,
+                    diagnosis: createdReport.diagnosis,
+                    prescription: createdReport.prescription ?? '',
+                    consultationId: updatedConsultation.id
+                };
             }
         }
 
-        return await updatedConsultation;
+        return updatedConsultation;
     }
 
-    public async list(id:string) : Promise<ConsultationResponse>{
+    public async list(id:string, userId: string, userRole: string) : Promise<ConsultationResponse>{
         const consultation = await this.consultationRepository.findById(id);
             if (!consultation) {
-              throw new Error("Consultation not exists.");
+              throw new AppError("Consultation not exists.", 404);
             }
-        
-            const list: ListConsultationRequest = { id: consultation.id };
-            return await this.consultationRepository.listConsultation(list);
+
+        if (userRole === 'MEDIC') {
+            // Verificar se a consulta pertence ao médico logado
+            if (consultation.medicId !== userId) {
+              throw new AppError("Access denied to this consultation.", 403);
+            }
+        }
+
+        const list: ListConsultationRequest = { id: consultation.id };
+        return await this.consultationRepository.listConsultation(list);
     }
 
-    public async listAll() : Promise<ConsultationResponse[]> {
-        return await this.consultationRepository.listConsultations();
+    public async listAll(userId: string, userRole: string, page:number|undefined, limit:number|undefined) : Promise<ConsultationResponse[]> {
+        if (userRole === 'MEDIC') {
+            return await this.consultationRepository.findByMedic(userId, page, limit);
+        }
+
+        return await this.consultationRepository.listConsultations(page, limit);
     }
 }

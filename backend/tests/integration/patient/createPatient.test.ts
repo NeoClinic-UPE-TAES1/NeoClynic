@@ -4,18 +4,21 @@ import { prisma } from "../../../src/infra/database/prismaClient";
 import { PatientService } from "../../../src/modules/patient/service/PatientService";
 import { PatientRepository } from "../../../src/modules/patient/domain/repository/PatientRepository";
 import { ObservationRepository } from "../../../src/modules/observation/domain/repository/ObservationRepository";
+import { SecretaryRepository } from "../../../src/modules/secretary/domain/repository/SecretaryRepository";
 
 describe("User integration with real DB", () => {
     let prismaClient: PrismaClient;
     let patientRepository: PatientRepository;
     let patientService: PatientService;
     let observationRepository: ObservationRepository;
+    let secretaryRepository: SecretaryRepository;
 
     beforeAll(() => {
         prismaClient = prisma;
         patientRepository = new PatientRepository();
         observationRepository = new ObservationRepository();
-        patientService = new PatientService(patientRepository, observationRepository);
+        secretaryRepository = new SecretaryRepository();
+        patientService = new PatientService(patientRepository, observationRepository, secretaryRepository);
     });
     afterAll(async () => {
         await prismaClient.$disconnect();

@@ -4,6 +4,7 @@ import { DeleteReportRequest } from "../dto/DeleteReportRequestDTO";
 import { ListReportRequest } from "../dto/ListReportRequestDTO";
 import { ReportResponse } from "../dto/ReportResponseDTO";
 import { UpdateReportRequest } from "../dto/UpdateReportRequestDTO";
+import { AppError } from "../../../core/errors/AppError";
 
 export class ReportService {
   constructor(
@@ -25,7 +26,7 @@ export class ReportService {
   async update(id:string, description: string |  undefined, diagnosis: string |  undefined, prescription: string |  undefined): Promise<ReportResponse> {
     const report = await this.ReportRepository.findById(id);
     if (!report) {
-      throw new Error("Report not exists.");
+      throw new AppError("Report not exists.", 404);
     }
 
     const updateRequest: UpdateReportRequest = {
@@ -41,7 +42,7 @@ export class ReportService {
   async list(id: string): Promise<ReportResponse> {
     const report = await this.ReportRepository.findById(id);
     if (!report) {
-      throw new Error("Report not exists.");
+      throw new AppError("Report not exists.", 404);
     }
 
     const list: ListReportRequest = { id: report.id };
@@ -51,7 +52,7 @@ export class ReportService {
   async delete(id: string): Promise<void> {
     const report = await this.ReportRepository.findById(id);
     if (!report) {
-      throw new Error("Report not exists.");
+      throw new AppError("Report not exists.", 404);
     }
 
     const deleteRequest: DeleteReportRequest = { id };
