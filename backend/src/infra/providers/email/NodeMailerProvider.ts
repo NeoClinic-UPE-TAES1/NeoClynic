@@ -40,6 +40,8 @@ export class NodemailerProvider implements IEmailProvider {
     return;
   }
 
+  console.log(`Sending email to: ${to}, subject: ${subject}`);
+
   await this.transporter.sendMail({
     from: process.env.SMTP_USER,
     to,

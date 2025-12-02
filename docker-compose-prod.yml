@@ -1,24 +1,37 @@
 services:
   backend:
-    image: neoclinic-backend:1.0
+    build:
+      context: ./backend
     ports:
-      - "3000:3000"
+      - "8050:3000"
     environment:
       DATABASE_URL: ${DATABASE_URL}
-    command: npm run start
-    deploy:
-      replicas: 2
-      restart_policy:
-        condition: on-failure
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      INIT_ADMIN_EMAIL: ${INIT_ADMIN_EMAIL}
+      INIT_ADMIN_PASSWORD: ${INIT_ADMIN_PASSWORD}
+      SMTP_CLIENT_ID: ${SMTP_CLIENT_ID}
+      SMTP_CLIENT_SECRET: ${SMTP_CLIENT_SECRET}
+      SMTP_REFRESH_TOKEN: ${SMTP_REFRESH_TOKEN}
+      SMTP_ACCESS_TOKEN: ${SMTP_ACCESS_TOKEN}
+      SMTP_USER: ${SMTP_USER}
+      PRISMA_CLI_BINARY_TARGETS: "debian-openssl-3.0.x"
+      PRISMA_CLIENT_ENGINE_TYPE: "binary"
 
   frontend:
-    image: neoclinic-frontend:1.0
+    build:
+      context: ./frontend
+      target: development
     ports:
-      - "80:80"
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: "development"
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     depends_on:
       - backend
-    deploy:
-      replicas: 2
-      restart_policy:
-        condition: on-failure
 
+volumes:
+  db_data:
