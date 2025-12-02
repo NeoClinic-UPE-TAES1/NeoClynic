@@ -104,6 +104,7 @@ const SuccessMessage = styled.div`
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
+  const [userType, setUserType] = useState('admin');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -123,15 +124,30 @@ const ForgotPassword = () => {
     
     setIsSubmitting(true);
     setError('');
+    setSuccess('');
     
     try {
-      // Aqui você deve implementar a chamada à API para recuperação de senha
-      // Por enquanto, vamos simular uma resposta de sucesso
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simula delay da API
+      const endpointMap = {
+        admin: '/admin/password/request',
+        secretary: '/secretary/password/request',
+        medic: '/medic/password/request'
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${endpointMap[userType]}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao processar sua solicitação');
+      }
+
       setSuccess('Um e-mail com instruções para redefinir sua senha foi enviado para ' + email);
       setEmail('');
     } catch (err) {
-      setError('Erro ao processar sua solicitação. Tente novamente.');
+      setError(err.message || 'Erro ao processar sua solicitação. Tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
@@ -152,6 +168,21 @@ const ForgotPassword = () => {
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
         {success && <SuccessMessage>{success}</SuccessMessage>}
+
+        <FormGroup>
+          <Label htmlFor="userType">Tipo de Usuário</Label>
+          <Input
+            as="select"
+            id="userType"
+            value={userType}
+            onChange={(e) => setUserType(e.target.value)}
+            disabled={isSubmitting}
+          >
+            <option value="admin">Administrador</option>
+            <option value="secretary">Secretária</option>
+            <option value="medic">Médico</option>
+          </Input>
+        </FormGroup>
 
         <FormGroup>
           <Label htmlFor="email">E-mail</Label>

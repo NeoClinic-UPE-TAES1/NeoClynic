@@ -15,12 +15,13 @@ const RootRedirect = () => {
     }
 
     // Redirecionar baseado no role
-    switch (user?.role) {
-        case 'admin':
+    const role = user?.role?.toUpperCase();
+    switch (role) {
+        case 'ADMIN':
             return <Navigate to="/admin" replace />;
-        case 'medic':
+        case 'MEDIC':
             return <Navigate to="/medic" replace />;
-        case 'secretary':
+        case 'SECRETARY':
             return <Navigate to="/secretary" replace />;
         default:
             return <Navigate to="/login" replace />;

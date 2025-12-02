@@ -11,12 +11,15 @@ export const updateConsultationBodySchema = z.object({
                     message: "Invalid date format",
                 })
                 .transform((date) => new Date(date))
-                .refine((date) => date > new Date(), {
-                    message: "Date must be in the future",
+                .refine((date) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return date >= today;
+                }, {
+                    message: "Date must be today or in the future",
                 }).optional(),
     hasFollowUp: z.boolean().optional(),
-    report: reportSchema.optional(),
-    userRole: z.enum(["MEDIC", "SECRETARY"], { message: "Unauthorized role" })
+    report: reportSchema.optional()
 });
 
 export const updateConsultationAuthSchema = z.object({

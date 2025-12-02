@@ -40,13 +40,20 @@ export class MedicController {
 
   public async updateMedic(req: Request, res: Response, next: NextFunction): Promise<Response|void> {
     try{
+      console.log('Update medic request body:', req.body);
+      console.log('Update medic req.user:', req.user);
       const { id } = updateMedicParamsSchema.parse(req.params);
-      const { name, email, password, specialty } = updateMedicBodySchema.parse(req.body);
+      console.log('Params parsed, id:', id);
+      const { name, email, password, specialty, currentPassword } = updateMedicBodySchema.parse(req.body);
+      console.log('Body parsed successfully');
       const { id: userId } = authenticatedUserSchema.parse({ id: req.user?.id });
-      const result = await this.medicService.update(id, name, email, password, specialty, userId);
+      const userRole = req.user?.role || '';
+      console.log('User authenticated, userId:', userId, 'role:', userRole);
+      const result = await this.medicService.update(id, name, email, password, specialty, userId, userRole, currentPassword);
 
       return res.status(200).json({ medic: result });
       } catch (error) {
+            console.log('Error in updateMedic:', error);
             return next(error);
         }
   }

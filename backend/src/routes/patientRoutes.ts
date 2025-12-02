@@ -25,7 +25,7 @@ patientRoutes.get('/patient/list/:id', authorizeRoles('SECRETARY', 'MEDIC'), (re
 patientRoutes.get('/patient/list', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {
     patientController.listPatients(req, res, next);  });
 
-patientRoutes.patch('/patient/update/:id', authorizeRoles('SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
+patientRoutes.patch('/patient/update/:id', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {
     patientController.updatePatient(req, res, next) });
 
 patientRoutes.delete('/patient/delete/:id', authorizeRoles('SECRETARY'), (req: Request, res: Response, next: NextFunction) => {

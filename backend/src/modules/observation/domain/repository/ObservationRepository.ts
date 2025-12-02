@@ -55,9 +55,9 @@ export class ObservationRepository implements IObservationRepository {
         const data = await prisma.observation.update({
             where: { id },
             data: {
-                ...(comorbidity !== undefined && comorbidity !== "" && { comorbidity }),
-                ...(allergies !== undefined && allergies !== "" && { allergies }),
-                ...(medications !== undefined && medications !== "" && { medications })
+                ...(comorbidity !== undefined && { comorbidity }),
+                ...(allergies !== undefined && { allergies }),
+                ...(medications !== undefined && { medications })
             }
         });
 

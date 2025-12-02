@@ -15,7 +15,11 @@ const PrivateRoute = ({ children, allowedRoles = [] }) => {
         return <Navigate to="/login" />;
     }
 
-    if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+    // Comparação case-insensitive de roles
+    const userRole = user?.role?.toLowerCase();
+    const normalizedAllowedRoles = allowedRoles.map(role => role.toLowerCase());
+    
+    if (allowedRoles.length > 0 && !normalizedAllowedRoles.includes(userRole)) {
         return <Navigate to="/login" />; // ou página de acesso negado
     }
 

@@ -15,7 +15,8 @@ export class AdminService {
     name: string | undefined,
     email: string | undefined,
     password: string | undefined,
-    userId:string | undefined
+    userId: string | undefined,
+    currentPassword: string | undefined
   ): Promise<AdminResponse> {
     const admin = await this.adminRepository.findById(id);
     if (!admin) {
@@ -28,6 +29,14 @@ export class AdminService {
 
     let hashedPassword: string | undefined = undefined;
     if (password) {
+      // Admin sempre está alterando sua própria senha (não há admin superior)
+      if (!currentPassword) {
+        throw new AppError("Current password is required to change password.", 400);
+      }
+      const passwordMatch = await bcrypt.compare(currentPassword, admin.password);
+      if (!passwordMatch) {
+        throw new AppError("Current password is incorrect.", 401);
+      }
       hashedPassword = await bcrypt.hash(password, 10);
     }
 

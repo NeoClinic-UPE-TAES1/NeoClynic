@@ -7,8 +7,12 @@ export const registerConsultationBodySchema = z.object({
                 message: "Invalid date format",
             })
             .transform((date) => new Date(date))
-            .refine((date) => date > new Date(), {
-                message: "Date must be in the future",
+            .refine((date) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return date >= today;
+            }, {
+                message: "Date must be today or in the future",
             }),
     hasFollowUp: z.boolean(),
     medicId: z.string().uuid({ message: "Invalid medic ID format" }),

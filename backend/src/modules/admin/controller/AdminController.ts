@@ -11,9 +11,9 @@ export class AdminController {
   public async updateAdmin(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try{
       const { id } = updateAdminParamsSchema.parse(req.params);
-      const { name, email, password } = updateAdminBodySchema.parse(req.body);
+      const { name, email, password, currentPassword } = updateAdminBodySchema.parse(req.body);
       const userId = updateAdminAuthSchema.parse({ id: req.user?.id }).userId;
-      const result = await this.adminService.update(id, name, email, password, userId);
+      const result = await this.adminService.update(id, name, email, password, userId, currentPassword);
 
       return res.status(200).json({ admin: result });
 

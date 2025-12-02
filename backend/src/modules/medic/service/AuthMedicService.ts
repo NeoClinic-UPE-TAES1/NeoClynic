@@ -46,7 +46,6 @@ export class AuthMedicService{
         const medic = await this.medicRepository.findByEmail(email);
         if (!medic) return;
 
-        const token = crypto.randomBytes(32).toString("hex");
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min
     
         const rawToken = crypto.randomBytes(32).toString("hex");
@@ -54,7 +53,7 @@ export class AuthMedicService{
 
         await this.medicRepository.saveResetToken(medic.id, hashedToken, expiresAt);
 
-        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}&type=medic`;
         const htmlBody = `
         <h2>Redefinição de senha - NeoClinic</h2>
         <p>Você solicitou a redefinição de senha da sua conta de médico.</p>
@@ -71,13 +70,24 @@ export class AuthMedicService{
       }
     
     async resetPassword(token: string, newPassword: string): Promise<void> {
+        console.log('AuthMedicService.resetPassword - Input token:', token);
         const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+        console.log('Hashed token:', hashedToken);
+        
         const record = await this.medicRepository.findByResetToken(hashedToken);
+        console.log('Found record:', record ? { medicId: record.medicId, expiresAt: record.expiresAt } : 'null');
     
         if (!record || record.expiresAt < new Date()) {
+          console.log('Token validation failed:', { 
+            recordExists: !!record, 
+            expiresAt: record?.expiresAt, 
+            now: new Date(),
+            expired: record ? record.expiresAt < new Date() : 'no record'
+          });
           throw new AppError("Token inválido ou expirado.", 400);
         }
     
+        console.log('Hashing new password...');
         const hashedPassword = await bcrypt.hash(newPassword, 10);
     
         const updateMedicRequest: UpdateMedicRequest = {
@@ -85,7 +95,10 @@ export class AuthMedicService{
             password: hashedPassword
         }
 
+        console.log('Updating medic with id:', record.medicId);
         await this.medicRepository.updateMedic(updateMedicRequest);
-        await this.medicRepository.invalidateResetToken(token);
+        console.log('Invalidating reset token...');
+        await this.medicRepository.invalidateResetToken(hashedToken);
+        console.log('Password reset completed successfully');
       }
 }

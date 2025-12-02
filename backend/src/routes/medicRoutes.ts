@@ -15,13 +15,13 @@ const medicRepository = new MedicRepository();
 const adminRepository = new AdminRepository();
 const medicController = new MedicController(medicRepository, adminRepository);
 
-medicRoutes.post('/medic/register', authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
+medicRoutes.post('/medic/register', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
     medicController.registerMedic(req, res, next) });
 
-medicRoutes.get('/medic/list/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
+medicRoutes.get('/medic/list/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {
     medicController.listMedic(req, res, next);  });
 
-medicRoutes.get('/medic/list', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
+medicRoutes.get('/medic/list', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'SECRETARY', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {
     medicController.listMedics(req, res, next);  });
 
 medicRoutes.patch('/medic/update/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {

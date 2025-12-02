@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom"; // 👈 Importa o hook para navegar
+import { useNavigate } from "react-router-dom";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
 import ptBr from "@fullcalendar/core/locales/pt-br";
+import useApi from "../../hooks/useApi";
+import { AuthContext } from "../../context/AuthContext";
 
 // ===== Estilos =====
 const PageLayout = styled.div`
@@ -131,46 +133,91 @@ const Select = styled.select`
 
 // ===== Componente Principal =====
 const Calendar = () => {
-  const navigate = useNavigate(); // 👈 Hook do React Router
+  const navigate = useNavigate();
+  const { apiCall, loading } = useApi();
+  const { user } = useContext(AuthContext);
 
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      title: "Consulta com Dr. João Figueiro Mario Da Silva",
-      start: "2025-10-07T09:30:00",
-      end: "2025-10-07T10:30:00",
-      description: "Consulta de rotina para acompanhamento de saúde.",
-      paciente: "Maria Clara Santos",
-      medico: "Dr. João Figueiro",
-    },
-    {
-      id: 2,
-      title: "Exame de Rotina",
-      start: "2025-10-10T14:00:00",
-      end: "2025-10-10T15:00:00",
-      description: "Exames laboratoriais e verificação de resultados anteriores.",
-      paciente: "João Henrique",
-      medico: "Dra. Maria Souza",
-    },
-    {
-      id: 3,
-      title: "Retorno com Dra. Maria",
-      start: "2025-10-12T16:15:00",
-      end: "2025-10-12T17:00:00",
-      description: "Avaliação pós-tratamento com resultados de exames.",
-      paciente: "Paulo Ricardo",
-      medico: "Dra. Maria Souza",
-    },
-  ]);
-
+  const [consultations, setConsultations] = useState([]);
+  const [medics, setMedics] = useState([]);
+  const [patients, setPatients] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [selectedMedicId, setSelectedMedicId] = useState("");
+  const [secretaryPassword, setSecretaryPassword] = useState("");
 
-  const doctors = [...new Set(events.map((e) => e.medico))];
+  const isSecretary = user?.role === "SECRETARY";
+  const isMedic = user?.role === "MEDIC";
+
+  // Carrega os dados iniciais
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      // Carrega consultas
+      const consultationsData = await apiCall("/consultation/list");
+      setConsultations(consultationsData.consultations || []);
+
+      // Carrega médicos
+      const medicsData = await apiCall("/medic/list");
+      setMedics(medicsData.medics || []);
+
+      // Carrega pacientes (secretária e médico precisam ver os nomes)
+      const patientsData = await apiCall("/patient/list");
+      setPatients(patientsData.patients || []);
+
+      // Se for médico, seleciona automaticamente suas próprias consultas
+      if (isMedic && user?.id) {
+        setSelectedMedicId(user.id);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      alert("Erro ao carregar dados do calendário");
+    }
+  };
+
+  // Converte consultas para eventos do calendário
+  const events = consultations
+    .filter((c) => !selectedMedicId || c.medicId === selectedMedicId)
+    .map((consultation) => {
+      const medic = medics.find((m) => m.id === consultation.medicId);
+      const patient = patients.find((p) => p.id === consultation.patientId);
+      
+      return {
+        id: consultation.id,
+        title: `${medic?.name || "Médico"} - ${patient?.name || "Paciente"}`,
+        start: consultation.date,
+        end: new Date(new Date(consultation.date).getTime() + 60 * 60 * 1000).toISOString(),
+        extendedProps: {
+          medicId: consultation.medicId,
+          patientId: consultation.patientId,
+          hasFollowUp: consultation.hasFollowUp,
+          medicName: medic?.name || "Médico não encontrado",
+          patientName: patient?.name || "Paciente não encontrado"
+        }
+      };
+    });
 
   const handleEventClick = (info) => {
-    const event = events.find((e) => e.title === info.event.title);
-    setSelectedEvent({ ...event });
+    const consultation = consultations.find((c) => c.id === info.event.id);
+    if (consultation) {
+      const medic = medics.find((m) => m.id === consultation.medicId);
+      const patient = patients.find((p) => p.id === consultation.patientId);
+      
+      // Converter a data sem ajuste de timezone
+      const consultDate = new Date(consultation.date);
+      const localDate = new Date(consultDate.getTime() - consultDate.getTimezoneOffset() * 60000);
+      
+      setSelectedEvent({
+        id: consultation.id,
+        date: localDate.toISOString().slice(0, 16),
+        hasFollowUp: consultation.hasFollowUp,
+        medicId: consultation.medicId,
+        patientId: consultation.patientId,
+        medicName: medic?.name || "Médico não encontrado",
+        patientName: patient?.name || "Paciente não encontrado"
+      });
+    }
   };
 
   const handleChange = (e) => {
@@ -178,90 +225,140 @@ const Calendar = () => {
     setSelectedEvent((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    if (!selectedEvent.title || !selectedEvent.start || !selectedEvent.end) {
+  const handleSave = async () => {
+    if (!selectedEvent.date || !selectedEvent.medicId || !selectedEvent.patientId) {
       alert("Preencha todos os campos obrigatórios antes de salvar.");
       return;
     }
 
-    if (!selectedEvent.id) {
-      const newEvent = { ...selectedEvent, id: Date.now() };
-      setEvents((prev) => [...prev, newEvent]);
-      alert("Nova consulta criada com sucesso!");
-    } else {
-      setEvents((prev) =>
-        prev.map((event) =>
-          event.id === selectedEvent.id ? selectedEvent : event
-        )
-      );
-      alert("Evento atualizado com sucesso!");
+    try {
+      if (!selectedEvent.id) {
+        // Criar nova consulta (apenas secretária)
+        if (!isSecretary) {
+          alert("Apenas secretárias podem criar consultas.");
+          return;
+        }
+
+        await apiCall("/consultation/register", {
+          method: "POST",
+          body: JSON.stringify({
+            date: new Date(selectedEvent.date).toISOString(),
+            hasFollowUp: selectedEvent.hasFollowUp || false,
+            medicId: selectedEvent.medicId,
+            patientId: selectedEvent.patientId
+          })
+        });
+        alert("Nova consulta criada com sucesso!");
+      } else {
+        // Atualizar consulta existente
+        await apiCall(`/consultation/update/${selectedEvent.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            date: new Date(selectedEvent.date).toISOString(),
+            hasFollowUp: selectedEvent.hasFollowUp || false
+          })
+        });
+        alert("Consulta atualizada com sucesso!");
+      }
+      
+      setSelectedEvent(null);
+      loadData(); // Recarrega os dados
+    } catch (error) {
+      console.error("Erro ao salvar consulta:", error);
+      alert("Erro ao salvar consulta: " + error.message);
     }
-    setSelectedEvent(null);
   };
 
-  const handleDelete = () => {
-    if (window.confirm("Tem certeza que deseja excluir este evento?")) {
-      setEvents((prev) => prev.filter((event) => event.id !== selectedEvent.id));
-      setSelectedEvent(null);
+  const handleDelete = async () => {
+    if (!isSecretary) {
+      alert("Apenas secretárias podem excluir consultas.");
+      return;
+    }
+
+    if (!secretaryPassword) {
+      alert("Digite sua senha para confirmar a exclusão.");
+      return;
+    }
+
+    if (window.confirm("Tem certeza que deseja excluir esta consulta?")) {
+      try {
+        await apiCall(`/consultation/delete/${selectedEvent.id}`, {
+          method: "DELETE",
+          body: JSON.stringify({ secretaryPassword })
+        });
+        
+        alert("Consulta excluída com sucesso!");
+        setSelectedEvent(null);
+        setSecretaryPassword("");
+        loadData(); // Recarrega os dados
+      } catch (error) {
+        console.error("Erro ao excluir consulta:", error);
+        alert("Erro ao excluir consulta: " + error.message);
+      }
     }
   };
 
   const handleCreate = () => {
-    if (!selectedDoctor) {
+    if (!isSecretary) {
+      alert("Apenas secretárias podem criar consultas.");
+      return;
+    }
+
+    if (!selectedMedicId) {
       alert("Selecione um médico antes de criar uma nova consulta.");
       return;
     }
 
-    const newEvent = {
-      id: null,
-      title: "Nova Consulta",
-      start: new Date().toISOString().slice(0, 16),
-      end: new Date(new Date().getTime() + 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 16),
-      description: "",
-      paciente: "",
-      medico: selectedDoctor,
-    };
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0);
 
-    setSelectedEvent(newEvent);
+    setSelectedEvent({
+      id: null,
+      date: tomorrow.toISOString().slice(0, 16),
+      hasFollowUp: false,
+      medicId: selectedMedicId,
+      patientId: patients[0]?.id || "",
+      medicName: medics.find(m => m.id === selectedMedicId)?.name || "",
+      patientName: patients[0]?.name || ""
+    });
   };
 
-  // 👁 Redireciona para a página de detalhes da consulta
   const handleViewDetails = () => {
     if (selectedEvent?.id) {
-      navigate(`/consulta/${selectedEvent.id}`, { state: { consulta: selectedEvent } });
+      navigate(`/consulta/${selectedEvent.id}`);
     } else {
       alert("Selecione uma consulta existente para ver detalhes.");
     }
   };
 
-  const filteredEvents = selectedDoctor
-    ? events.filter((e) => e.medico === selectedDoctor)
-    : [];
+  if (loading) {
+    return <PageLayout><div>Carregando...</div></PageLayout>;
+  }
 
   return (
     <PageLayout>
       {/* 🗓️ CALENDÁRIO */}
       <CalendarContainer>
-        <h1>Agenda</h1>
+        <h1>Agenda de Consultas</h1>
 
         <Select
-          value={selectedDoctor}
+          value={selectedMedicId}
           onChange={(e) => {
-            setSelectedDoctor(e.target.value);
+            setSelectedMedicId(e.target.value);
             setSelectedEvent(null);
           }}
+          disabled={isMedic} // Médico não pode trocar a visualização
         >
           <option value="">Selecione um médico</option>
-          {doctors.map((doc) => (
-            <option key={doc} value={doc}>
-              {doc}
+          {medics.map((medic) => (
+            <option key={medic.id} value={medic.id}>
+              {medic.name} - {medic.specialty}
             </option>
           ))}
         </Select>
 
-        {selectedDoctor ? (
+        {selectedMedicId ? (
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
             initialView="dayGridMonth"
@@ -278,7 +375,7 @@ const Calendar = () => {
               day: "Dia",
               list: "Lista",
             }}
-            events={filteredEvents}
+            events={events}
             eventClick={handleEventClick}
             nowIndicator={true}
             allDaySlot={false}
@@ -295,69 +392,109 @@ const Calendar = () => {
       <DetailsPanel>
         <HeaderDetails>
           <h2>Detalhes da Consulta</h2>
-          <Button secondary onClick={handleCreate}>➕ Criar Consulta</Button>
+          {isSecretary && (
+            <Button secondary onClick={handleCreate}>➕ Criar Consulta</Button>
+          )}
         </HeaderDetails>
 
         {selectedEvent ? (
           <>
-            <label>Título:</label>
-            <Input
-              name="title"
-              value={selectedEvent.title}
-              onChange={handleChange}
-            />
-
             <label>Médico:</label>
-            <Input
-              name="medico"
-              value={selectedEvent.medico}
-              onChange={handleChange}
-            />
+            {selectedEvent.id ? (
+              <Input
+                value={selectedEvent.medicName}
+                disabled
+              />
+            ) : (
+              <Select
+                name="medicId"
+                value={selectedEvent.medicId}
+                onChange={handleChange}
+                disabled={!isSecretary}
+              >
+                {medics.map((medic) => (
+                  <option key={medic.id} value={medic.id}>
+                    {medic.name} - {medic.specialty}
+                  </option>
+                ))}
+              </Select>
+            )}
 
             <label>Paciente:</label>
-            <Input
-              name="paciente"
-              value={selectedEvent.paciente}
-              onChange={handleChange}
-            />
+            {selectedEvent.id ? (
+              <Input
+                value={selectedEvent.patientName}
+                disabled
+              />
+            ) : (
+              <Select
+                name="patientId"
+                value={selectedEvent.patientId}
+                onChange={handleChange}
+                disabled={!isSecretary}
+              >
+                <option value="">Selecione um paciente</option>
+                {patients.map((patient) => (
+                  <option key={patient.id} value={patient.id}>
+                    {patient.name} - {patient.cpf}
+                  </option>
+                ))}
+              </Select>
+            )}
 
-            <label>Início:</label>
+            <label>Data e Hora:</label>
             <Input
               type="datetime-local"
-              name="start"
-              value={selectedEvent.start.slice(0, 16)}
+              name="date"
+              value={selectedEvent.date}
               onChange={handleChange}
+              disabled={!isSecretary}
             />
 
-            <label>Término:</label>
-            <Input
-              type="datetime-local"
-              name="end"
-              value={selectedEvent.end.slice(0, 16)}
-              onChange={handleChange}
-            />
-
-            <label>Descrição:</label>
-            <TextArea
-              rows="3"
-              name="description"
-              value={selectedEvent.description}
-              onChange={handleChange}
-            />
+            <label>
+              <input
+                type="checkbox"
+                name="hasFollowUp"
+                checked={selectedEvent.hasFollowUp}
+                onChange={(e) =>
+                  setSelectedEvent((prev) => ({
+                    ...prev,
+                    hasFollowUp: e.target.checked,
+                  }))
+                }
+                disabled={!isSecretary}
+              />
+              {" "}Consulta de retorno
+            </label>
 
             <div style={{ marginTop: "1rem" }}>
-              <Button onClick={handleSave}>💾 Salvar</Button>
+              {isSecretary && (
+                <Button onClick={handleSave}>💾 Salvar</Button>
+              )}
               {selectedEvent.id && (
                 <>
                   <Button view onClick={handleViewDetails}>👁 Ver detalhes</Button>
-                  <Button delete onClick={handleDelete}>🗑 Excluir</Button>
+                  {isSecretary && (
+                    <>
+                      <label style={{ display: "block", marginTop: "1rem" }}>
+                        Senha (para excluir):
+                      </label>
+                      <Input
+                        type="password"
+                        value={secretaryPassword}
+                        onChange={(e) => setSecretaryPassword(e.target.value)}
+                        placeholder="Digite sua senha"
+                      />
+                      <Button delete onClick={handleDelete}>🗑 Excluir</Button>
+                    </>
+                  )}
                 </>
               )}
             </div>
           </>
         ) : (
           <p>
-            {selectedDoctor
+            {selectedMedicId
               ? "Selecione uma consulta no calendário para ver ou editar."
               : "Selecione um médico para começar."}
           </p>

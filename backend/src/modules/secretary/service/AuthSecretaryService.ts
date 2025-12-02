@@ -45,7 +45,6 @@ export class AuthSecretaryService{
         const secretary = await this.secretaryRepository.findByEmail(email);
         if (!secretary) return;
     
-        const token = crypto.randomBytes(32).toString("hex");
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min
     
         const rawToken = crypto.randomBytes(32).toString("hex");
@@ -53,7 +52,7 @@ export class AuthSecretaryService{
     
         await this.secretaryRepository.saveResetToken(secretary.id, hashedToken, expiresAt);
     
-        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}&type=secretary`;
         const htmlBody = `
         <h2>Redefinição de senha - NeoClinic</h2>
         <p>Você solicitou a redefinição de senha da sua conta de secretária.</p>
@@ -85,6 +84,6 @@ export class AuthSecretaryService{
         }
 
         await this.secretaryRepository.updateSecretary(updateSecretaryRequest);
-        await this.secretaryRepository.invalidateResetToken(token);
+        await this.secretaryRepository.invalidateResetToken(hashedToken);
       }
 }

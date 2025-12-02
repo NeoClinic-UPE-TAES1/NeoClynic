@@ -159,30 +159,38 @@ const Profile = () => {
         }
 
         try {
-            // Preparar dados para envio
-            const updateData = {
-                name: formData.name,
-                email: formData.email,
-            };
+            // Preparar dados para envio - enviar apenas campos preenchidos
+            const updateData = {};
+            
+            if (formData.name && formData.name.trim()) {
+                updateData.name = formData.name.trim();
+            }
+            if (formData.email && formData.email.trim()) {
+                updateData.email = formData.email.trim();
+            }
             
             // Adicionar especialidade se for médico
-            if (user.role === 'medic') {
-                updateData.specialty = formData.specialty;
+            if (user.role === 'MEDIC' && formData.specialty && formData.specialty.trim()) {
+                updateData.specialty = formData.specialty.trim();
             }
             
             // Adicionar senha se estiver sendo alterada
             if (formData.newPassword) {
                 updateData.password = formData.newPassword;
+                updateData.currentPassword = formData.currentPassword;
             }
             
             // Chamar API apropriada baseada no role
             let endpoint = '';
-            if (user.role === 'medic') {
+            if (user.role === 'ADMIN') {
+                endpoint = `/admin/update/${user.id}`;
+            } else if (user.role === 'MEDIC') {
                 endpoint = `/medic/update/${user.id}`;
-            } else if (user.role === 'secretary') {
+            } else if (user.role === 'SECRETARY') {
                 endpoint = `/secretary/update/${user.id}`;
             } else {
-                setMessage({ type: 'error', text: 'Atualização de perfil não disponível para administradores!' });
+                console.log('Invalid user role:', user.role);
+                setMessage({ type: 'error', text: 'Tipo de usuário inválido!' });
                 return;
             }
             
@@ -192,7 +200,7 @@ const Profile = () => {
             });
             
             // Extrair dados atualizados
-            const updatedData = response.medic || response.secretary || response;
+            const updatedData = response.admin || response.medic || response.secretary || response;
             
             // Atualizar contexto do usuário
             updateUser(updatedData);
@@ -224,19 +232,14 @@ const Profile = () => {
             <UserInfo>
                 <h3>Informações da Conta</h3>
                 <p><strong>Tipo de Usuário:</strong> {
-                    user.role === 'admin' ? 'Administrador' :
-                    user.role === 'medic' ? 'Médico' :
-                    user.role === 'secretary' ? 'Secretária' : user.role
+                    user.role === 'ADMIN' ? 'Administrador' :
+                    user.role === 'MEDIC' ? 'Médico' :
+                    user.role === 'SECRETARY' ? 'Secretária' : user.role
                 }</p>
                 <p><strong>ID:</strong> {user.id}</p>
             </UserInfo>
             
-            {user.role === 'admin' ? (
-                <Message className="error">
-                    A edição de perfil não está disponível para administradores no momento.
-                </Message>
-            ) : (
-                <>
+            <>
                     {message.text && (
                         <Message className={message.type}>
                             {message.text}
@@ -264,7 +267,7 @@ const Profile = () => {
                             required 
                         />
                         
-                        {user.role === 'medic' && (
+                        {user.role === 'MEDIC' && (
                             <>
                                 <Label htmlFor="specialty">Especialidade</Label>
                                 <Input 
@@ -314,8 +317,7 @@ const Profile = () => {
                             {loading ? 'Salvando...' : 'Atualizar Perfil'}
                         </Button>
                     </Form>
-                </>
-            )}
+            </>
         </Container>
     );
 };

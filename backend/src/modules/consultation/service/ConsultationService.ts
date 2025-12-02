@@ -112,6 +112,7 @@ export class ConsultationService {
             const existingReport = await this.reportRepository.findByConsultationId(consultation.id);
 
             if (existingReport) {
+                // Atualizar relatório existente
                 const newReport = await this.reportService.update(
                     existingReport.id,
                     report.description ?? undefined,
@@ -126,10 +127,26 @@ export class ConsultationService {
                     prescription: newReport.prescription ?? '',
                     consultationId: updatedConsultation.id
                 };
+            } else {
+                // Criar novo relatório se não existir
+                const createdReport = await this.reportService.create(
+                    report.description ?? '',
+                    report.diagnosis ?? '',
+                    report.prescription ?? '',
+                    consultation.id
+                );
+
+                updatedConsultation.report = {
+                    id: createdReport.id,
+                    description: createdReport.description,
+                    diagnosis: createdReport.diagnosis,
+                    prescription: createdReport.prescription ?? '',
+                    consultationId: updatedConsultation.id
+                };
             }
         }
 
-        return await updatedConsultation;
+        return updatedConsultation;
     }
 
     public async list(id:string, userId: string, userRole: string) : Promise<ConsultationResponse>{
@@ -139,13 +156,10 @@ export class ConsultationService {
             }
 
         if (userRole === 'MEDIC') {
-            const consultations = await this.consultationRepository.findByMedic(userId, undefined, undefined);
-
-            if (consultations.length === 0) {
+            // Verificar se a consulta pertence ao médico logado
+            if (consultation.medicId !== userId) {
               throw new AppError("Access denied to this consultation.", 403);
             }
-
-            return consultations[0];
         }
 
         const list: ListConsultationRequest = { id: consultation.id };

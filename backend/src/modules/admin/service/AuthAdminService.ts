@@ -15,7 +15,7 @@ export class AuthAdminService{
         private emailProvider: IEmailProvider
     ){}
 
-    async authenticate(email: string, password: string, twoFactorCode: string): Promise<LoginAdminResponse | null> {
+    async authenticate(email: string, password: string, twoFactorCode?: string): Promise<LoginAdminResponse | null> {
         const admin = await this.adminRepository.findByEmail(email);
         if (!admin) {
             throw new AppError("Invalid credentials", 401);
@@ -26,7 +26,7 @@ export class AuthAdminService{
             throw new AppError("Invalid credentials", 401);
         }
 
-        if (!twoFactorCode) {
+        if (!twoFactorCode || twoFactorCode.trim() === '') {
         throw new AppError("Two-factor authentication code required.", 401);
         }
 
@@ -61,7 +61,6 @@ export class AuthAdminService{
         const admin = await this.adminRepository.findByEmail(email);
         if (!admin) return;
 
-        const token = crypto.randomBytes(32).toString("hex");
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min
 
         const rawToken = crypto.randomBytes(32).toString("hex");
@@ -69,7 +68,7 @@ export class AuthAdminService{
 
         await this.adminRepository.saveResetToken(admin.id, hashedToken, expiresAt);
 
-        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}&type=admin`;
 
         const htmlBody = `
         <h2>Redefinição de senha - NeoClinic</h2>
@@ -102,6 +101,6 @@ export class AuthAdminService{
     }
 
     await this.adminRepository.updateAdmin(updateAdminRequest);
-    await this.adminRepository.invalidateResetToken(token);
+    await this.adminRepository.invalidateResetToken(hashedToken);
     }
 }

@@ -4,12 +4,14 @@ import { Routes, Route } from 'react-router-dom';
 // Importa os componentes de página
 import Login from '../pages/Login/Login';
 import ForgotPassword from '../pages/ForgotPassword/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword/ResetPassword';
 import AdminHome from '../pages/AdminHome/AdminHome';
 import MedicHome from '../pages/MedicHome/MedicHome';
 import SecretaryHome from '../pages/SecretaryHome/SecretaryHome';
 import ManageSecretaries from '../pages/ManageSecretaries/ManageSecretaries';
 import ManageMedics from '../pages/ManageMedics/ManageMedics';
 import Calendar from '../pages/Calendar/Calendar';
+import ConsultationDetail from '../pages/ConsultationDetail/ConsultationDetail';
 import Patients from '../pages/Patients/Patients';
 import Profile from '../pages/Profile/Profile';
 import NaoEncontrada from '../pages/NaoEncontrada/NaoEncontrada';
@@ -37,6 +39,7 @@ const AppRoutes = () => {
             {/* Rota pública */}
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Rotas para Administrador */}
             <Route 
@@ -82,6 +85,16 @@ const AppRoutes = () => {
                 <Route path="patients" element={<Patients />} />
                 <Route path="profile" element={<Profile />} />
             </Route>
+
+            {/* Rota de detalhes da consulta (compartilhada entre médico e secretária) */}
+            <Route 
+                path="/consulta/:id" 
+                element={
+                    <PrivateRoute allowedRoles={['medic', 'secretary']}>
+                        <ConsultationDetail />
+                    </PrivateRoute>
+                }
+            />
 
             {/* Redirecionar ou página 404 */}
             <Route path="*" element={<NaoEncontrada />} />

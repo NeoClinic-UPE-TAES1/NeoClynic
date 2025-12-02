@@ -9,4 +9,5 @@ export const updateMedicBodySchema = z.object({
     email: z.string().email("Invalid email").optional(),
     password: z.string().min(6, "Password must be at least 6 characters").optional(),
     specialty: z.string().min(2, "Specialty is too short").optional(),
+    currentPassword: z.string().optional(),
 });

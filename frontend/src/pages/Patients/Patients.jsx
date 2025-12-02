@@ -250,6 +250,23 @@ const Patients = () => {
             setPatients([]);
         }
     };
+
+    // Função para formatar CPF com máscara
+    const formatCPF = (cpf) => {
+        if (!cpf) return '';
+        const cleaned = cpf.replace(/\D/g, '');
+        if (cleaned.length <= 11) {
+            return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+        return cleaned;
+    };
+
+    // Handler para aplicar máscara enquanto o usuário digita
+    const handleCPFChange = (e) => {
+        const value = e.target.value;
+        const cleaned = value.replace(/\D/g, ''); // Remove tudo que não é número
+        setCurrentPatient({ ...currentPatient, cpf: cleaned });
+    };
     
     // 3. Lógica de Filtro
     const filteredPatients = useMemo(() => 
@@ -259,9 +276,25 @@ const Patients = () => {
         ), 
     [patients, searchTerm]);
 
+    // Função para mapear sexo do backend para o frontend
+    const mapSexFromBackend = (sex) => {
+        if (sex === 'M') return 'Masculino';
+        if (sex === 'F') return 'Feminino';
+        return sex; // Retorna como está se for 'Outro' ou outro valor
+    };
+
     // 4. Handlers de Ações
     const handleOpenModal = (patient) => {
-        setCurrentPatient(patient || emptyPatient);
+        if (patient) {
+            // Converter sexo do backend (M/F) para o frontend (Masculino/Feminino)
+            const mappedPatient = {
+                ...patient,
+                sex: mapSexFromBackend(patient.sex)
+            };
+            setCurrentPatient(mappedPatient);
+        } else {
+            setCurrentPatient(emptyPatient);
+        }
         setShowModal(true);
     };
 
@@ -272,10 +305,35 @@ const Patients = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setCurrentPatient(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        
+        // Aplicar máscara de CPF
+        if (name === 'cpf') {
+            // Remove tudo que não é dígito
+            const numbersOnly = value.replace(/\D/g, '');
+            // Limita a 11 dígitos
+            const limited = numbersOnly.substring(0, 11);
+            // Aplica a máscara: 000.000.000-00
+            let formatted = limited;
+            if (limited.length > 3) {
+                formatted = limited.substring(0, 3) + '.' + limited.substring(3);
+            }
+            if (limited.length > 6) {
+                formatted = formatted.substring(0, 7) + '.' + limited.substring(6);
+            }
+            if (limited.length > 9) {
+                formatted = formatted.substring(0, 11) + '-' + limited.substring(9);
+            }
+            
+            setCurrentPatient(prev => ({
+                ...prev,
+                [name]: formatted
+            }));
+        } else {
+            setCurrentPatient(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     };
     
     const handleObservationChange = (e) => {
@@ -294,27 +352,39 @@ const Patients = () => {
         e.preventDefault();
         try {
             // Preparar dados do paciente
+            // Converter sexo para o formato do backend (M/F)
+            let sexValue = 'M';
+            if (currentPatient.sex === 'Feminino') {
+                sexValue = 'F';
+            } else if (currentPatient.sex === 'Masculino') {
+                sexValue = 'M';
+            }
+            
             const patientData = {
                 name: currentPatient.name,
                 birthDay: currentPatient.birthDay,
-                sex: currentPatient.sex,
-                cpf: currentPatient.cpf,
+                sex: sexValue,
+                cpf: currentPatient.cpf.replace(/\D/g, ''),  // Remove máscara antes de enviar
                 ethnicity: currentPatient.ethnicity,
                 email: currentPatient.email.trim() || null  // null se vazio
             };
             
             if (currentPatient.id) {
                 // Atualizar paciente existente
+                // Filtrar campos vazios para não enviar ao backend
+                const filteredData = Object.fromEntries(
+                    Object.entries(patientData).filter(([_, value]) => value !== null && value !== '')
+                );
                 const response = await apiCall(`/patient/update/${currentPatient.id}`, { 
                     method: 'PATCH', 
-                    body: JSON.stringify(patientData)
+                    body: JSON.stringify(filteredData)
                 });
                 const updatedPatient = response.patient || response;
                 setPatients(patients.map(p => p.id === currentPatient.id ? updatedPatient : p));
                 alert('Paciente atualizado com sucesso!');
             } else {
                 // Criar novo paciente
-                const response = await apiCall('/patient/create', { 
+                const response = await apiCall('/patient/register', { 
                     method: 'POST', 
                     body: JSON.stringify(patientData)
                 });
@@ -333,12 +403,14 @@ const Patients = () => {
     const handleSaveObservation = async (e) => {
         e.preventDefault();
         try {
-            await apiCall(`/patient/observation/${currentPatient.id}`, { 
+            await apiCall(`/patient/update/${currentPatient.id}`, { 
                 method: 'PATCH', 
                 body: JSON.stringify({
-                    comorbidity: currentPatient.observation?.comorbidity || '',
-                    allergies: currentPatient.observation?.allergies || '',
-                    medications: currentPatient.observation?.medications || ''
+                    observation: {
+                        comorbidity: currentPatient.observation?.comorbidity || '',
+                        allergies: currentPatient.observation?.allergies || '',
+                        medications: currentPatient.observation?.medications || ''
+                    }
                 })
             });
             
@@ -355,9 +427,18 @@ const Patients = () => {
 
     // Ação da Secretária: Excluir paciente
     const handleDelete = async (id) => {
+        const secretaryPassword = window.prompt('Para confirmar a exclusão, digite sua senha de secretária:');
+        
+        if (!secretaryPassword) {
+            return; // Usuário cancelou
+        }
+        
         if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
             try {
-                await apiCall(`/patient/delete/${id}`, { method: 'DELETE' });
+                await apiCall(`/patient/delete/${id}`, { 
+                    method: 'DELETE',
+                    body: JSON.stringify({ secretaryPassword })
+                });
                 setPatients(patients.filter(p => p.id !== id));
                 alert('Paciente excluído.');
             } catch (err) {
@@ -449,9 +530,11 @@ const Patients = () => {
                                 <Input 
                                     id="cpf" 
                                     name="cpf" 
-                                    value={currentPatient.cpf || ''} 
-                                    onChange={handleInputChange} 
+                                    value={formatCPF(currentPatient.cpf || '')} 
+                                    onChange={handleCPFChange} 
                                     required 
+                                    maxLength="14"
+                                    placeholder="000.000.000-00"
                                 />
                                 
                                 <Label htmlFor="birthDay">Data de Nascimento</Label>
@@ -477,7 +560,6 @@ const Patients = () => {
                                 <Select id="sex" name="sex" value={currentPatient.sex || 'Masculino'} onChange={handleInputChange}>
                                     <option>Masculino</option>
                                     <option>Feminino</option>
-                                    <option>Outro</option>
                                 </Select>
                                 
                                 <Label htmlFor="ethnicity">Etnia</Label>
@@ -502,7 +584,7 @@ const Patients = () => {
                                     <ReadOnlyField><strong>Paciente:</strong> {currentPatient.name}</ReadOnlyField>
                                     <ReadOnlyField><strong>CPF:</strong> {currentPatient.cpf}</ReadOnlyField>
                                     <ReadOnlyField><strong>Nascimento:</strong> {new Date(currentPatient.birthDay).toLocaleDateString()}</ReadOnlyField>
-                                    <ReadOnlyField><strong>Sexo:</strong> {currentPatient.sex}</ReadOnlyField>
+                                    <ReadOnlyField><strong>Sexo:</strong> {mapSexFromBackend(currentPatient.sex)}</ReadOnlyField>
                                 </ReadOnlyGroup>
                                 
                                 {/* Médico gerencia o histórico clínico (Observações) */}

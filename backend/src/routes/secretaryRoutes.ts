@@ -15,7 +15,7 @@ const secretaryRepository = new SecretaryRepository();
 const adminRepository = new AdminRepository();
 const secretaryController = new SecretaryController(secretaryRepository, adminRepository);
 
-secretaryRoutes.post('/secretary/register', authorizeRoles('ADMIN'), (req: Request, res: Response, next:NextFunction) => {
+secretaryRoutes.post('/secretary/register', authenticateToken(jwtProvider), authorizeRoles('ADMIN'), (req: Request, res: Response, next:NextFunction) => {
     secretaryController.registerSecretary(req, res, next) });
 
 secretaryRoutes.get('/secretary/list/:id', authenticateToken(jwtProvider), authorizeRoles('ADMIN'), (req: Request, res: Response, next:NextFunction) => {
