@@ -20,7 +20,7 @@ const jwtProvider = new JWTProvider();
 
 consultationRoutes.use(authenticateToken(jwtProvider));
 
-consultationRoutes.post('/consultation/register', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {
+consultationRoutes.post('/consultation/register', authorizeRoles('SECRETARY'), (req: Request, res: Response, next: NextFunction) => {
     consultationController.registerConsultation(req, res, next) });
 
 consultationRoutes.get('/consultation/list/:id', authorizeRoles('SECRETARY', 'MEDIC'), (req: Request, res: Response, next: NextFunction) => {

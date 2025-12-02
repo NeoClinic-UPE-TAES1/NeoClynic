@@ -77,7 +77,7 @@ export class PatientRepository implements IPatientRepository {
       ethnicity: m.ethnicity,
       name: m.name,
       email: m.email ?? undefined,
-      observations: m.observation ?? undefined,
+      observation: m.observation ?? undefined,
       consultation: m.consultation ?? undefined
     }));
   }
@@ -132,6 +132,7 @@ export class PatientRepository implements IPatientRepository {
         },
       },
       include: {
+        observation: true,
         consultation: {
           where: { patientId: id, medicId },
           select: { id: true, medicId: true, patientId: true, date: true, hasFollowUp: true },
@@ -152,6 +153,7 @@ export class PatientRepository implements IPatientRepository {
       ethnicity: patients.ethnicity,
       name: patients.name,
       email: patients.email ?? undefined,
+      observation: patients.observation ?? undefined,
       consultation: patients.consultation ?? undefined,
     };
   }
@@ -166,6 +168,7 @@ export class PatientRepository implements IPatientRepository {
       skip: page && limit ? (page - 1) * limit : undefined,
       take: limit,
       include: {
+        observation: true,
         consultation: {
           where: { medicId },
           select: { id: true, medicId: true, patientId: true, date: true, hasFollowUp: true },
@@ -182,6 +185,7 @@ export class PatientRepository implements IPatientRepository {
       ethnicity: m.ethnicity,
       name: m.name,
       email: m.email ?? undefined,
+      observation: m.observation ?? undefined,
       consultation: m.consultation ?? undefined,
     }));
   }

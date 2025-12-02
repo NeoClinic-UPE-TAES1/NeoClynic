@@ -118,13 +118,24 @@ export class PatientService {
 
       let updatedObservation : ObservationResponse | undefined = undefined;
 
-      if (observation && observationExists?.patientId === id) {
+      if (observation) {
+        if (observationExists) {
+          // Atualizar observation existente
           updatedObservation = await this.observationService.update(
-          observationExists.id,
-          observation.comorbidity ?? undefined,
-          observation.allergies ?? undefined,
-          observation.medications ?? undefined
-        );
+            observationExists.id,
+            observation.comorbidity ?? undefined,
+            observation.allergies ?? undefined,
+            observation.medications ?? undefined
+          );
+        } else {
+          // Criar nova observation se não existir
+          updatedObservation = await this.observationService.create(
+            observation.comorbidity ?? '',
+            observation.allergies ?? '',
+            observation.medications ?? '',
+            id
+          );
+        }
       }
 
       const updatedPatient = await this.patientRepository.updatePatient(updateRequest);

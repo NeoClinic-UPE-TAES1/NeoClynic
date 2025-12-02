@@ -276,9 +276,25 @@ const Patients = () => {
         ), 
     [patients, searchTerm]);
 
+    // Função para mapear sexo do backend para o frontend
+    const mapSexFromBackend = (sex) => {
+        if (sex === 'M') return 'Masculino';
+        if (sex === 'F') return 'Feminino';
+        return sex; // Retorna como está se for 'Outro' ou outro valor
+    };
+
     // 4. Handlers de Ações
     const handleOpenModal = (patient) => {
-        setCurrentPatient(patient || emptyPatient);
+        if (patient) {
+            // Converter sexo do backend (M/F) para o frontend (Masculino/Feminino)
+            const mappedPatient = {
+                ...patient,
+                sex: mapSexFromBackend(patient.sex)
+            };
+            setCurrentPatient(mappedPatient);
+        } else {
+            setCurrentPatient(emptyPatient);
+        }
         setShowModal(true);
     };
 
@@ -387,12 +403,14 @@ const Patients = () => {
     const handleSaveObservation = async (e) => {
         e.preventDefault();
         try {
-            await apiCall(`/patient/observation/${currentPatient.id}`, { 
+            await apiCall(`/patient/update/${currentPatient.id}`, { 
                 method: 'PATCH', 
                 body: JSON.stringify({
-                    comorbidity: currentPatient.observation?.comorbidity || '',
-                    allergies: currentPatient.observation?.allergies || '',
-                    medications: currentPatient.observation?.medications || ''
+                    observation: {
+                        comorbidity: currentPatient.observation?.comorbidity || '',
+                        allergies: currentPatient.observation?.allergies || '',
+                        medications: currentPatient.observation?.medications || ''
+                    }
                 })
             });
             
@@ -542,7 +560,6 @@ const Patients = () => {
                                 <Select id="sex" name="sex" value={currentPatient.sex || 'Masculino'} onChange={handleInputChange}>
                                     <option>Masculino</option>
                                     <option>Feminino</option>
-                                    <option>Outro</option>
                                 </Select>
                                 
                                 <Label htmlFor="ethnicity">Etnia</Label>
@@ -567,7 +584,7 @@ const Patients = () => {
                                     <ReadOnlyField><strong>Paciente:</strong> {currentPatient.name}</ReadOnlyField>
                                     <ReadOnlyField><strong>CPF:</strong> {currentPatient.cpf}</ReadOnlyField>
                                     <ReadOnlyField><strong>Nascimento:</strong> {new Date(currentPatient.birthDay).toLocaleDateString()}</ReadOnlyField>
-                                    <ReadOnlyField><strong>Sexo:</strong> {currentPatient.sex}</ReadOnlyField>
+                                    <ReadOnlyField><strong>Sexo:</strong> {mapSexFromBackend(currentPatient.sex)}</ReadOnlyField>
                                 </ReadOnlyGroup>
                                 
                                 {/* Médico gerencia o histórico clínico (Observações) */}

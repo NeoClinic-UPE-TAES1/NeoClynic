@@ -9,8 +9,8 @@ export const reportSchema = z.object({
     .min(3, { message: "Diagnosis must be at least 3 characters long" }),
   prescription: z
     .string()
-    .min(3, { message: "Prescription must be at least 3 characters long" })
-    .optional(),
+    .optional()
+    .or(z.literal('')),
 });
 
 export type ReportBody = z.infer<typeof reportSchema>;
