@@ -66,7 +66,7 @@ const TwoFactorInput = styled.input`
 `;
 
 const LoginButton = styled.button`
-  width: 90%;
+  width: 100%;
   padding: 12px;
   background: #0d2b27;
   color: white;
@@ -79,7 +79,7 @@ const LoginButton = styled.button`
 `;
 
 const BackButton = styled.button`
-  width: 90%;
+  width: 100%;
   padding: 12px;
   background: transparent;
   color: #7bd5caff;

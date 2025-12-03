@@ -9,25 +9,70 @@ import listPlugin from "@fullcalendar/list";
 import ptBr from "@fullcalendar/core/locales/pt-br";
 import useApi from "../../hooks/useApi";
 import { AuthContext } from "../../context/AuthContext";
+import "./CalendarStyles.css";
 
 // ===== Estilos =====
 const PageLayout = styled.div`
   display: flex;
   gap: 2rem;
   padding: 2rem;
-  background: #f4f6f8;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
   min-height: 100vh;
   box-sizing: border-box;
+
+  @media (max-width: 1200px) {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    gap: 1rem;
+  }
 `;
 
 const CalendarContainer = styled.div`
   flex: 1.2;
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
   display: flex;
   flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  min-height: 600px;
+  overflow: hidden;
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  h1 .title-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  @media (max-width: 1200px) {
+    min-height: 500px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+    min-height: 400px;
+
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
 `;
 
 const FilterContainer = styled.div`
@@ -46,29 +91,40 @@ const FilterContainer = styled.div`
 const DetailsPanel = styled.div`
   flex: 0.8;
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
   display: flex;
   flex-direction: column;
-
-  /* ADICIONADO: permite rolagem */
+  border: 1px solid rgba(0, 0, 0, 0.05);
   overflow-y: auto;
-
-  /* ADICIONADO: adiciona um pequeno espaço ao final */
   padding-bottom: 2rem;
+  max-height: calc(100vh - 4rem);
 
-  /* Opcional: melhora a aparência da barra de rolagem */
   scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
+  scrollbar-color: #cbd5e0 transparent;
 
   &::-webkit-scrollbar {
     width: 8px;
   }
 
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
   &::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 4px;
+    background-color: #cbd5e0;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #a0aec0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+    max-height: none;
   }
 `;
 
@@ -76,29 +132,85 @@ const HeaderDetails = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
 
   h2 {
-    font-size: 1.25rem;
-    font-weight: bold;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a202c;
   }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+
+    h2 {
+      font-size: 1.25rem;
+    }
+  }
+`;
+
+const Label = styled.label`
+  display: block;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 0.75rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  &:disabled {
+    background-color: #f7fafc;
+    color: #718096;
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: #a0aec0;
+  }
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  padding: 0.5rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  resize: none;
-  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  resize: vertical;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  min-height: 100px;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  &::placeholder {
+    color: #a0aec0;
+  }
 `;
 
 const Button = styled.button`
@@ -109,26 +221,128 @@ const Button = styled.button`
   font-weight: 600;
   margin-right: 0.5rem;
   background: ${(props) =>
-    props.delete
+    props.$delete
       ? "#ff4d4f"
-      : props.secondary
+      : props.$secondary
       ? "#6c757d"
-      : props.view
+      : props.$view
       ? "#17a2b8"
       : "#007bff"};
   color: white;
+  transition: all 0.2s ease;
 
   &:hover {
-    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
 
 const Select = styled.select`
-  padding: 0.6rem;
+  padding: 0.75rem 1rem;
   border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-bottom: 1rem;
+  border: 2px solid #e2e8f0;
+  margin-bottom: 1.5rem;
   font-weight: 500;
+  font-size: 0.95rem;
+  color: #2d3748;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  &:disabled {
+    background-color: #f7fafc;
+    color: #718096;
+    cursor: not-allowed;
+  }
+
+  option {
+    padding: 0.5rem;
+  }
+`;
+
+const CalendarWrapper = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+`;
+
+const CheckboxLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  font-weight: 500;
+  color: #2d3748;
+  cursor: pointer;
+  user-select: none;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #667eea;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e2e8f0;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #718096;
+  
+  p {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+`;
+
+const LoadingState = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 1.25rem;
+  color: #667eea;
+  font-weight: 600;
+`;
+
+const PasswordSection = styled.div`
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #fff5f5;
+  border: 2px solid #feb2b2;
+  border-radius: 8px;
 `;
 
 // ===== Componente Principal =====
@@ -333,14 +547,21 @@ const Calendar = () => {
   };
 
   if (loading) {
-    return <PageLayout><div>Carregando...</div></PageLayout>;
+    return (
+      <LoadingState>
+        <div>⏳ Carregando calendário...</div>
+      </LoadingState>
+    );
   }
 
   return (
     <PageLayout>
       {/* 🗓️ CALENDÁRIO */}
       <CalendarContainer>
-        <h1>Agenda de Consultas</h1>
+        <h1>
+          <span>📅</span>
+          <span className="title-text">Agenda de Consultas</span>
+        </h1>
 
         <Select
           value={selectedMedicId}
@@ -350,7 +571,7 @@ const Calendar = () => {
           }}
           disabled={isMedic} // Médico não pode trocar a visualização
         >
-          <option value="">Selecione um médico</option>
+          <option value="">🩺 Selecione um médico</option>
           {medics.map((medic) => (
             <option key={medic.id} value={medic.id}>
               {medic.name} - {medic.specialty}
@@ -359,47 +580,51 @@ const Calendar = () => {
         </Select>
 
         {selectedMedicId ? (
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-            initialView="dayGridMonth"
-            locale={ptBr}
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-            }}
-            buttonText={{
-              today: "Hoje",
-              month: "Mês",
-              week: "Semana",
-              day: "Dia",
-              list: "Lista",
-            }}
-            events={events}
-            eventClick={handleEventClick}
-            nowIndicator={true}
-            allDaySlot={false}
-            height="100%"
-          />
+          <CalendarWrapper>
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+              initialView="dayGridMonth"
+              locale={ptBr}
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+              }}
+              buttonText={{
+                today: "Hoje",
+                month: "Mês",
+                week: "Semana",
+                day: "Dia",
+                list: "Lista",
+              }}
+              events={events}
+              eventClick={handleEventClick}
+              nowIndicator={true}
+              allDaySlot={false}
+              height="100%"
+              contentHeight="auto"
+            />
+          </CalendarWrapper>
         ) : (
-          <p style={{ textAlign: "center", marginTop: "2rem" }}>
-            🩺 Selecione um médico para visualizar as consultas no calendário.
-          </p>
+          <EmptyState>
+            <div className="icon">🩺</div>
+            <p>Selecione um médico para visualizar as consultas no calendário.</p>
+          </EmptyState>
         )}
       </CalendarContainer>
 
       {/* 📝 PAINEL DE DETALHES */}
       <DetailsPanel>
         <HeaderDetails>
-          <h2>Detalhes da Consulta</h2>
+          <h2>📝 Detalhes da Consulta</h2>
           {isSecretary && (
-            <Button secondary onClick={handleCreate}>➕ Criar Consulta</Button>
+            <Button $secondary onClick={handleCreate}>➕ Criar Consulta</Button>
           )}
         </HeaderDetails>
 
         {selectedEvent ? (
           <>
-            <label>Médico:</label>
+            <Label>👨‍⚕️ Médico:</Label>
             {selectedEvent.id ? (
               <Input
                 value={selectedEvent.medicName}
@@ -420,7 +645,7 @@ const Calendar = () => {
               </Select>
             )}
 
-            <label>Paciente:</label>
+            <Label>👤 Paciente:</Label>
             {selectedEvent.id ? (
               <Input
                 value={selectedEvent.patientName}
@@ -442,7 +667,7 @@ const Calendar = () => {
               </Select>
             )}
 
-            <label>Data e Hora:</label>
+            <Label>📅 Data e Hora:</Label>
             <Input
               type="datetime-local"
               name="date"
@@ -451,7 +676,7 @@ const Calendar = () => {
               disabled={!isSecretary}
             />
 
-            <label>
+            <CheckboxLabel>
               <input
                 type="checkbox"
                 name="hasFollowUp"
@@ -464,40 +689,40 @@ const Calendar = () => {
                 }
                 disabled={!isSecretary}
               />
-              {" "}Consulta de retorno
-            </label>
+              🔄 Consulta de retorno
+            </CheckboxLabel>
 
-            <div style={{ marginTop: "1rem" }}>
+            <ButtonGroup>
               {isSecretary && (
                 <Button onClick={handleSave}>💾 Salvar</Button>
               )}
               {selectedEvent.id && (
-                <>
-                  <Button view onClick={handleViewDetails}>👁 Ver detalhes</Button>
-                  {isSecretary && (
-                    <>
-                      <label style={{ display: "block", marginTop: "1rem" }}>
-                        Senha (para excluir):
-                      </label>
-                      <Input
-                        type="password"
-                        value={secretaryPassword}
-                        onChange={(e) => setSecretaryPassword(e.target.value)}
-                        placeholder="Digite sua senha"
-                      />
-                      <Button delete onClick={handleDelete}>🗑 Excluir</Button>
-                    </>
-                  )}
-                </>
+                <Button $view onClick={handleViewDetails}>👁 Ver detalhes</Button>
               )}
-            </div>
+            </ButtonGroup>
+
+            {selectedEvent.id && isSecretary && (
+              <PasswordSection>
+                <Label>🔐 Senha (para excluir):</Label>
+                <Input
+                  type="password"
+                  value={secretaryPassword}
+                  onChange={(e) => setSecretaryPassword(e.target.value)}
+                  placeholder="Digite sua senha para confirmar exclusão"
+                />
+                <Button $delete onClick={handleDelete}>🗑 Excluir Consulta</Button>
+              </PasswordSection>
+            )}
           </>
         ) : (
-          <p>
-            {selectedMedicId
-              ? "Selecione uma consulta no calendário para ver ou editar."
-              : "Selecione um médico para começar."}
-          </p>
+          <EmptyState>
+            <div className="icon">📋</div>
+            <p>
+              {selectedMedicId
+                ? "Selecione uma consulta no calendário para ver ou editar."
+                : "Selecione um médico para começar."}
+            </p>
+          </EmptyState>
         )}
       </DetailsPanel>
     </PageLayout>

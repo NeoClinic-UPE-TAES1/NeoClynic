@@ -12,7 +12,7 @@ const FooterBar = styled.footer`
 
 const Footer = () => (  
 	<FooterBar>
-		<div>&copy; 2025 NeoClinic. Todos os direitos reservados.</div>
+		<div>&copy; 2025 NeoClynic. Todos os direitos reservados.</div>
 		<div style={{ fontSize: 12, marginTop: 6 }}>Sistema em conformidade com a LGPD</div>
 	</FooterBar>
 );

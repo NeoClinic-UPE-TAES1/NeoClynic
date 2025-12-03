@@ -6,106 +6,192 @@ import useApi from '../../hooks/useApi';
 // --- Estilização ---
 const Container = styled.div`
     padding: 2rem;
-    font-family: 'Istok Web', sans-serif;
-    max-width: 600px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
+`;
+
+const PageCard = styled.div`
+    max-width: 700px;
     margin: 0 auto;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+
+    @media (max-width: 768px) {
+        padding: 1.25rem;
+    }
 `;
 
 const Title = styled.h2`
-    color: #333;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a202c;
     margin-bottom: 1.5rem;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    .title-text {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    @media (max-width: 768px) {
+        font-size: 1.5rem;
+    }
 `;
 
 const UserInfo = styled.div`
-    background: #f0f8ff;
+    background: linear-gradient(135deg, #ebf4ff 0%, #e8f1ff 100%);
     padding: 1.5rem;
-    border-radius: 8px;
+    border-radius: 12px;
     margin-bottom: 2rem;
-    border-left: 4px solid #007bff;
+    border: 2px solid #bfdbfe;
     
     h3 {
         margin: 0 0 1rem 0;
-        color: #007bff;
+        color: #667eea;
         font-size: 1.1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
     
     p {
         margin: 0.5rem 0;
-        color: #555;
+        color: #4a5568;
+        font-size: 0.95rem;
         
         strong {
-            color: #333;
+            color: #1a202c;
+            font-weight: 600;
         }
     }
 `;
 
 const Form = styled.form`
     padding: 2rem;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
     display: flex;
     flex-direction: column;
     gap: 1rem;
+
+    @media (max-width: 768px) {
+        padding: 1.5rem;
+    }
 `;
 
 const Input = styled.input`
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
     
+    &:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
     &:disabled {
-        background-color: #e9ecef;
+        background-color: #f7fafc;
+        color: #718096;
         cursor: not-allowed;
+    }
+
+    &::placeholder {
+        color: #a0aec0;
     }
 `;
 
 const Label = styled.label`
-    font-weight: bold;
+    font-weight: 600;
     font-size: 0.9rem;
-    color: #444;
+    color: #2d3748;
     margin-bottom: -0.5rem;
+    letter-spacing: 0.3px;
+`;
+
+const Divider = styled.hr`
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 2px solid #e2e8f0;
 `;
 
 const Button = styled.button`
     padding: 0.85rem 1.5rem;
-    background-color: #28a745;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
     font-size: 1rem;
     margin-top: 1rem;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(72, 187, 120, 0.2);
     
     &:hover:not(:disabled) {
-        background-color: #218838;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(72, 187, 120, 0.3);
+    }
+
+    &:active {
+        transform: translateY(0);
     }
     
     &:disabled {
-        background-color: #6c757d;
+        opacity: 0.6;
         cursor: not-allowed;
     }
 `;
 
 const Message = styled.div`
-    padding: 1rem;
-    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
     margin-bottom: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: slideDown 0.3s ease;
+
+    @keyframes slideDown {
+        from {
+            transform: translateY(-10px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
     
     &.success {
         background-color: #d4edda;
         color: #155724;
-        border: 1px solid #c3e6cb;
+        border: 2px solid #c3e6cb;
     }
     
     &.error {
         background-color: #f8d7da;
         color: #721c24;
-        border: 1px solid #f5c6cb;
+        border: 2px solid #f5c6cb;
     }
 `;
 
@@ -222,31 +308,42 @@ const Profile = () => {
     };
 
     if (!user) {
-        return <Container>Carregando...</Container>;
+        return (
+            <Container>
+                <PageCard>Carregando...</PageCard>
+            </Container>
+        );
     }
 
     return (
         <Container>
-            <Title>Meu Perfil</Title>
-            
-            <UserInfo>
-                <h3>Informações da Conta</h3>
-                <p><strong>Tipo de Usuário:</strong> {
-                    user.role === 'ADMIN' ? 'Administrador' :
-                    user.role === 'MEDIC' ? 'Médico' :
-                    user.role === 'SECRETARY' ? 'Secretária' : user.role
-                }</p>
-                <p><strong>ID:</strong> {user.id}</p>
-            </UserInfo>
-            
-            <>
-                    {message.text && (
-                        <Message className={message.type}>
-                            {message.text}
-                        </Message>
-                    )}
-                    
-                    <Form onSubmit={handleSubmit}>
+            <PageCard>
+                <Title>
+                    <span className="emoji">👤</span>
+                    <span className="title-text">Meu Perfil</span>
+                </Title>
+                
+                <UserInfo>
+                    <h3>
+                        <span>ℹ️</span>
+                        Informações da Conta
+                    </h3>
+                    <p><strong>Tipo de Usuário:</strong> {
+                        user.role === 'ADMIN' ? 'Administrador' :
+                        user.role === 'MEDIC' ? 'Médico' :
+                        user.role === 'SECRETARY' ? 'Secretária' : user.role
+                    }</p>
+                    <p><strong>ID:</strong> {user.id}</p>
+                </UserInfo>
+                
+                <>
+                        {message.text && (
+                            <Message className={message.type}>
+                                {message.text}
+                            </Message>
+                        )}
+                        
+                        <Form onSubmit={handleSubmit}>
                         <Label htmlFor="name">Nome Completo</Label>
                         <Input 
                             type="text" 
@@ -280,8 +377,8 @@ const Profile = () => {
                                 />
                             </>
                         )}
-                        
-                        <hr style={{ margin: '1rem 0', border: 'none', borderTop: '1px solid #ddd' }} />
+
+                        <Divider />
                         
                         <Label htmlFor="currentPassword">Senha Atual (para alteração de senha)</Label>
                         <Input 
@@ -317,7 +414,8 @@ const Profile = () => {
                             {loading ? 'Salvando...' : 'Atualizar Perfil'}
                         </Button>
                     </Form>
-            </>
+                </>
+            </PageCard>
         </Container>
     );
 };

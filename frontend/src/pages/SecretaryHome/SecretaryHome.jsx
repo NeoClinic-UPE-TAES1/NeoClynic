@@ -6,11 +6,14 @@ import styled from 'styled-components';
 const Container = styled.div`
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
 `
 
 const StyledMain = styled.main`
     flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
 `
 
 const SecretaryHome = () => {
