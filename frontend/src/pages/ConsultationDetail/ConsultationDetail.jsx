@@ -4,13 +4,29 @@ import { useParams, useNavigate } from "react-router-dom";
 import useApi from "../../hooks/useApi";
 import { AuthContext } from "../../context/AuthContext";
 
+const PageWrapper = styled.div`
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  min-height: 100vh;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+`;
+
 const Container = styled.div`
   max-width: 900px;
-  margin: 2rem auto;
+  margin: 0 auto;
   padding: 2rem;
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+  }
 `;
 
 const Header = styled.div`
@@ -18,59 +34,152 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid #e2e8f0;
   padding-bottom: 1rem;
+  gap: 1rem;
 
-  h1 {
-    font-size: 1.75rem;
-    color: #2d3748;
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
+const Title = styled.h1`
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .title-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
   }
 `;
 
 const Section = styled.div`
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: #f8f9fa;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
 
   h2 {
     font-size: 1.25rem;
-    color: #007bff;
-    margin-bottom: 1rem;
+    font-weight: 700;
+    color: #667eea;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
   }
 `;
 
 const InfoRow = styled.div`
   display: flex;
   margin-bottom: 0.75rem;
+  gap: 0.5rem;
 
   strong {
-    min-width: 150px;
-    color: #495057;
+    min-width: 180px;
+    color: #2d3748;
+    font-weight: 600;
   }
 
   span {
-    color: #212529;
+    color: #4a5568;
+    flex: 1;
   }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.25rem;
+
+    strong {
+      min-width: auto;
+    }
+  }
+`;
+
+const Label = styled.label`
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.3px;
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  padding: 0.75rem;
-  border-radius: 6px;
-  border: 1px solid #ced4da;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
   resize: vertical;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
   font-family: inherit;
-  min-height: 100px;
+  font-size: 0.95rem;
+  min-height: 120px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  &::placeholder {
+    color: #a0aec0;
+  }
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 0.75rem;
-  border-radius: 6px;
-  border: 1px solid #ced4da;
-  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  &::placeholder {
+    color: #a0aec0;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 const Button = styled.button`
@@ -79,18 +188,36 @@ const Button = styled.button`
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  margin-right: 0.5rem;
-  background: ${(props) => (props.secondary ? "#6c757d" : "#007bff")};
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  background: ${(props) => (props.$secondary ? 'linear-gradient(135deg, #718096 0%, #4a5568 100%)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)')};
   color: white;
+  box-shadow: ${(props) => (props.$secondary ? '0 2px 4px rgba(113, 128, 150, 0.2)' : '0 2px 4px rgba(102, 126, 234, 0.2)')};
 
-  &:hover {
-    opacity: 0.9;
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: ${(props) => (props.$secondary ? '0 4px 8px rgba(113, 128, 150, 0.3)' : '0 4px 8px rgba(102, 126, 234, 0.3)')};
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+`;
+
+const EmptyState = styled.p`
+  text-align: center;
+  color: #718096;
+  padding: 2rem;
+  font-style: italic;
 `;
 
 const ConsultationDetail = () => {
@@ -185,20 +312,30 @@ const ConsultationDetail = () => {
   };
 
   if (loading || !consultation) {
-    return <Container>Carregando...</Container>;
+    return (
+      <PageWrapper>
+        <Container>
+          <EmptyState>Carregando...</EmptyState>
+        </Container>
+      </PageWrapper>
+    );
   }
 
   return (
-    <Container>
-      <Header>
-        <h1>Detalhes da Consulta</h1>
-        <Button secondary onClick={() => navigate(getCalendarRoute())}>
-          ← Voltar ao Calendário
-        </Button>
-      </Header>
+    <PageWrapper>
+      <Container>
+        <Header>
+          <Title>
+            <span>📋</span>
+            <span className="title-text">Detalhes da Consulta</span>
+          </Title>
+          <Button $secondary onClick={() => navigate(getCalendarRoute())}>
+            ← Voltar ao Calendário
+          </Button>
+        </Header>
 
-      <Section>
-        <h2>Informações da Consulta</h2>
+        <Section>
+          <h2>🗓️ Informações da Consulta</h2>
         <InfoRow>
           <strong>Data e Hora:</strong>
           <span>{new Date(consultation.date).toLocaleString("pt-BR")}</span>
@@ -211,7 +348,7 @@ const ConsultationDetail = () => {
 
       {medic && (
         <Section>
-          <h2>Informações do Médico</h2>
+          <h2>👨‍⚕️ Informações do Médico</h2>
           <InfoRow>
             <strong>Nome:</strong>
             <span>{medic.name}</span>
@@ -229,7 +366,7 @@ const ConsultationDetail = () => {
 
       {patient && (
         <Section>
-          <h2>Informações do Paciente</h2>
+          <h2>🧑‍⚕️ Informações do Paciente</h2>
           <InfoRow>
             <strong>Nome:</strong>
             <span>{patient.name}</span>
@@ -261,7 +398,7 @@ const ConsultationDetail = () => {
 
       {patient?.observation && (
         <Section>
-          <h2>Prontuário (Observation)</h2>
+          <h2>📝 Prontuário (Observation)</h2>
           {patient.observation.comorbidity && (
             <InfoRow>
               <strong>Comorbidades:</strong>
@@ -284,7 +421,7 @@ const ConsultationDetail = () => {
       )}
 
       <Section>
-        <h2>Relatório da Consulta (Report)</h2>
+        <h2>📄 Relatório da Consulta (Report)</h2>
         {consultation.report && !isEditingReport ? (
           <>
             <InfoRow>
@@ -302,16 +439,18 @@ const ConsultationDetail = () => {
               </InfoRow>
             )}
             {isMedic && (
-              <Button onClick={() => setIsEditingReport(true)}>
-                ✏️ Editar Relatório
-              </Button>
+              <ButtonGroup>
+                <Button onClick={() => setIsEditingReport(true)}>
+                  ✏️ Editar Relatório
+                </Button>
+              </ButtonGroup>
             )}
           </>
         ) : (
           <>
             {isMedic ? (
               <>
-                <label>Descrição:</label>
+                <Label>Descrição:</Label>
                 <TextArea
                   name="description"
                   value={report.description}
@@ -319,7 +458,7 @@ const ConsultationDetail = () => {
                   placeholder="Descreva os detalhes da consulta..."
                 />
 
-                <label>Diagnóstico:</label>
+                <Label>Diagnóstico:</Label>
                 <TextArea
                   name="diagnosis"
                   value={report.diagnosis}
@@ -327,7 +466,7 @@ const ConsultationDetail = () => {
                   placeholder="Informe o diagnóstico..."
                 />
 
-                <label>Prescrição (opcional):</label>
+                <Label>Prescrição (opcional):</Label>
                 <TextArea
                   name="prescription"
                   value={report.prescription}
@@ -335,23 +474,26 @@ const ConsultationDetail = () => {
                   placeholder="Informe a prescrição médica..."
                 />
 
-                <Button onClick={handleSaveReport}>💾 Salvar Relatório</Button>
-                {consultation.report && (
-                  <Button secondary onClick={() => {
-                    setIsEditingReport(false);
-                    setReport(consultation.report);
-                  }}>
-                    Cancelar
-                  </Button>
-                )}
+                <ButtonGroup>
+                  <Button onClick={handleSaveReport}>💾 Salvar Relatório</Button>
+                  {consultation.report && (
+                    <Button $secondary onClick={() => {
+                      setIsEditingReport(false);
+                      setReport(consultation.report);
+                    }}>
+                      Cancelar
+                    </Button>
+                  )}
+                </ButtonGroup>
               </>
             ) : (
-              <p>Nenhum relatório disponível para esta consulta ainda.</p>
+              <EmptyState>Nenhum relatório disponível para esta consulta ainda.</EmptyState>
             )}
           </>
         )}
       </Section>
-    </Container>
+      </Container>
+    </PageWrapper>
   );
 };
 
